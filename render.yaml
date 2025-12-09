@@ -37,7 +37,7 @@ services:
     branch: main
     rootDir: frontend
     buildCommand: npm ci && npm run build
-    startCommand: npm run start -- -p $PORT
+    startCommand: npm run start
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
