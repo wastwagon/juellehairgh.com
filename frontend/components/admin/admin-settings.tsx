@@ -1,0 +1,500 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Settings, Save, CreditCard, Loader2, Eye, EyeOff, Mail, Send, CheckCircle2, XCircle } from "lucide-react";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+
+export function AdminSettings() {
+  const queryClient = useQueryClient();
+  const [showSecretKey, setShowSecretKey] = useState(false);
+  const [showSendGridKey, setShowSendGridKey] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [testEmailStatus, setTestEmailStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [testEmailMessage, setTestEmailMessage] = useState("");
+  const [settings, setSettings] = useState({
+    siteName: "Juelle Hair",
+    siteEmail: "sales@juellehairgh.com",
+    sitePhone: "+233 539506949",
+    shippingFreeThreshold: 950,
+    shippingStandardDays: "3-7",
+    returnPolicyDays: 14,
+    currencyBase: "GHS",
+    paystackSecretKey: "",
+    paystackPublicKey: "",
+    emailProvider: "sendgrid",
+    sendgridApiKey: "",
+  });
+
+  // Fetch settings from API
+  const { data: apiSettings, isLoading } = useQuery({
+    queryKey: ["admin", "settings"],
+    queryFn: async () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Not authenticated");
+      const response = await api.get("/admin/settings", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data;
+    },
+    retry: false,
+  });
+
+  // Update local state when API settings are loaded
+  useEffect(() => {
+    if (apiSettings) {
+      setSettings((prev) => ({
+        ...prev,
+        paystackSecretKey: apiSettings.PAYSTACK_SECRET_KEY || "",
+        paystackPublicKey: apiSettings.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+        emailProvider: apiSettings.EMAIL_PROVIDER || "sendgrid",
+        sendgridApiKey: apiSettings.SENDGRID_API_KEY || "",
+        siteName: apiSettings.SITE_NAME || prev.siteName,
+        siteEmail: apiSettings.SITE_EMAIL || prev.siteEmail,
+        sitePhone: apiSettings.SITE_PHONE || prev.sitePhone,
+        shippingFreeThreshold: apiSettings.SHIPPING_FREE_THRESHOLD ? parseFloat(apiSettings.SHIPPING_FREE_THRESHOLD) : prev.shippingFreeThreshold,
+        shippingStandardDays: apiSettings.SHIPPING_STANDARD_DAYS || prev.shippingStandardDays,
+        returnPolicyDays: apiSettings.RETURN_POLICY_DAYS ? parseInt(apiSettings.RETURN_POLICY_DAYS) : prev.returnPolicyDays,
+      }));
+    }
+  }, [apiSettings]);
+
+  // Save settings mutation
+  const saveMutation = useMutation({
+    mutationFn: async (settingsToSave: typeof settings) => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Not authenticated");
+      
+      return api.put(
+        "/admin/settings",
+        {
+          settings: [
+            { key: "SITE_NAME", value: settingsToSave.siteName, category: "general" },
+            { key: "SITE_EMAIL", value: settingsToSave.siteEmail, category: "general" },
+            { key: "SITE_PHONE", value: settingsToSave.sitePhone, category: "general" },
+            { key: "SHIPPING_FREE_THRESHOLD", value: settingsToSave.shippingFreeThreshold.toString(), category: "shipping" },
+            { key: "SHIPPING_STANDARD_DAYS", value: settingsToSave.shippingStandardDays, category: "shipping" },
+            { key: "RETURN_POLICY_DAYS", value: settingsToSave.returnPolicyDays.toString(), category: "returns" },
+            { key: "PAYSTACK_SECRET_KEY", value: settingsToSave.paystackSecretKey, category: "payment" },
+            { key: "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY", value: settingsToSave.paystackPublicKey, category: "payment" },
+            { key: "EMAIL_PROVIDER", value: settingsToSave.emailProvider, category: "email" },
+            { key: "SENDGRID_API_KEY", value: settingsToSave.sendgridApiKey, category: "email" },
+          ],
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "settings"] });
+      toast.success("Settings saved successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to save settings");
+    },
+  });
+
+  const handleSave = () => {
+    saveMutation.mutate(settings);
+  };
+
+  // Test email mutation
+  const testEmailMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Not authenticated");
+      
+      const response = await api.post(
+        "/admin/settings/test-email",
+        { email },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setTestEmailStatus("success");
+      setTestEmailMessage(data.message || "Test email sent successfully! Check your inbox.");
+      setTimeout(() => {
+        setTestEmailStatus("idle");
+        setTestEmailMessage("");
+        setTestEmail("");
+      }, 5000);
+    },
+    onError: (error: any) => {
+      setTestEmailStatus("error");
+      setTestEmailMessage(error.response?.data?.message || error.message || "Failed to send test email. Please check your configuration.");
+    },
+  });
+
+  const handleTestEmail = () => {
+    if (!testEmail || !testEmail.includes("@")) {
+      setTestEmailStatus("error");
+      setTestEmailMessage("Please enter a valid email address");
+      return;
+    }
+    setTestEmailStatus("sending");
+    setTestEmailMessage("");
+    testEmailMutation.mutate(testEmail);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-600 mt-1">Manage platform settings and configuration</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            General Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Site Name</label>
+            <Input
+              type="text"
+              value={settings.siteName}
+              onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Contact Email</label>
+            <Input
+              type="email"
+              value={settings.siteEmail}
+              onChange={(e) => setSettings({ ...settings, siteEmail: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Contact Phone</label>
+            <Input
+              type="tel"
+              value={settings.sitePhone}
+              onChange={(e) => setSettings({ ...settings, sitePhone: e.target.value })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Shipping Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Free Shipping Threshold (GHS)</label>
+            <Input
+              type="number"
+              value={settings.shippingFreeThreshold}
+              onChange={(e) =>
+                setSettings({ ...settings, shippingFreeThreshold: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Standard Delivery Days</label>
+            <Input
+              type="text"
+              value={settings.shippingStandardDays}
+              onChange={(e) => setSettings({ ...settings, shippingStandardDays: e.target.value })}
+              placeholder="3-7"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Return & Refund Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Return Policy Days</label>
+            <Input
+              type="number"
+              value={settings.returnPolicyDays}
+              onChange={(e) =>
+                setSettings({ ...settings, returnPolicyDays: parseInt(e.target.value) || 14 })
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Currency Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Base Currency</label>
+            <Input
+              type="text"
+              value={settings.currencyBase}
+              onChange={(e) => setSettings({ ...settings, currencyBase: e.target.value })}
+              disabled
+            />
+            <p className="text-xs text-gray-500 mt-1">Base currency cannot be changed</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Email Service Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Email Provider</label>
+            <select
+              value={settings.emailProvider}
+              onChange={(e) => setSettings({ ...settings, emailProvider: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="sendgrid">SendGrid</option>
+              <option value="smtp">SMTP (Gmail, Outlook, etc.)</option>
+              <option value="mailgun">Mailgun</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Select your email service provider. Changes require backend restart to take effect.
+            </p>
+          </div>
+
+          {settings.emailProvider === "sendgrid" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">SendGrid API Key</label>
+                <div className="relative">
+                  <Input
+                    type={showSendGridKey ? "text" : "password"}
+                    value={settings.sendgridApiKey}
+                    onChange={(e) => setSettings({ ...settings, sendgridApiKey: e.target.value })}
+                    placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSendGridKey(!showSendGridKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    aria-label={showSendGridKey ? "Hide API key" : "Show API key"}
+                  >
+                    {showSendGridKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  SendGrid API key for email delivery. Get your API key from{" "}
+                  <a
+                    href="https://app.sendgrid.com/settings/api_keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-600 hover:underline"
+                  >
+                    SendGrid Dashboard
+                  </a>
+                </p>
+              </div>
+
+              {/* Test Email Section */}
+              <div className="border-t pt-4">
+                <label className="block text-sm font-medium mb-2">Test Email Configuration</label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Enter an email address to send a test email and verify your SendGrid configuration is working.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="your-email@example.com"
+                    className="flex-1"
+                    disabled={testEmailStatus === "sending"}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleTestEmail}
+                    disabled={testEmailStatus === "sending" || !testEmail || !testEmail.includes("@")}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    {testEmailStatus === "sending" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Send Test
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {testEmailStatus === "success" && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-green-800">Success!</p>
+                      <p className="text-xs text-green-700 mt-1">{testEmailMessage}</p>
+                    </div>
+                  </div>
+                )}
+
+                {testEmailStatus === "error" && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                    <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-red-800">Error</p>
+                      <p className="text-xs text-red-700 mt-1">{testEmailMessage}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  <strong>Free Tier:</strong> 100 emails/day forever. Perfect for getting started!
+                </p>
+                <p className="text-xs text-blue-800 mt-1">
+                  <strong>Note:</strong> After saving, restart the backend server for changes to take effect.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {settings.emailProvider === "smtp" && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs text-yellow-800">
+                <strong>SMTP Configuration:</strong> For SMTP settings, configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASSWORD in your environment variables or contact your administrator.
+              </p>
+            </div>
+          )}
+
+          {settings.emailProvider === "mailgun" && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs text-yellow-800">
+                <strong>Mailgun Configuration:</strong> For Mailgun settings, configure MAILGUN_API_KEY and MAILGUN_DOMAIN in your environment variables or contact your administrator.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Paystack Payment Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Paystack Secret Key (Backend)</label>
+            <div className="relative">
+              <Input
+                type={showSecretKey ? "text" : "password"}
+                value={settings.paystackSecretKey}
+                onChange={(e) => setSettings({ ...settings, paystackSecretKey: e.target.value })}
+                placeholder="sk_live_... or sk_test_..."
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowSecretKey(!showSecretKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                aria-label={showSecretKey ? "Hide secret key" : "Show secret key"}
+              >
+                {showSecretKey ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Secret key for backend payment processing. Get your keys from{" "}
+              <a
+                href="https://paystack.com/dashboard/settings/developer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:underline"
+              >
+                Paystack Dashboard
+              </a>
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Paystack Public Key (Frontend)</label>
+            <Input
+              type="text"
+              value={settings.paystackPublicKey}
+              onChange={(e) => setSettings({ ...settings, paystackPublicKey: e.target.value })}
+              placeholder="pk_live_... or pk_test_..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Public key for frontend payment initialization. Starts with "pk_live_" or "pk_test_"
+            </p>
+          </div>
+
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-800">
+              <strong>Note:</strong> Changes to Paystack keys take effect immediately. The backend will use these keys for all payment operations.
+            </p>
+            <p className="text-xs text-blue-800 mt-2">
+              <strong>Key Types:</strong> Use test keys (sk_test_/pk_test_) for development and live keys (sk_live_/pk_live_) for production.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button 
+          onClick={handleSave} 
+          className="flex items-center gap-2"
+          disabled={saveMutation.isPending || isLoading}
+        >
+          {saveMutation.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              Save Settings
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
