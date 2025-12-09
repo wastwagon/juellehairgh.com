@@ -59,6 +59,7 @@ services:
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Juelle Hair Ghana}
       NEXT_PUBLIC_BASE_CURRENCY: ${NEXT_PUBLIC_BASE_CURRENCY:-GHS}
       WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - "${FRONTEND_PORT:-8002}:3000"
     depends_on:
@@ -66,8 +67,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      # Removed /app/.next volume to allow fresh builds
-    command: npm run dev
+      - /app/.next
+    command: sh -c "chmod -R 755 /app && npm run dev"
     networks:
       - juelle-hair-network
     restart: unless-stopped
