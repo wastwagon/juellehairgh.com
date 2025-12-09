@@ -20,8 +20,11 @@ services:
           name: juelle-hair-postgres
           property: connectionString
       # PORT is automatically set by Render - do not override
+      # JWT_SECRET with placeholder - UPDATE THIS in Render dashboard after deployment!
+      # Generate a secure secret with: openssl rand -base64 32
+      - key: JWT_SECRET
+        value: CHANGE_ME_GENERATE_WITH_openssl_rand_base64_32
       # Add these environment variables in Render dashboard after deployment:
-      # - JWT_SECRET (generate with: openssl rand -base64 32)
       # - PAYSTACK_SECRET_KEY (your Paystack secret key)
       # - SENDGRID_API_KEY (optional, for email)
       # - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD (optional, if not using SendGrid)
