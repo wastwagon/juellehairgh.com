@@ -15,8 +15,12 @@ services:
         value: production
       - key: FRONTEND_URL
         value: https://juelle-hair-web.onrender.com
+      # DATABASE_URL will be automatically set from the database below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: juelle-hair-postgres
+          property: connectionString
       # PORT is automatically set by Render - do not override
-      # DATABASE_URL will be set automatically when database is linked
       # Add these environment variables in Render dashboard after deployment:
       # - JWT_SECRET (generate with: openssl rand -base64 32)
       # - PAYSTACK_SECRET_KEY (your Paystack secret key)
