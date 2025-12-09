@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger, InternalServerErrorException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: any) {
+    try {
     const { category, brand, search, minPrice, maxPrice, page = 1, limit = 20 } = query;
 
     const skip = (page - 1) * limit;
@@ -76,9 +79,16 @@ export class ProductsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+    } catch (error: any) {
+      this.logger.error(`❌ Error in findAll: ${error?.message || "Unknown error"}`, error?.stack);
+      throw new InternalServerErrorException(
+        `Failed to fetch products: ${error?.message || "Unknown error"}`
+      );
+    }
   }
 
   async findOne(slug: string) {
+    try {
     const product = await this.prisma.product.findUnique({
       where: { slug },
       include: {
@@ -113,6 +123,15 @@ export class ProductsService {
     }
 
     return product;
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`❌ Error in findOne: ${error?.message || "Unknown error"}`, error?.stack);
+      throw new InternalServerErrorException(
+        `Failed to fetch product: ${error?.message || "Unknown error"}`
+      );
+    }
   }
 
   async getRecommendations(productId: string, limit: number = 8) {
