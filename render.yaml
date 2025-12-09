@@ -26,6 +26,29 @@ services:
       # - SENDGRID_API_KEY (optional, for email)
       # - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD (optional, if not using SendGrid)
 
+  - type: web
+    name: juelle-hair-web
+    runtime: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Backend API URL - Update this after backend is deployed with actual backend URL
+      # Format: https://juelle-hair-backend.onrender.com/api
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://juelle-hair-backend.onrender.com/api
+      # PORT is automatically set by Render - Next.js will use it automatically
+      # Add these environment variables in Render dashboard after deployment:
+      # - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY (your Paystack public key)
+      # - NEXT_PUBLIC_APP_NAME (e.g., "Juelle Hair Ghana")
+      # - NEXT_PUBLIC_BASE_CURRENCY (e.g., "GHS")
+
 databases:
   - name: juelle-hair-postgres
     plan: free
