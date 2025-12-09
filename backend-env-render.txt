@@ -1,0 +1,33 @@
+# Database Configuration (REQUIRED)
+# From your Render PostgreSQL database: juelle-hair-postgres
+# 
+# IMPORTANT: Use the Internal Database URL for services in the same Render account
+# This is the recommended connection string from Render dashboard
+#
+# Internal Database URL (USE THIS - for services in same Render account):
+DATABASE_URL=postgresql://juellehair_user:lJbEutCA26lLKqZIaBfq4YWOdudkwGfC@dpg-d4nkgtngi27c73bi9j8g-a/juellehair_k4fu
+#
+# External Database URL (only if connecting from outside Render):
+# DATABASE_URL=postgresql://juellehair_user:lJbEutCA26lLKqZIaBfq4YWOdudkwGfC@dpg-d4nkgtngi27c73bi9j8g-a.oregon-postgres.render.com/juellehair_k4fu
+#
+# BEST OPTION: Link the database in Render dashboard (auto-provides DATABASE_URL)
+# Go to your backend service → Connections → Link Resource → Select juelle-hair-postgres
+
+# Server Configuration
+# PORT is automatically set by Render - do not override it
+# PORT=3001  # Commented out - Render sets this automatically
+NODE_ENV=production
+
+# Frontend URL (REQUIRED for CORS and email links)
+FRONTEND_URL=https://juelle-hair-web.onrender.com
+
+# JWT Authentication (REQUIRED)
+# Generate a strong random string (e.g., openssl rand -base64 32)
+JWT_SECRET=your-super-secret-jwt-key-change-this-to-a-random-string
+
+# Paystack Payment Gateway (REQUIRED for payments)
+# Get from: https://paystack.com/dashboard/settings/developer
+PAYSTACK_SECRET_KEY=sk_live_your_paystack_secret_key_here
+
+# Render automatically provides this, but you can set it explicitly if needed
+# RENDER_EXTERNAL_URL=https://juelle-hair-backend.onrender.com
