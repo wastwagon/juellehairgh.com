@@ -10,7 +10,6 @@ services:
     # Migrations will run automatically on first deploy via startCommand
     startCommand: (npm run prisma:deploy || true) && npm run start:prod
     healthCheckPath: /health
-    healthCheckInitialDelay: 10
     envVars:
       - key: NODE_ENV
         value: production
@@ -23,11 +22,7 @@ services:
       # - PAYSTACK_SECRET_KEY (your Paystack secret key)
       # - SENDGRID_API_KEY (optional, for email)
       # - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD (optional, if not using SendGrid)
-    # Link to the database created below
-    database:
-      name: juelle-hair-postgres
-      databaseName: juellehair
-      user: juellehair_user
+    # Database will be linked automatically when created below
 
 databases:
   - name: juelle-hair-postgres
