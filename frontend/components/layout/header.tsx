@@ -145,6 +145,43 @@ export function Header() {
               )}
             </div>
 
+            {/* Middle - Flash Sale Content */}
+            {flashSale && timeLeft ? (
+              <div className="hidden md:flex items-center gap-2 md:gap-3 flex-1 justify-center">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-3.5 w-3.5 md:h-4 md:w-4 animate-pulse" />
+                  <span className="font-bold text-xs md:text-sm whitespace-nowrap">{flashSale.title}</span>
+                  {flashSale.discountPercent && (
+                    <span className="bg-white/20 px-2 py-0.5 rounded text-xs md:text-sm font-semibold whitespace-nowrap">
+                      {Number(flashSale.discountPercent).toFixed(0)}% OFF
+                    </span>
+                  )}
+                </div>
+                <div className="hidden lg:flex items-center gap-2">
+                  <Clock className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                  <span className="text-xs md:text-sm">Ends in:</span>
+                </div>
+                <div className="hidden lg:flex gap-1 md:gap-1.5">
+                  <div className="bg-white/20 rounded px-1.5 py-0.5 min-w-[30px] md:min-w-[35px] text-center">
+                    <div className="text-xs md:text-sm font-bold">{String(timeLeft.days).padStart(2, "0")}</div>
+                    <div className="text-[9px] md:text-[10px] opacity-90">D</div>
+                  </div>
+                  <div className="bg-white/20 rounded px-1.5 py-0.5 min-w-[30px] md:min-w-[35px] text-center">
+                    <div className="text-xs md:text-sm font-bold">{String(timeLeft.hours).padStart(2, "0")}</div>
+                    <div className="text-[9px] md:text-[10px] opacity-90">H</div>
+                  </div>
+                  <div className="bg-white/20 rounded px-1.5 py-0.5 min-w-[30px] md:min-w-[35px] text-center">
+                    <div className="text-xs md:text-sm font-bold">{String(timeLeft.minutes).padStart(2, "0")}</div>
+                    <div className="text-[9px] md:text-[10px] opacity-90">M</div>
+                  </div>
+                  <div className="bg-white/20 rounded px-1.5 py-0.5 min-w-[30px] md:min-w-[35px] text-center">
+                    <div className="text-xs md:text-sm font-bold">{String(timeLeft.seconds).padStart(2, "0")}</div>
+                    <div className="text-[9px] md:text-[10px] opacity-90">S</div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {/* Right Side - Order Tracking & Social Media */}
             <div className="flex items-center gap-3 md:gap-4">
               <Link
@@ -197,51 +234,6 @@ export function Header() {
           </div>
         </div>
       </div>
-
-      {/* Flash Sale Counter Banner */}
-      {flashSale && timeLeft ? (
-        <div className="bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white py-2 md:py-3 px-2">
-          <div className="container mx-auto">
-            <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
-                <span className="font-bold text-xs md:text-sm whitespace-nowrap">{flashSale.title}</span>
-                {flashSale.discountPercent && (
-                  <span className="bg-white/20 px-2 py-0.5 rounded text-xs md:text-sm font-semibold whitespace-nowrap">
-                    {Number(flashSale.discountPercent).toFixed(0)}% OFF
-                  </span>
-                )}
-              </div>
-              <div className="hidden sm:flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                <span className="text-xs md:text-sm">Ends in:</span>
-              </div>
-              <div className="flex gap-1.5 md:gap-2">
-                <div className="bg-white/20 rounded px-2 py-1 min-w-[35px] md:min-w-[45px] text-center">
-                  <div className="text-sm md:text-base font-bold">{String(timeLeft.days).padStart(2, "0")}</div>
-                  <div className="text-[10px] md:text-xs opacity-90">D</div>
-                </div>
-                <div className="bg-white/20 rounded px-2 py-1 min-w-[35px] md:min-w-[45px] text-center">
-                  <div className="text-sm md:text-base font-bold">{String(timeLeft.hours).padStart(2, "0")}</div>
-                  <div className="text-[10px] md:text-xs opacity-90">H</div>
-                </div>
-                <div className="bg-white/20 rounded px-2 py-1 min-w-[35px] md:min-w-[45px] text-center">
-                  <div className="text-sm md:text-base font-bold">{String(timeLeft.minutes).padStart(2, "0")}</div>
-                  <div className="text-[10px] md:text-xs opacity-90">M</div>
-                </div>
-                <div className="bg-white/20 rounded px-2 py-1 min-w-[35px] md:min-w-[45px] text-center">
-                  <div className="text-sm md:text-base font-bold">{String(timeLeft.seconds).padStart(2, "0")}</div>
-                  <div className="text-[10px] md:text-xs opacity-90">S</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-center py-2 md:py-2.5 text-xs md:text-sm font-medium px-2">
-          <p>💥 Black Friday Sale - Everything Must Go! 💥</p>
-        </div>
-      )}
 
       {/* Main Header */}
       <div className="bg-white/95 backdrop-blur-sm">
