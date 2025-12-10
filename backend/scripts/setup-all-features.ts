@@ -160,10 +160,10 @@ Find your perfect style at Juelle Hair Ghana!
       });
       console.log(`✅ Created flash sale: ${flashSale.title} (${flashSale.discountPercent}% off)`);
 
-      // Add some products to flash sale (first 5 products)
+      // Add products to flash sale (first 10 products)
       const products = await prisma.product.findMany({
         where: { isActive: true },
-        take: 5,
+        take: 10,
       });
 
       for (const product of products) {

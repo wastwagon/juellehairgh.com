@@ -25,6 +25,9 @@ export default function HomePage() {
           <FeaturedCollections />
         </div>
         <div className="bg-white w-full">
+          <FlashSalesSection />
+        </div>
+        <div className="bg-white w-full">
           <ClearanceProducts />
         </div>
         <div className="bg-white w-full">
@@ -47,9 +50,6 @@ export default function HomePage() {
         </div>
         <div className="bg-white w-full">
           <TestimonialsSection />
-        </div>
-        <div className="bg-white w-full">
-          <FlashSalesSection />
         </div>
         <div className="bg-white w-full">
           <BlogSection />
