@@ -73,31 +73,77 @@ export async function GET(
     const category = pathSegments[0];
     const filename = pathSegments[pathSegments.length - 1];
     
-    // Try direct backend media serving first (if backend serves static files)
-    const baseUrl = apiBaseUrl.replace(/\/api$/, '');
-    const directUrl = `${baseUrl}/media/${category}/${filename}`;
-    
-    // Also try admin upload endpoint as fallback
+    // Try admin upload endpoint first (most reliable - serves uploaded files)
     const adminUrl = `${apiBaseUrl}/admin/upload/media/${category}/${filename}`;
-    
-    // Use direct URL first, fallback to admin endpoint
-    backendUrl = directUrl;
+    backendUrl = adminUrl;
   } else {
     // Fallback for single segment (shouldn't happen, but handle gracefully)
     const filename = pathSegments[0] || 'unknown';
     backendUrl = `${apiBaseUrl}/admin/upload/media/library/${filename}`;
   }
 
+  // Try admin endpoint first, then fallback to direct backend URL
+  let response: Response | null = null;
+  let lastError: Error | null = null;
+  
+  // Try admin upload endpoint first (most reliable)
   try {
-    const response = await fetch(backendUrl, {
+    response = await fetch(backendUrl, {
       headers: {
         'Accept': 'image/*',
       },
-      cache: 'no-store', // Don't cache proxy requests
+      cache: 'no-store',
     });
+    
+    if (response.ok) {
+      // Success - use this response
+    } else {
+      // Try direct backend URL as fallback
+      const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+      const directUrl = `${baseUrl}/media/${pathSegments[0]}/${pathSegments[pathSegments.length - 1]}`;
+      
+      try {
+        const fallbackResponse = await fetch(directUrl, {
+          headers: {
+            'Accept': 'image/*',
+          },
+          cache: 'no-store',
+        });
+        
+        if (fallbackResponse.ok) {
+          response = fallbackResponse;
+          backendUrl = directUrl;
+        }
+      } catch (error) {
+        lastError = error as Error;
+      }
+    }
+  } catch (error) {
+    lastError = error as Error;
+    
+    // Try direct backend URL as fallback
+    const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+    const directUrl = `${baseUrl}/media/${pathSegments[0]}/${pathSegments[pathSegments.length - 1]}`;
+    
+    try {
+      response = await fetch(directUrl, {
+        headers: {
+          'Accept': 'image/*',
+        },
+        cache: 'no-store',
+      });
+      
+      if (response.ok) {
+        backendUrl = directUrl;
+      }
+    } catch (fallbackError) {
+      lastError = fallbackError as Error;
+    }
+  }
 
-    if (!response.ok) {
-      console.error(`Failed to fetch media from backend: ${backendUrl}, status: ${response.status}`);
+  try {
+    if (!response || !response.ok) {
+      console.error(`Failed to fetch media from backend. Tried: ${backendUrl}. Status: ${response?.status || 'no response'}`);
       return new NextResponse('Not Found', { status: 404 });
     }
 
@@ -113,6 +159,9 @@ export async function GET(
   } catch (error) {
     console.error('Error proxying media request:', error);
     console.error('Backend URL attempted:', backendUrl);
+    if (lastError) {
+      console.error('Last error:', lastError);
+    }
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

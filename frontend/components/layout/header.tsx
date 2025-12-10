@@ -198,11 +198,10 @@ export function Header() {
                     href={facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 hover:text-purple-200 transition-colors"
+                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
                     title="Facebook"
                   >
-                    <Facebook className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Facebook</span>
+                    <Facebook className="h-5 w-5" />
                   </a>
                 </>
               )}
@@ -211,11 +210,10 @@ export function Header() {
                   href={instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-purple-200 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
                   title="Instagram"
                 >
-                  <Instagram className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Instagram</span>
+                  <Instagram className="h-5 w-5" />
                 </a>
               )}
               {twitter && (
@@ -223,11 +221,10 @@ export function Header() {
                   href={twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-purple-200 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
                   title="Twitter"
                 >
-                  <Twitter className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Twitter</span>
+                  <Twitter className="h-5 w-5" />
                 </a>
               )}
             </div>

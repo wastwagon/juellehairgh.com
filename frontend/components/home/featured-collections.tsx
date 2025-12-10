@@ -175,33 +175,29 @@ export function FeaturedCollections() {
       
       // Handle different image path formats
       if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-        // Full URL - use as-is
+        // Full URL - use as-is (external images)
         return imagePath;
       }
       
-      // For /media/ paths, use Next.js API proxy route
-      // This proxies to backend: /api/media/collections/filename.jpg
+      // ALWAYS use Next.js API proxy route for /media/ paths
+      // This ensures images load correctly even if backend static serving has issues
       if (imagePath.startsWith("/media/")) {
-        // Remove leading slash and use API proxy route
-        // /media/collections/file.jpg -> /api/media/collections/file.jpg
+        // Convert /media/collections/file.jpg -> /api/media/collections/file.jpg
         return `/api${imagePath}`;
       }
       
+      // For other absolute paths starting with /
       if (imagePath.startsWith("/")) {
-        // Other absolute paths - try API proxy if it's a media path
+        // If it contains /media/, use proxy route
         if (imagePath.includes("/media/")) {
           return `/api${imagePath}`;
         }
-        // Try direct backend URL as fallback
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-        if (apiBaseUrl) {
-          const baseUrl = apiBaseUrl.replace(/\/api$/, "");
-          return `${baseUrl}${imagePath}`;
-        }
+        // For other paths, return as-is (might be relative to frontend)
         return imagePath;
       }
       
       // Relative filename - assume it's a collection image
+      // Use proxy route: /api/media/collections/filename
       return `/api/media/collections/${imagePath}`;
     }
     return null;
