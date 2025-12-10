@@ -196,10 +196,12 @@ export function ProductVariantSelector({
                     if (variant.image.startsWith("http")) {
                       imageUrl = variant.image;
                     } 
-                    // Otherwise, use backend API to serve the image
+                    // Otherwise, use Next.js API proxy route for production compatibility
                     else {
                       const filename = variant.image.split('/').pop() || variant.image;
-                      imageUrl = `${apiBaseUrl}/admin/upload/media/swatches/${filename}`;
+                      // Use Next.js API proxy route (same as collection images)
+                      // This ensures images load correctly in production
+                      imageUrl = `/api/media/swatches/${filename}`;
                     }
                   } else if (productImages[index] || productImages[0]) {
                     const productImage = productImages[index] || productImages[0];
@@ -253,12 +255,12 @@ export function ProductVariantSelector({
                             const img = e.target as HTMLImageElement;
                             const retryCount = parseInt(img.getAttribute('data-retry') || '0');
                             
-                            // Try backend API fallback if direct path fails
+                            // Try Next.js API proxy route fallback if direct path fails
                             if (retryCount < 3 && variant.image) {
                               // Extract filename from image path
                               const filename = variant.image.split('/').pop() || variant.image;
-                              const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
-                              const fallbackUrl = `${apiBaseUrl}/admin/upload/media/swatches/${filename}`;
+                              // Use Next.js API proxy route (same as collection images)
+                              const fallbackUrl = `/api/media/swatches/${filename}`;
                               
                               img.setAttribute('data-retry', String(retryCount + 1));
                               img.src = fallbackUrl;
