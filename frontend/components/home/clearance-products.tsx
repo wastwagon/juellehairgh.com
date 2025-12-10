@@ -79,7 +79,7 @@ export function ClearanceProducts() {
   const productsToShow = products.slice(0, 8);
 
   return (
-    <section className="py-8 md:py-12 container mx-auto px-4 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <section className="py-8 md:py-12 container mx-auto px-4">
       <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
         <div className="text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 tracking-tight">
