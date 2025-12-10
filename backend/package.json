@@ -42,6 +42,7 @@
     "setup:features": "ts-node scripts/setup-all-features.ts",
     "setup:collections-reviews-social": "ts-node scripts/setup-collections-reviews-social.ts",
     "fix:collection-images": "ts-node scripts/fix-collection-images-and-products.ts",
+    "verify:users": "ts-node scripts/verify-users.ts",
     "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },
