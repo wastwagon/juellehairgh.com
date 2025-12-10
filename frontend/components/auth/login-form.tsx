@@ -40,18 +40,21 @@ export function LoginForm() {
       localStorage.setItem("token", response.data.accessToken);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       
+      const userRole = response.data.user?.role;
+      
       // Check for redirect parameter
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get("redirect");
       
-      // If admin login, go to admin dashboard
-      if (response.data.user?.role === "ADMIN" && redirect === "/admin") {
+      // Priority: Admin/Manager → Redirect param → Default account
+      if (userRole === "ADMIN" || userRole === "MANAGER") {
+        // Admin/Manager always goes to admin dashboard
         router.push("/admin");
       } else if (redirect) {
+        // Regular users follow redirect if provided
         router.push(redirect);
-      } else if (response.data.user?.role === "ADMIN") {
-        router.push("/admin");
       } else {
+        // Default to account page
         router.push("/account");
       }
     } catch (err: any) {
