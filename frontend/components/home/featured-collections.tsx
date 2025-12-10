@@ -172,13 +172,28 @@ export function FeaturedCollections() {
     const backendCollection = backendCollections?.find((c: any) => c.slug === slug);
     if (backendCollection?.image) {
       // Handle different image path formats
-      if (backendCollection.image.startsWith("/")) {
-        return backendCollection.image;
-      }
       if (backendCollection.image.startsWith("http")) {
+        return backendCollection.image; // Full URL
+      }
+      if (backendCollection.image.startsWith("/")) {
+        // Absolute path - use backend API URL if it's /media/ path
+        if (backendCollection.image.startsWith("/media/")) {
+          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+          if (apiBaseUrl) {
+            // Remove /api suffix if present, then add /media path
+            const baseUrl = apiBaseUrl.replace(/\/api$/, "");
+            return `${baseUrl}${backendCollection.image}`;
+          }
+        }
         return backendCollection.image;
       }
-      // Assume it's a filename in collections folder
+      // Relative filename - construct full URL
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+      if (apiBaseUrl) {
+        const baseUrl = apiBaseUrl.replace(/\/api$/, "");
+        return `${baseUrl}/media/collections/${backendCollection.image.split("/").pop()}`;
+      }
+      // Fallback to relative path
       return `/media/collections/${backendCollection.image.split("/").pop()}`;
     }
     return null;
