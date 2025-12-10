@@ -53,7 +53,6 @@ async function migrateProductsFromImages() {
         data: {
           name: "Juelle Hair",
           slug: "juelle-hair",
-          description: "Premium hair products from Juelle Hair Ghana",
         },
       });
       console.log("✅ Created default brand: Juelle Hair");
