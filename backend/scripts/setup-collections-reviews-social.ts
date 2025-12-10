@@ -287,24 +287,26 @@ async function setupCollectionsReviewsSocial() {
       
       // Create sample users
       const bcrypt = require("bcrypt");
+      const hashedPassword = await bcrypt.hash("password123", 10);
+      
       const sampleUsers = [
         {
           email: "customer1@example.com",
-          password: await bcrypt.hash("password123", 10),
+          password: hashedPassword,
           name: "Sarah Mensah",
           role: "CUSTOMER" as const,
           emailVerified: true,
         },
         {
           email: "customer2@example.com",
-          password: await bcrypt.hash("password123", 10),
+          password: hashedPassword,
           name: "Ama Asante",
           role: "CUSTOMER" as const,
           emailVerified: true,
         },
         {
           email: "customer3@example.com",
-          password: await bcrypt.hash("password123", 10),
+          password: hashedPassword,
           name: "Kofi Osei",
           role: "CUSTOMER" as const,
           emailVerified: true,
