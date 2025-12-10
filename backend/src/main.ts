@@ -3,10 +3,11 @@ import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import * as fs from "fs";
 import * as path from "path";
+import { NestExpressApplication } from "@nestjs/platform-express";
 
 async function bootstrap() {
   try {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Enable CORS - allow all origins in development, specific origins in production
   const allowedOrigins = process.env.NODE_ENV === "production" 
@@ -95,6 +96,31 @@ async function bootstrap() {
       transform: true,
     })
   );
+
+  // Serve static files for media (collections, products, etc.)
+  // This allows frontend to access images via /media/collections/ etc.
+  // Try multiple paths to find media directory
+  const possibleMediaPaths = [
+    path.join(process.cwd(), "uploads", "media"), // Production backend uploads
+    path.join(process.cwd(), "..", "frontend", "public", "media"), // Development frontend public
+    path.join(process.cwd(), "frontend", "public", "media"), // Alternative path
+  ];
+
+  let mediaServed = false;
+  for (const mediaPath of possibleMediaPaths) {
+    if (fs.existsSync(mediaPath)) {
+      app.useStaticAssets(mediaPath, {
+        prefix: "/media",
+      });
+      console.log(`✅ Static media files served from: ${mediaPath}`);
+      mediaServed = true;
+      break;
+    }
+  }
+
+  if (!mediaServed) {
+    console.warn(`⚠️  Media directory not found. Tried: ${possibleMediaPaths.join(", ")}`);
+  }
 
   // Global prefix (applied after health endpoint registration)
   app.setGlobalPrefix("api");
