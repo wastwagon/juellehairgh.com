@@ -24,12 +24,25 @@ export function CategoryPage({ slug }: CategoryPageProps) {
     page: 1,
   });
 
+  // For "shop-all", we don't need to fetch category - show all products
+  const isShopAll = slug === "shop-all";
+
   const { data: category } = useQuery<Category>({
     queryKey: ["category", slug],
     queryFn: async () => {
+      if (isShopAll) {
+        // Return a mock category for shop-all
+        return {
+          id: "shop-all",
+          name: "Shop All",
+          slug: "shop-all",
+          description: "All products",
+        };
+      }
       const response = await api.get(`/categories/${slug}`);
       return response.data;
     },
+    enabled: !isShopAll || true, // Always enabled
   });
 
   const { data: productsData, isLoading } = useQuery<{
@@ -39,7 +52,8 @@ export function CategoryPage({ slug }: CategoryPageProps) {
     queryKey: ["products", slug, filters],
     queryFn: async () => {
       const params = new URLSearchParams({
-        category: category?.id || "",
+        // Don't filter by category for shop-all
+        ...(isShopAll ? {} : { category: category?.id || "" }),
         minPrice: filters.minPrice || "",
         maxPrice: filters.maxPrice || "",
         brand: filters.brand || "",
@@ -49,7 +63,7 @@ export function CategoryPage({ slug }: CategoryPageProps) {
       const response = await api.get(`/products?${params}`);
       return response.data;
     },
-    enabled: !!category,
+    enabled: isShopAll || !!category, // Enable for shop-all or when category exists
   });
 
   return (

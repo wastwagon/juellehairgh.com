@@ -38,6 +38,9 @@
     "seed:products": "ts-node prisma/seed-products.ts",
     "migrate:from-images": "ts-node scripts/migrate-products-from-images.ts",
     "import:products": "ts-node scripts/import-products-from-json.ts",
+    "categorize:products": "ts-node scripts/categorize-products.ts",
+    "setup:features": "ts-node scripts/setup-all-features.ts",
+    "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
