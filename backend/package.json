@@ -40,6 +40,7 @@
     "import:products": "ts-node scripts/import-products-from-json.ts",
     "categorize:products": "ts-node scripts/categorize-products.ts",
     "setup:features": "ts-node scripts/setup-all-features.ts",
+    "setup:collections-reviews-social": "ts-node scripts/setup-collections-reviews-social.ts",
     "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },
