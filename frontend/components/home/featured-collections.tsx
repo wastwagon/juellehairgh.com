@@ -171,30 +171,38 @@ export function FeaturedCollections() {
   const getCollectionImage = (slug: string) => {
     const backendCollection = backendCollections?.find((c: any) => c.slug === slug);
     if (backendCollection?.image) {
+      const imagePath = backendCollection.image;
+      
       // Handle different image path formats
-      if (backendCollection.image.startsWith("http")) {
-        return backendCollection.image; // Full URL
+      if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+        // Full URL - use as-is
+        return imagePath;
       }
-      if (backendCollection.image.startsWith("/")) {
-        // Absolute path - use backend API URL if it's /media/ path
-        if (backendCollection.image.startsWith("/media/")) {
-          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-          if (apiBaseUrl) {
-            // Remove /api suffix if present, then add /media path
-            const baseUrl = apiBaseUrl.replace(/\/api$/, "");
-            return `${baseUrl}${backendCollection.image}`;
-          }
+      
+      // For /media/ paths, use Next.js API proxy route
+      // This proxies to backend: /api/media/collections/filename.jpg
+      if (imagePath.startsWith("/media/")) {
+        // Remove leading slash and use API proxy route
+        // /media/collections/file.jpg -> /api/media/collections/file.jpg
+        return `/api${imagePath}`;
+      }
+      
+      if (imagePath.startsWith("/")) {
+        // Other absolute paths - try API proxy if it's a media path
+        if (imagePath.includes("/media/")) {
+          return `/api${imagePath}`;
         }
-        return backendCollection.image;
+        // Try direct backend URL as fallback
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+        if (apiBaseUrl) {
+          const baseUrl = apiBaseUrl.replace(/\/api$/, "");
+          return `${baseUrl}${imagePath}`;
+        }
+        return imagePath;
       }
-      // Relative filename - construct full URL
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-      if (apiBaseUrl) {
-        const baseUrl = apiBaseUrl.replace(/\/api$/, "");
-        return `${baseUrl}/media/collections/${backendCollection.image.split("/").pop()}`;
-      }
-      // Fallback to relative path
-      return `/media/collections/${backendCollection.image.split("/").pop()}`;
+      
+      // Relative filename - assume it's a collection image
+      return `/api/media/collections/${imagePath}`;
     }
     return null;
   };

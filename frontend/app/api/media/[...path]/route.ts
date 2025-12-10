@@ -69,10 +69,19 @@ export async function GET(
     const filename = pathSegments[1];
     backendUrl = `${apiBaseUrl}/admin/upload/media/library/${filename}`;
   } else if (pathSegments.length >= 2) {
-    // For /media/category/filename.jpg
+    // For /media/category/filename.jpg (e.g., /media/collections/file.jpg)
     const category = pathSegments[0];
     const filename = pathSegments[pathSegments.length - 1];
-    backendUrl = `${apiBaseUrl}/admin/upload/media/${category}/${filename}`;
+    
+    // Try direct backend media serving first (if backend serves static files)
+    const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+    const directUrl = `${baseUrl}/media/${category}/${filename}`;
+    
+    // Also try admin upload endpoint as fallback
+    const adminUrl = `${apiBaseUrl}/admin/upload/media/${category}/${filename}`;
+    
+    // Use direct URL first, fallback to admin endpoint
+    backendUrl = directUrl;
   } else {
     // Fallback for single segment (shouldn't happen, but handle gracefully)
     const filename = pathSegments[0] || 'unknown';
