@@ -248,27 +248,26 @@ async function setupCollectionsReviewsSocial() {
       {
         key: "SOCIAL_FACEBOOK",
         value: "https://www.facebook.com/juellehairgh",
-        description: "Facebook page URL",
       },
       {
         key: "SOCIAL_INSTAGRAM",
         value: "https://www.instagram.com/juellehairgh",
-        description: "Instagram profile URL",
       },
       {
         key: "SOCIAL_TWITTER",
         value: "https://www.twitter.com/juellehairgh",
-        description: "Twitter profile URL",
       },
     ];
 
     for (const setting of socialSettings) {
       await prisma.setting.upsert({
         where: { key: setting.key },
-        create: setting,
+        create: {
+          key: setting.key,
+          value: setting.value,
+        },
         update: {
           value: setting.value,
-          description: setting.description,
         },
       });
       console.log(`✅ Set ${setting.key}: ${setting.value}`);
