@@ -45,6 +45,17 @@ else
 fi
 echo ""
 
+echo -e "${BLUE}📋 Step 2.5: Setup Collections, Reviews & Social Media${NC}"
+echo "--------------------------------------------------------"
+npx ts-node scripts/setup-collections-reviews-social.ts
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Collections, reviews & social media setup complete${NC}"
+else
+    echo -e "${RED}❌ Failed to setup collections/reviews/social${NC}"
+    exit 1
+fi
+echo ""
+
 echo -e "${BLUE}📋 Step 3: Verify Database${NC}"
 echo "--------------------------"
 DB_STATUS=$(curl -s https://juelle-hair-backend.onrender.com/api/health/db)
