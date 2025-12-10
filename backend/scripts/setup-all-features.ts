@@ -154,7 +154,7 @@ Find your perfect style at Juelle Hair Ghana!
           description: "Limited time offer on selected products",
           startDate: new Date(),
           endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-          discountPercent: 25.0,
+          discountPercent: 25.00, // Decimal(5,2) format
           isActive: true,
         },
       });
