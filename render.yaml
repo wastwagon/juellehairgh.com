@@ -37,7 +37,7 @@ services:
     branch: main
     rootDir: frontend
     buildCommand: npm ci --include=dev && npm run build
-    startCommand: npm run start
+    startCommand: NODE_OPTIONS='--max-old-space-size=2048' node .next/standalone/server.js
     healthCheckPath: /
     envVars:
       - key: NODE_ENV

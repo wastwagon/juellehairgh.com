@@ -42,8 +42,8 @@ const nextConfig = {
     // Use timestamp for build ID to avoid unnecessary rebuilds
     return `build-${Date.now()}`;
   },
-  // Reduce build time by limiting static page generation
-  generateStaticParams: false, // Disable static params generation during build
+  // Note: generateStaticParams is not a valid Next.js config option
+  // Removed to avoid build warnings
   // Optimize webpack
   webpack: (config, { isServer }) => {
     // Optimize chunk splitting
