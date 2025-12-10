@@ -45,6 +45,8 @@
     "verify:users": "ts-node scripts/verify-users.ts",
     "create:users": "ts-node scripts/create-complete-users.ts",
     "update:flash-sale": "ts-node scripts/update-flash-sale-products.ts",
+    "check:variants": "ts-node scripts/check-product-variants.ts",
+    "migrate:variants": "ts-node scripts/migrate-variants-from-attributes.ts",
     "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },
