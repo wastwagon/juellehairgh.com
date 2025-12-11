@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Truck, Gift, CreditCard, Headphones, Star, Globe, Zap } from "lucide-react";
+import { Shield, Truck, Gift, CreditCard, Headphones, Wallet, Globe, Zap } from "lucide-react";
 
 interface Feature {
   icon: React.ReactNode;
