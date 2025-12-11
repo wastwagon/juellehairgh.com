@@ -1051,11 +1051,11 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
                                       <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-2 border rounded-md bg-gray-50">
                                         {colorAttr.terms.map((term) => {
                                           const isSelected = attr.terms.includes(term.name);
-                                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
+                                          // Use Next.js API proxy route for production compatibility (same as frontend)
                                           const imageUrl = term.image 
                                             ? (term.image.startsWith("http") 
                                                 ? term.image 
-                                                : `${apiBaseUrl}/admin/upload/media/swatches/${term.image.split('/').pop() || term.image}`)
+                                                : `/api/media/swatches/${term.image.split('/').pop() || term.image}`)
                                             : null;
                                           
                                           return (
@@ -1088,10 +1088,10 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
                                                       const img = e.target as HTMLImageElement;
                                                       const retryCount = parseInt(img.getAttribute('data-retry') || '0');
                                                       
-                                                      // Try backend API fallback if direct path fails
+                                                      // Try Next.js API proxy route fallback if direct path fails
                                                       if (retryCount < 2 && term.image) {
                                                         const filename = term.image.split('/').pop() || term.image;
-                                                        const fallbackUrl = `${apiBaseUrl}/admin/upload/media/swatches/${filename}`;
+                                                        const fallbackUrl = `/api/media/swatches/${filename}`;
                                                         img.setAttribute('data-retry', String(retryCount + 1));
                                                         img.src = fallbackUrl;
                                                         return;
@@ -1204,7 +1204,9 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
                                               >
                                                 {term.image && (
                                                   <img
-                                                    src={term.image.startsWith("http") ? term.image : `/${term.image}`}
+                                                    src={term.image.startsWith("http") 
+                                                      ? term.image 
+                                                      : `/api/media/swatches/${term.image.split('/').pop() || term.image}`}
                                                     alt={term.name}
                                                     className="w-6 h-6 object-cover rounded"
                                                     onError={(e) => {
