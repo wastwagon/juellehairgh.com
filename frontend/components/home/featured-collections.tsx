@@ -186,6 +186,14 @@ export function FeaturedCollections() {
         return `/api${imagePath}`;
       }
       
+      // Handle paths that contain "collections" or "media"
+      if (imagePath.includes("collections") || imagePath.includes("media")) {
+        // Extract filename from path
+        const filename = imagePath.split("/").pop() || imagePath;
+        // Use proxy route: /api/media/collections/filename
+        return `/api/media/collections/${filename}`;
+      }
+      
       // For other absolute paths starting with /
       if (imagePath.startsWith("/")) {
         // If it contains /media/, use proxy route
@@ -200,6 +208,24 @@ export function FeaturedCollections() {
       // Use proxy route: /api/media/collections/filename
       return `/api/media/collections/${imagePath}`;
     }
+    
+    // If no image in backend collection, try to use first product image as fallback
+    const collectionIndex = collections.findIndex(c => c.slug === slug);
+    if (collectionIndex >= 0) {
+      const products = collectionQueries[collectionIndex]?.data || [];
+      if (products.length > 0 && products[0]?.images && products[0].images.length > 0) {
+        const productImage = products[0].images[0];
+        // Use product image via API proxy
+        if (productImage.startsWith("/media/")) {
+          return `/api${productImage}`;
+        }
+        if (productImage.includes("products") || productImage.includes("media")) {
+          const filename = productImage.split("/").pop() || productImage;
+          return `/api/media/products/${filename}`;
+        }
+      }
+    }
+    
     return null;
   };
 
@@ -227,12 +253,64 @@ export function FeaturedCollections() {
                     alt={collection.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback to gradient background if image fails
+                      // Try fallback URLs if image fails
                       const target = e.target as HTMLImageElement;
+                      const retryCount = parseInt(target.getAttribute('data-retry') || '0');
+                      
+                      if (retryCount < 3) {
+                        // Try different fallback paths
+                        const originalSrc = target.getAttribute('data-original-src') || collectionImage;
+                        let fallbackUrl = '';
+                        
+                        if (retryCount === 0) {
+                          // Try direct backend URL
+                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+                          const filename = originalSrc.split('/').pop() || '';
+                          fallbackUrl = `${apiBaseUrl}/admin/upload/media/collections/${filename}`;
+                        } else if (retryCount === 1) {
+                          // Try backend media path
+                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+                          const baseUrl = apiBaseUrl.replace('/api', '');
+                          const filename = originalSrc.split('/').pop() || '';
+                          fallbackUrl = `${baseUrl}/media/collections/${filename}`;
+                        } else {
+                          // Final fallback - use product image
+                          const collectionIndex = collections.findIndex(c => c.slug === collection.slug);
+                          if (collectionIndex >= 0) {
+                            const products = collectionQueries[collectionIndex]?.data || [];
+                            if (products.length > 0 && products[0]?.images && products[0].images.length > 0) {
+                              const productImage = products[0].images[0];
+                              if (productImage.startsWith("/media/")) {
+                                fallbackUrl = `/api${productImage}`;
+                              } else if (productImage.includes("products")) {
+                                const filename = productImage.split("/").pop() || productImage;
+                                fallbackUrl = `/api/media/products/${filename}`;
+                              }
+                            }
+                          }
+                        }
+                        
+                        if (fallbackUrl) {
+                          target.setAttribute('data-retry', String(retryCount + 1));
+                          target.setAttribute('data-original-src', originalSrc);
+                          target.src = fallbackUrl;
+                          return;
+                        }
+                      }
+                      
+                      // If all retries failed, show gradient background
                       target.style.display = 'none';
                       const fallback = target.parentElement?.querySelector('.fallback-gradient') as HTMLElement;
                       if (fallback) fallback.style.display = 'block';
                     }}
+                    onLoad={() => {
+                      // Hide fallback gradient when image loads successfully
+                      const fallback = document.querySelector(`.fallback-gradient`);
+                      if (fallback) {
+                        (fallback as HTMLElement).style.display = 'none';
+                      }
+                    }}
+                    data-original-src={collectionImage}
                   />
                 ) : null}
 
