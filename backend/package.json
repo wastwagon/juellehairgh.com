@@ -49,6 +49,7 @@
     "migrate:variants": "ts-node scripts/migrate-variants-from-attributes.ts",
     "create:variants": "ts-node scripts/create-variants-from-admin-attributes.ts",
     "setup:attributes": "ts-node scripts/setup-product-attributes.ts",
+    "remove:variants": "ts-node scripts/remove-auto-variants.ts",
     "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },
