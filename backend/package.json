@@ -50,6 +50,8 @@
     "create:variants": "ts-node scripts/create-variants-from-admin-attributes.ts",
     "setup:attributes": "ts-node scripts/setup-product-attributes.ts",
     "remove:variants": "ts-node scripts/remove-auto-variants.ts",
+    "match:variations": "ts-node scripts/match-products-to-variations.ts",
+    "fix:variations": "ts-node scripts/fix-existing-variations.ts",
     "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },
