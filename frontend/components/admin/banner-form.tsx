@@ -28,6 +28,8 @@ interface BannerFormProps {
 
 export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -105,7 +107,37 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
     }
   };
 
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Not authenticated");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await api.post("/admin/upload/banner", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data?.url) {
+        setFormData((prev) => ({ ...prev, image: response.data.url }));
+      }
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      alert(error.response?.data?.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const isLoading = createMutation.isPending || updateMutation.isPending || uploading;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
