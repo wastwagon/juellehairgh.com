@@ -52,6 +52,7 @@
     "remove:variants": "ts-node scripts/remove-auto-variants.ts",
     "match:variations": "ts-node scripts/match-products-to-variations.ts",
     "fix:variations": "ts-node scripts/fix-existing-variations.ts",
+    "populate:blogs": "ts-node scripts/populate-blogs.ts",
     "deploy:all": "bash scripts/deploy-all-to-production.sh",
     "prisma:studio": "prisma studio"
   },

@@ -24,6 +24,7 @@ import {
   Truck,
   Database,
   Wallet,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -46,6 +47,7 @@ const navItems = [
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/wallets", label: "Wallet Management", icon: Wallet },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/banners", label: "Banners", icon: Image },
   { href: "/admin/media", label: "Media Library", icon: Database },
   { href: "/admin/discount-codes", label: "Discount Codes", icon: Ticket },
