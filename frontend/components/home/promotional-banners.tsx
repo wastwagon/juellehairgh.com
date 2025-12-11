@@ -54,11 +54,8 @@ export function PromotionalBanners() {
     staleTime: 60000, // Cache for 1 minute
   });
 
-  // Get active banners, sorted by position
-  const activeBanners = banners
-    ?.filter((banner) => banner.isActive)
-    .sort((a, b) => a.position - b.position)
-    .slice(0, 4) || []; // Limit to 4 banners
+  // Banners are already filtered and sorted in the query
+  const activeBanners = banners || [];
 
   const getImageUrl = (url?: string) => {
     if (!url) return null;

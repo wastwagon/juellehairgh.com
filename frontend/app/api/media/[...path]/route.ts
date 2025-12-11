@@ -69,7 +69,7 @@ export async function GET(
     const filename = pathSegments[1];
     backendUrl = `${apiBaseUrl}/admin/upload/media/library/${filename}`;
   } else if (pathSegments.length >= 2) {
-    // For /media/category/filename.jpg (e.g., /media/collections/file.jpg)
+    // For /media/category/filename.jpg (e.g., /media/collections/file.jpg, /media/banners/file.jpg)
     const category = pathSegments[0];
     const filename = pathSegments[pathSegments.length - 1];
     
