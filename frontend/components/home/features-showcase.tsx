@@ -41,9 +41,9 @@ const features: Feature[] = [
     gradient: "from-pink-500 to-rose-500",
   },
   {
-    icon: <Star className="h-6 w-6" />,
-    title: "Quality Products",
-    description: "Premium quality guaranteed",
+    icon: <Wallet className="h-6 w-6" />,
+    title: "Quick Checkout",
+    description: "Wallet integration for instant payments",
     gradient: "from-purple-500 to-pink-500",
   },
   {
