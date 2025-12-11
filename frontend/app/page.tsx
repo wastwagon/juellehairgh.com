@@ -6,7 +6,7 @@ import { FeaturedCollections } from "@/components/home/featured-collections";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { ClearanceProducts } from "@/components/home/clearance-products";
 import { RecentlyViewed } from "@/components/home/recently-viewed";
-import { PromotionalCards } from "@/components/home/promotional-cards";
+import { PromotionalBanners } from "@/components/home/promotional-banners";
 import { FeaturesShowcase } from "@/components/home/features-showcase";
 import { PopularProductsWidget } from "@/components/products/popular-products-widget";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
@@ -37,7 +37,7 @@ export default function HomePage() {
           <ProductCarousel title="Best Sellers" />
         </div>
         <div className="bg-white w-full">
-          <PromotionalCards />
+          <PromotionalBanners />
         </div>
         <div className="bg-gray-50 w-full">
           <RecentlyViewed />
