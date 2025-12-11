@@ -170,14 +170,58 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Image URL *</label>
-              <Input
-                type="text"
-                required
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://example.com/banner.jpg"
-              />
+              <label className="block text-sm font-medium mb-2">Banner Image *</label>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    placeholder="/media/banners/banner.jpg or URL"
+                    className="flex-1"
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      "Uploading..."
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {formData.image && (
+                  <div className="mt-2 relative w-full h-32 border rounded-lg overflow-hidden bg-gray-100">
+                    <img
+                      src={
+                        formData.image.startsWith("/")
+                          ? `/api${formData.image}`
+                          : formData.image.startsWith("http")
+                          ? formData.image
+                          : `/api/media/banners/${formData.image}`
+                      }
+                      alt="Banner preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
