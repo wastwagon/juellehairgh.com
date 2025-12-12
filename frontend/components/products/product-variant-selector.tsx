@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { ProductVariant } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
+import { getShippingStatus } from "@/lib/shipping-time";
 
 interface ProductVariantSelectorProps {
   variants?: ProductVariant[];
@@ -276,6 +277,12 @@ export function ProductVariantSelector({
                       {variant.stock === 0 && (
                         <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center pointer-events-none">
                           <span className="text-xs text-white font-medium">OOS</span>
+                        </div>
+                      )}
+                      {/* Ship Today badge */}
+                      {variant.stock > 0 && (
+                        <div className="absolute top-1 left-1 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md">
+                          {getShippingStatus()}
                         </div>
                       )}
                       {/* Variant label overlay */}

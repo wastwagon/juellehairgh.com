@@ -55,6 +55,7 @@
     "import:color-terms": "ts-node scripts/import-color-terms.ts",
     "export:shipping": "ts-node scripts/export-shipping-data.ts",
     "import:shipping": "ts-node scripts/import-shipping-data.ts",
+    "update:variant-images": "ts-node scripts/update-variant-images-from-terms.ts",
     "seed:page-content": "ts-node scripts/seed-page-content.ts",
     "update:flash-sale-christmas": "ts-node scripts/update-flash-sale-to-christmas.ts",
     "fix:currency-rates": "ts-node scripts/fix-currency-rates.ts",
