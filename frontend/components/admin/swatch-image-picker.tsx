@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Upload, Image as ImageIcon, Search } from "lucide-react";
+import { X, Upload, Image as ImageIcon, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface MediaFile {
@@ -26,13 +26,25 @@ interface SwatchImagePickerProps {
 }
 
 export function SwatchImagePicker({ value, onChange, onClose }: SwatchImagePickerProps) {
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [uploading, setUploading] = useState(false);
+  // Always start with "library" tab to check media folder first
   const [selectedTab, setSelectedTab] = useState<"library" | "upload">("library");
+  
+  // Reset to library tab when modal opens - ensures media folder is checked first
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedTab("library");
+      setSearchTerm("");
+      // Invalidate and refetch media when opening
+      queryClient.invalidateQueries({ queryKey: ["admin", "media", "swatches"] });
+    }
+  }, [isOpen, queryClient]);
 
   // Fetch swatch images from media library
-  const { data: mediaData, isLoading } = useQuery<{
+  const { data: mediaData, isLoading, error, refetch } = useQuery<{
     files: MediaFile[];
   }>({
     queryKey: ["admin", "media", "swatches", searchTerm],
@@ -52,6 +64,8 @@ export function SwatchImagePicker({ value, onChange, onClose }: SwatchImagePicke
       return response.data;
     },
     enabled: isOpen && selectedTab === "library",
+    retry: 2,
+    staleTime: 0, // Always check for fresh data
   });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +105,10 @@ export function SwatchImagePicker({ value, onChange, onClose }: SwatchImagePicke
         onChange(imageUrl);
         toast.success("Image uploaded successfully!");
         setSelectedTab("library");
-        // Refresh media library
+        // Refresh media library by invalidating query
+        queryClient.invalidateQueries({ queryKey: ["admin", "media", "swatches"] });
+        // Refresh immediately
+        await refetch();
         setTimeout(() => {
           setIsOpen(false);
           if (onClose) onClose();
@@ -205,22 +222,61 @@ export function SwatchImagePicker({ value, onChange, onClose }: SwatchImagePicke
             <div className="flex-1 overflow-y-auto p-6">
               {selectedTab === "library" ? (
                 <div className="space-y-4">
-                  {/* Search */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder="Search swatch images..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
+                  {/* Search and Refresh */}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search swatch images from media folder..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        queryClient.invalidateQueries({ queryKey: ["admin", "media", "swatches"] });
+                        refetch();
+                      }}
+                      title="Refresh media folder"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                    </Button>
                   </div>
+
+                  {/* Error State */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                      <p className="text-red-600 text-sm">
+                        Failed to load images from media folder. Please try again.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => {
+                          queryClient.invalidateQueries({ queryKey: ["admin", "media", "swatches"] });
+                          refetch();
+                        }}
+                      >
+                        <RefreshCw className="h-3 w-3 mr-2" />
+                        Retry
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Image Grid */}
                   {isLoading ? (
-                    <div className="text-center py-12 text-gray-500">Loading images...</div>
-                  ) : mediaData?.files && mediaData.files.length > 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                      <p>Loading images from media folder...</p>
+                    </div>
+                  ) : !error && mediaData?.files && mediaData.files.length > 0 ? (
                     <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                       {mediaData.files.map((file) => (
                         <button
@@ -251,13 +307,21 @@ export function SwatchImagePicker({ value, onChange, onClose }: SwatchImagePicke
                         </button>
                       ))}
                     </div>
-                  ) : (
+                  ) : !error ? (
                     <div className="text-center py-12 text-gray-500">
                       <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>No swatch images found</p>
-                      <p className="text-sm mt-2">Switch to "Upload New" tab to add images</p>
+                      <p className="font-medium">No swatch images found in media folder</p>
+                      <p className="text-sm mt-2 mb-4">Upload a new image from your computer</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setSelectedTab("upload")}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload New Image
+                      </Button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               ) : (
                 <div className="space-y-4">
