@@ -133,11 +133,11 @@ export function AdminFlashSales() {
 
   const resetForm = () => {
     setFormData({
-      title: "",
-      description: "",
+      title: "Christmas Mega Sale",
+      description: "Celebrate the holidays with amazing deals! Up to 30% off on selected hair products. Perfect gifts for yourself or loved ones!",
       startDate: "",
       endDate: "",
-      discountPercent: 0,
+      discountPercent: 30,
       productIds: [],
       isActive: true,
     });
@@ -289,7 +289,7 @@ export function AdminFlashSales() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g., Black Friday Sale"
+                    placeholder="e.g., Christmas Mega Sale"
                   />
                 </div>
 
@@ -298,7 +298,7 @@ export function AdminFlashSales() {
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Flash sale description"
+                    placeholder="Celebrate the holidays with amazing deals! Up to 30% off on selected hair products. Perfect gifts for yourself or loved ones!"
                     className="min-h-[80px]"
                   />
                 </div>

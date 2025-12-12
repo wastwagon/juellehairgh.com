@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Zap, Clock } from "lucide-react";
+import { Zap, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ProductCard } from "@/components/products/product-card";
 import { Product } from "@/types";
@@ -60,11 +60,11 @@ export function FlashSalesSection() {
 
   if (isLoading) {
     return (
-      <section className="py-12 md:py-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+      <section className="py-12 md:py-16 bg-gradient-to-r from-green-50 via-pink-50 to-pink-50">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading flash sale...</p>
+            <p className="text-gray-600">Loading Christmas sale...</p>
           </div>
         </div>
       </section>
@@ -86,21 +86,25 @@ export function FlashSalesSection() {
       ...product,
       priceGhs: salePrice,
       compareAtPriceGhs: originalPrice,
-      badges: [...(product.badges || []), "FLASH SALE"],
+      badges: [...(product.badges || []), "CHRISTMAS SALE"],
     };
   });
 
+  // Use Christmas content if available, otherwise use flash sale data
+  const displayTitle = flashSale.title || "Christmas Mega Sale";
+  const displayDescription = flashSale.description || "Celebrate the holidays with amazing deals! Up to 30% off on selected hair products. Perfect gifts for yourself or loved ones!";
+  const displayDiscount = flashSale.discountPercent || 30;
+
   return (
-    <section className="py-12 md:py-16 bg-gradient-to-br from-green-50 via-red-50 to-red-100 border-t border-red-200">
+    <section className="py-12 md:py-16 bg-gradient-to-r from-green-50 via-pink-50 to-pink-50 border-t border-gray-200">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Zap className="h-6 w-6 md:h-8 md:w-8 text-red-600 animate-pulse" />
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">{flashSale.title}</h2>
+            <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-pink-600 animate-pulse" />
+            <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-yellow-500 animate-pulse" />
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">{displayTitle}</h2>
           </div>
-          {flashSale.description && (
-            <p className="text-gray-700 mb-6">{flashSale.description}</p>
-          )}
+          <p className="text-gray-700 mb-6 text-base md:text-lg max-w-3xl mx-auto">{displayDescription}</p>
           
           {/* Countdown Timer */}
           <div className="flex items-center justify-center gap-4 md:gap-6 mb-8">
@@ -128,8 +132,8 @@ export function FlashSalesSection() {
             </div>
           </div>
 
-          <div className="inline-block bg-red-600 text-white px-4 py-2 rounded-full text-sm md:text-base font-semibold mb-6">
-            {Number(flashSale.discountPercent).toFixed(0)}% OFF
+          <div className="inline-block bg-red-600 text-white px-6 py-3 rounded-lg text-base md:text-lg font-semibold mb-6 shadow-lg">
+            {Number(displayDiscount).toFixed(0)}% OFF
           </div>
         </div>
 

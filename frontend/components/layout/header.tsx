@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Heart, Search, Menu, X, Home, Phone, Mail, Package, Facebook, Instagram, Twitter, Clock, Zap } from "lucide-react";
+import { ShoppingCart, User, Heart, Search, Menu, X, Home, Phone, Mail, Package, Facebook, Instagram, Twitter, Clock, Zap, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { SearchBar } from "./search-bar";
@@ -149,11 +149,12 @@ export function Header() {
             {flashSale && timeLeft ? (
               <div className="hidden md:flex items-center gap-2 md:gap-3 flex-1 justify-center">
                 <div className="flex items-center gap-2">
-                  <Zap className="h-3.5 w-3.5 md:h-4 md:w-4 animate-pulse" />
-                  <span className="font-bold text-xs md:text-sm whitespace-nowrap">{flashSale.title}</span>
-                  {flashSale.discountPercent && (
+                  <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 animate-pulse text-pink-300" />
+                  <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 animate-pulse text-yellow-300" />
+                  <span className="font-bold text-xs md:text-sm whitespace-nowrap">{flashSale.title || "Christmas Mega Sale"}</span>
+                  {(flashSale.discountPercent || 30) && (
                     <span className="bg-white/20 px-2 py-0.5 rounded text-xs md:text-sm font-semibold whitespace-nowrap">
-                      {Number(flashSale.discountPercent).toFixed(0)}% OFF
+                      {Number(flashSale.discountPercent || 30).toFixed(0)}% OFF
                     </span>
                   )}
                 </div>

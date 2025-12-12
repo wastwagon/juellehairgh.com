@@ -55,6 +55,7 @@ const navItems = [
   { href: "/admin/discount-codes", label: "Discount Codes", icon: Ticket },
   { href: "/admin/currency", label: "Currency Rates", icon: DollarSign },
   { href: "/admin/emails", label: "Email Templates", icon: Mail },
+  { href: "/admin/pages", label: "Page Content", icon: FileText },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

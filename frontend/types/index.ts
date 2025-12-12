@@ -75,6 +75,7 @@ export interface Collection {
   slug: string;
   description?: string;
   image?: string;
+  isActive?: boolean;
   products?: Product[];
 }
 

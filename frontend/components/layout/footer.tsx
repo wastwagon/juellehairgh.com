@@ -2,12 +2,86 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { Facebook, Youtube, Instagram, Twitter, Mail, Phone, MapPin, CreditCard, Shield, Truck, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Category, Collection } from "@/types";
 
 export function Footer() {
   const [email, setEmail] = useState("");
+
+  // Fetch categories for Shop section
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["footer-categories"],
+    queryFn: async () => {
+      try {
+        const response = await api.get("/categories");
+        // Filter to show only top-level categories or specific ones
+        const allCategories = response.data || [];
+        // Flatten to include parent categories
+        const parentCategories = allCategories.filter((cat: Category) => !cat.parentId);
+        // Return top 5 categories, prioritizing common ones
+        const commonSlugs = ["lace-wigs", "braids", "ponytails", "clip-ins", "hair-growth-oils"];
+        const prioritized = commonSlugs
+          .map(slug => parentCategories.find((c: Category) => c.slug === slug))
+          .filter(Boolean) as Category[];
+        const others = parentCategories.filter((c: Category) => !commonSlugs.includes(c.slug)).slice(0, 5 - prioritized.length);
+        return [...prioritized, ...others].slice(0, 5);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch collections for Collections section
+  const { data: collections } = useQuery<Collection[]>({
+    queryKey: ["footer-collections"],
+    queryFn: async () => {
+      try {
+        const response = await api.get("/collections");
+        const allCollections = response.data || [];
+        // Filter active collections and prioritize common ones
+        const commonSlugs = ["new-arrivals", "best-sellers", "featured-products", "protective-styles", "trending"];
+        const prioritized = commonSlugs
+          .map(slug => allCollections.find((c: Collection) => c.slug === slug))
+          .filter(Boolean) as Collection[];
+        const others = allCollections
+          .filter((c: Collection) => !commonSlugs.includes(c.slug) && (c.isActive !== false))
+          .slice(0, 5 - prioritized.length);
+        return [...prioritized, ...others].slice(0, 5);
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fallback hardcoded categories if API fails
+  const shopCategories: Array<{ slug: string; name: string; id?: string }> = categories && categories.length > 0 
+    ? categories.map(cat => ({ slug: cat.slug, name: cat.name, id: cat.id }))
+    : [
+        { slug: "lace-wigs", name: "Lace Wigs" },
+        { slug: "braids", name: "Braids" },
+        { slug: "ponytails", name: "Ponytails" },
+        { slug: "clip-ins", name: "Clip-ins" },
+        { slug: "hair-growth-oils", name: "Hair Growth Oils" },
+      ];
+
+  // Fallback hardcoded collections if API fails
+  const footerCollections: Array<{ slug: string; name: string; id?: string }> = collections && collections.length > 0 
+    ? collections.map(col => ({ slug: col.slug, name: col.name, id: col.id }))
+    : [
+        { slug: "new-arrivals", name: "New Arrivals" },
+        { slug: "best-sellers", name: "Best Sellers" },
+        { slug: "featured-products", name: "Featured Products" },
+        { slug: "protective-styles", name: "Protective Styles" },
+        { slug: "trending", name: "Trending" },
+      ];
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,31 +167,16 @@ export function Footer() {
               Shop
             </h4>
             <ul className="space-y-3">
-              <li>
-                <Link href="/categories/lace-wigs" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Lace Wigs
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/braids" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Braids
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/ponytails" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Ponytails
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/clip-ins" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Clip-ins
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/hair-growth-oils" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Hair Growth Oils
-                </Link>
-              </li>
+              {shopCategories.map((category) => (
+                <li key={category.slug || category.id}>
+                  <Link 
+                    href={`/categories/${category.slug}`} 
+                    className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -127,31 +186,16 @@ export function Footer() {
               Collections
             </h4>
             <ul className="space-y-3">
-              <li>
-                <Link href="/collections/new-arrivals" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  New Arrivals
-                </Link>
-              </li>
-              <li>
-                <Link href="/collections/best-sellers" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Best Sellers
-                </Link>
-              </li>
-              <li>
-                <Link href="/collections/featured-products" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Featured Products
-                </Link>
-              </li>
-              <li>
-                <Link href="/collections/protective-styles" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Protective Styles
-                </Link>
-              </li>
-              <li>
-                <Link href="/collections/trending" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Trending
-                </Link>
-              </li>
+              {footerCollections.map((collection) => (
+                <li key={collection.slug || collection.id}>
+                  <Link 
+                    href={`/collections/${collection.slug}`} 
+                    className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
+                  >
+                    {collection.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

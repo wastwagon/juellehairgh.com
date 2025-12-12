@@ -1,5 +1,7 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
@@ -9,7 +11,8 @@ interface FAQItem {
   answer: string;
 }
 
-const faqData: FAQItem[] = [
+// Fallback FAQ data if API fails
+const defaultFAQData: FAQItem[] = [
   {
     question: "What payment methods do you accept?",
     answer: "We accept all major credit/debit cards, mobile money (MTN, Vodafone, AirtelTigo), and bank transfers. All payments are processed securely through Paystack.",
@@ -88,6 +91,28 @@ function FAQItemComponent({ item, isOpen, onToggle }: { item: FAQItem; isOpen: b
 export function FAQPage() {
   const [openItems, setOpenItems] = useState<Set<number>>(new Set());
 
+  // Fetch FAQ content from API
+  const { data: faqContent, isLoading } = useQuery<{ content: string }>({
+    queryKey: ["settings", "faq"],
+    queryFn: async () => {
+      const response = await api.get("/settings/faq");
+      return response.data;
+    },
+  });
+
+  // Parse FAQ data from API (JSON string) or use default
+  let faqData: FAQItem[] = defaultFAQData;
+  if (faqContent?.content) {
+    try {
+      const parsed = JSON.parse(faqContent.content);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        faqData = parsed;
+      }
+    } catch (error) {
+      console.error("Error parsing FAQ content:", error);
+    }
+  }
+
   const toggleItem = (index: number) => {
     const newOpenItems = new Set(openItems);
     if (newOpenItems.has(index)) {
@@ -97,6 +122,15 @@ export function FAQPage() {
     }
     setOpenItems(newOpenItems);
   };
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

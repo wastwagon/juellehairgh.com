@@ -6,13 +6,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, Package, Mail, Clock } from "lucide-react";
 
 export function ReturnsPage() {
-  const { data: siteSettings, isLoading } = useQuery({
+  const { data: siteSettings, isLoading: siteLoading } = useQuery({
     queryKey: ["settings", "site"],
     queryFn: async () => {
       const response = await api.get("/settings/site");
       return response.data;
     },
   });
+
+  const { data: returnsContent, isLoading: contentLoading } = useQuery<{ content: string }>({
+    queryKey: ["settings", "returns"],
+    queryFn: async () => {
+      const response = await api.get("/settings/returns");
+      return response.data;
+    },
+  });
+
+  const isLoading = siteLoading || contentLoading;
 
   if (isLoading) {
     return (
@@ -25,6 +35,44 @@ export function ReturnsPage() {
 
   const returnDays = 14; // Default, can be fetched from settings
 
+  // If content exists from API, render it as HTML
+  if (returnsContent?.content) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Return & Refund Policy</h1>
+          <p className="text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
+        </div>
+        <Card>
+          <CardContent className="p-6 md:p-8">
+            <div
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: returnsContent.content }}
+            />
+          </CardContent>
+        </Card>
+        {/* Contact section */}
+        <Card className="mt-6">
+          <CardContent className="p-6 md:p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help with Returns?</h2>
+            <p className="text-gray-600 mb-4">
+              If you have any questions about returns or need assistance, please contact us:
+            </p>
+            <div className="space-y-2 text-gray-600">
+              <p>
+                <strong>Email:</strong> {siteSettings?.email || "sales@juellehairgh.com"}
+              </p>
+              <p>
+                <strong>Phone:</strong> {siteSettings?.phone || "+233 539506949"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Fallback to structured content if no API content
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">

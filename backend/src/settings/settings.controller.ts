@@ -24,4 +24,19 @@ export class SettingsController {
   async getTermsContent() {
     return this.settingsService.getPageContent("TERMS_CONDITIONS");
   }
+
+  @Get("shipping")
+  async getShippingContent() {
+    return this.settingsService.getPageContent("SHIPPING_POLICY");
+  }
+
+  @Get("returns")
+  async getReturnsContent() {
+    return this.settingsService.getPageContent("RETURNS_POLICY");
+  }
+
+  @Get("faq")
+  async getFAQContent() {
+    return this.settingsService.getPageContent("FAQ_CONTENT");
+  }
 }
