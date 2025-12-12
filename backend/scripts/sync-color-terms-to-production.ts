@@ -16,11 +16,34 @@ import { PrismaClient } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
 
-// Local database connection
+// Get database URLs from environment
+// On Render, DATABASE_URL is automatically set, but we need DATABASE_URL_PROD for production
+const localDbUrl = process.env.DATABASE_URL;
+const prodDbUrl = process.env.DATABASE_URL_PROD;
+
+if (!localDbUrl) {
+  console.error("❌ Error: DATABASE_URL environment variable is not set");
+  console.log("\n💡 On Render, DATABASE_URL should be automatically set.");
+  console.log("   If running locally, make sure .env file exists with DATABASE_URL");
+  process.exit(1);
+}
+
+if (!prodDbUrl) {
+  console.error("❌ Error: DATABASE_URL_PROD environment variable is not set");
+  console.log("\n💡 Set it in Render Environment tab:");
+  console.log("   1. Go to your backend service");
+  console.log("   2. Click 'Environment' tab");
+  console.log("   3. Add: DATABASE_URL_PROD = your-production-database-url");
+  console.log("\n   Or export it temporarily:");
+  console.log("   export DATABASE_URL_PROD='your-production-database-url'");
+  process.exit(1);
+}
+
+// Local database connection (uses DATABASE_URL from environment)
 const localPrisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL,
+      url: localDbUrl,
     },
   },
 });
@@ -29,7 +52,7 @@ const localPrisma = new PrismaClient({
 const prodPrisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL_PROD,
+      url: prodDbUrl,
     },
   },
 });
@@ -43,12 +66,7 @@ interface ColorTermData {
 async function syncColorTermsToProduction() {
   console.log("🔄 Syncing Color Attribute Terms to Production...\n");
 
-  if (!process.env.DATABASE_URL_PROD) {
-    console.error("❌ Error: DATABASE_URL_PROD environment variable is required");
-    console.log("\n💡 Set it in your .env file or export it:");
-    console.log("   export DATABASE_URL_PROD='your-production-database-url'");
-    process.exit(1);
-  }
+  // Environment variables are already checked at the top
 
   try {
     // Test local database connection
