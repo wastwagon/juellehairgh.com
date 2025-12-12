@@ -58,9 +58,14 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
   const [uploadingImage, setUploadingImage] = useState(false);
   
   // Product type: simple or variable
-  const [productType, setProductType] = useState<"simple" | "variable">(
-    product?.variants && product.variants.length > 0 ? "variable" : "simple"
-  );
+  // Initialize from product, but will be updated when variants are loaded
+  const [productType, setProductType] = useState<"simple" | "variable">(() => {
+    // Check if product has variants (either from initial load or already loaded)
+    if (product?.variants && product.variants.length > 0) {
+      return "variable";
+    }
+    return "simple";
+  });
   
   // Selected attribute terms for variable products
   const [selectedColorTerms, setSelectedColorTerms] = useState<string[]>([]);
@@ -271,11 +276,17 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
           })
           .then((response) => {
             if (response.data?.variants) {
-              setVariants(response.data.variants);
+              const loadedVariants = response.data.variants;
+              setVariants(loadedVariants);
+              
+              // Update productType based on loaded variants
+              if (loadedVariants.length > 0) {
+                setProductType("variable");
+              }
               
               // Try to reconstruct attributes from variants
               const variantMap = new Map<string, Set<string>>();
-              response.data.variants.forEach((v: ProductVariant) => {
+              loadedVariants.forEach((v: ProductVariant) => {
                 if (!variantMap.has(v.name)) {
                   variantMap.set(v.name, new Set());
                 }
@@ -292,10 +303,21 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                 setAttributes(reconstructedAttributes);
                 setUseAttributeSystem(true);
               }
+            } else {
+              // No variants found, ensure productType is set correctly
+              if (product?.variants && product.variants.length > 0) {
+                setProductType("variable");
+              } else {
+                setProductType("simple");
+              }
             }
           })
           .catch((error) => {
             console.error("Error loading variants:", error);
+            // On error, check if product has variants from initial load
+            if (product?.variants && product.variants.length > 0) {
+              setProductType("variable");
+            }
           });
       }
     } else {
@@ -303,8 +325,9 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       setVariants([]);
       setAttributes([]);
       setUseAttributeSystem(false);
+      setProductType("simple");
     }
-  }, [product?.id]);
+  }, [product?.id, product?.variants]);
 
 
   const removeImage = (index: number) => {
@@ -1787,22 +1810,6 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                         </div>
                       ))}
 
-                      {product?.id && attributes.filter((a) => a.name && a.terms.length > 0).length > 0 && (
-                        <div className="pt-4 border-t">
-                          <p className="text-xs text-gray-600 text-center mb-2">
-                            ✓ Variations will be generated automatically when you save the product
-                          </p>
-                          <Button
-                            type="button"
-                            onClick={generateVariationsFromAttributes}
-                            variant="outline"
-                            className="w-full"
-                            disabled={attributes.filter((a) => a.name && a.terms.length > 0).length === 0}
-                          >
-                            Generate Variations Now (Optional)
-                          </Button>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
