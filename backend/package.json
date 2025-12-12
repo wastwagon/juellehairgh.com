@@ -47,6 +47,8 @@
     "update:flash-sale": "ts-node scripts/update-flash-sale-products.ts",
     "check:variants": "ts-node scripts/check-product-variants.ts",
     "check:variation-differences": "ts-node scripts/check-variation-differences.ts",
+    "check:currency-rates": "ts-node scripts/check-currency-rates.ts",
+    "fix:currency-rates": "ts-node scripts/fix-currency-rates.ts",
     "sync:variations": "ts-node scripts/sync-variations-to-production.ts",
     "sync:variations-enhanced": "ts-node scripts/sync-variations-with-images.ts",
     "migrate:variants": "ts-node scripts/migrate-variants-from-attributes.ts",
