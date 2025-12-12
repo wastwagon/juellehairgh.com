@@ -53,6 +53,8 @@
     "verify:local-color-terms": "ts-node scripts/verify-local-color-terms.ts",
     "export:color-terms": "ts-node scripts/export-color-terms.ts",
     "import:color-terms": "ts-node scripts/import-color-terms.ts",
+    "export:shipping": "ts-node scripts/export-shipping-data.ts",
+    "import:shipping": "ts-node scripts/import-shipping-data.ts",
     "seed:page-content": "ts-node scripts/seed-page-content.ts",
     "update:flash-sale-christmas": "ts-node scripts/update-flash-sale-to-christmas.ts",
     "fix:currency-rates": "ts-node scripts/fix-currency-rates.ts",
