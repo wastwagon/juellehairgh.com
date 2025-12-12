@@ -49,6 +49,7 @@
     "check:variation-differences": "ts-node scripts/check-variation-differences.ts",
     "check:currency-rates": "ts-node scripts/check-currency-rates.ts",
     "sync:color-terms": "ts-node scripts/sync-color-terms-to-production.ts",
+    "check:color-images": "ts-node scripts/check-color-term-images.ts",
     "seed:page-content": "ts-node scripts/seed-page-content.ts",
     "update:flash-sale-christmas": "ts-node scripts/update-flash-sale-to-christmas.ts",
     "fix:currency-rates": "ts-node scripts/fix-currency-rates.ts",

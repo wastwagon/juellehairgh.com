@@ -100,7 +100,10 @@ async function syncColorTermsToProduction() {
       process.exit(1);
     }
 
-    console.log(`✅ Found Color attribute with ${localColorAttribute.terms.length} terms\n`);
+    // Count terms with images
+    const termsWithImages = localColorAttribute.terms.filter(t => t.image).length;
+    console.log(`✅ Found Color attribute with ${localColorAttribute.terms.length} terms`);
+    console.log(`   ${termsWithImages} terms have images in local database\n`);
 
     // Get or create Color attribute in production
     console.log("🔍 Step 4: Ensuring Color attribute exists in production...");
@@ -130,8 +133,30 @@ async function syncColorTermsToProduction() {
     let updatedCount = 0;
     let skippedCount = 0;
 
+    let imagesSynced = 0;
     for (const localTerm of localColorAttribute.terms) {
       try {
+        // Normalize image URL - remove localhost/absolute URLs, keep relative paths
+        let imageUrl = localTerm.image;
+        if (imageUrl) {
+          // Remove localhost URLs, keep relative paths like /media/swatches/ or media/swatches/
+          if (imageUrl.includes("localhost") || imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            // Extract filename from URL
+            const filename = imageUrl.split("/").pop() || imageUrl.split("\\").pop() || "";
+            if (filename) {
+              // Use relative path format that works in production
+              imageUrl = `/media/swatches/${filename}`;
+            } else {
+              imageUrl = localTerm.image; // Keep original if can't extract filename
+            }
+          }
+          // Ensure consistent format: /media/swatches/filename.jpg
+          if (imageUrl && !imageUrl.startsWith("/media/swatches/") && !imageUrl.startsWith("http")) {
+            const filename = imageUrl.split("/").pop() || imageUrl.split("\\").pop() || imageUrl;
+            imageUrl = `/media/swatches/${filename}`;
+          }
+        }
+
         // Check if term exists in production (by slug)
         const existingTerm = await prodPrisma.productAttributeTerm.findFirst({
           where: {
@@ -141,16 +166,21 @@ async function syncColorTermsToProduction() {
         });
 
         if (existingTerm) {
-          // Update existing term
+          // Update existing term - always update image even if it's null (to clear old images)
           await prodPrisma.productAttributeTerm.update({
             where: { id: existingTerm.id },
             data: {
               name: localTerm.name,
-              image: localTerm.image,
+              image: imageUrl,
             },
           });
           updatedCount++;
-          console.log(`   ✅ Updated: ${localTerm.name}${localTerm.image ? ' (with image)' : ''}`);
+          if (imageUrl) {
+            imagesSynced++;
+            console.log(`   ✅ Updated: ${localTerm.name} (image: ${imageUrl})`);
+          } else {
+            console.log(`   ✅ Updated: ${localTerm.name} (no image)`);
+          }
         } else {
           // Create new term
           await prodPrisma.productAttributeTerm.create({
@@ -158,11 +188,16 @@ async function syncColorTermsToProduction() {
               attributeId: prodColorAttribute.id,
               name: localTerm.name,
               slug: localTerm.slug,
-              image: localTerm.image,
+              image: imageUrl,
             },
           });
           createdCount++;
-          console.log(`   ✅ Created: ${localTerm.name}${localTerm.image ? ' (with image)' : ''}`);
+          if (imageUrl) {
+            imagesSynced++;
+            console.log(`   ✅ Created: ${localTerm.name} (image: ${imageUrl})`);
+          } else {
+            console.log(`   ✅ Created: ${localTerm.name} (no image)`);
+          }
         }
       } catch (error: any) {
         console.error(`   ❌ Error syncing term "${localTerm.name}":`, error.message);
@@ -174,6 +209,7 @@ async function syncColorTermsToProduction() {
     console.log(`   ✅ Created: ${createdCount} terms`);
     console.log(`   🔄 Updated: ${updatedCount} terms`);
     console.log(`   ⏭️  Skipped: ${skippedCount} terms`);
+    console.log(`   🖼️  Images synced: ${imagesSynced} terms`);
     console.log(`   📦 Total: ${localColorAttribute.terms.length} terms processed\n`);
 
     // Verify sync
