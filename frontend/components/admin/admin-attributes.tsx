@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2, X, Search } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { SwatchImagePicker } from "@/components/admin/swatch-image-picker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -486,64 +487,17 @@ export function AdminAttributes() {
                             </div>
                           ) : (
                             <>
-                              {/* File Upload */}
-                              <div>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-
-                                    try {
-                                      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-                                      if (!token) throw new Error("Not authenticated");
-
-                                      const formData = new FormData();
-                                      formData.append("file", file);
-
-                                      // Use axios directly for file upload to avoid Content-Type override
-                                      const response = await api.post("/admin/upload/swatch", formData, {
-                                        headers: {
-                                          Authorization: `Bearer ${token}`,
-                                          "Content-Type": "multipart/form-data",
-                                        },
-                                        transformRequest: (data) => {
-                                          // Return FormData as-is, let browser set Content-Type with boundary
-                                          return data;
-                                        },
-                                      });
-
-                                      if (response.data.success) {
-                                        // Set the image URL immediately
-                                        const imageUrl = response.data.url;
-                                        setNewTermImage(imageUrl);
-                                        
-                                        // Log for debugging
-                                        console.log("Image uploaded successfully:", {
-                                          url: imageUrl,
-                                          filename: response.data.filename,
-                                          size: response.data.size,
-                                        });
-                                        
-                                        // Add a small delay to allow file system sync
-                                        await new Promise(resolve => setTimeout(resolve, 300));
-                                      }
-                                    } catch (error: any) {
-                                      console.error("Error uploading image:", error);
-                                      alert(error.response?.data?.message || error.message || "Failed to upload image.");
-                                    }
-                                  }}
-                                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Upload an image file (max 5MB)</p>
-                              </div>
-                              {/* Or Enter URL */}
-                              <div>
+                              {/* Image Picker - Shows Media Library First */}
+                              <SwatchImagePicker
+                                value={newTermImage}
+                                onChange={(imageUrl) => setNewTermImage(imageUrl)}
+                              />
+                              {/* Or Enter URL Manually */}
+                              <div className="mt-2">
                                 <Input
                                   value={newTermImage}
                                   onChange={(e) => setNewTermImage(e.target.value)}
-                                  placeholder="Or enter image URL"
+                                  placeholder="Or enter image URL manually"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Or paste an image URL</p>
                               </div>
@@ -889,63 +843,20 @@ export function AdminAttributes() {
                     </div>
                   ) : (
                     <>
-                      {/* File Upload */}
-                      <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-
-                            try {
-                              const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-                              if (!token) throw new Error("Not authenticated");
-
-                              const formData = new FormData();
-                              formData.append("file", file);
-
-                              // Use axios directly for file upload to avoid Content-Type override
-                              const response = await api.post("/admin/upload/swatch", formData, {
-                                headers: {
-                                  Authorization: `Bearer ${token}`,
-                                  "Content-Type": "multipart/form-data",
-                                },
-                                transformRequest: (data) => {
-                                  // Return FormData as-is, let browser set Content-Type with boundary
-                                  return data;
-                                },
-                              });
-
-                              if (response.data.success && editingTerm?.term) {
-                                const newImageUrl = response.data.url;
-                                
-                                // Log for debugging
-                                console.log("Image uploaded successfully:", {
-                                  url: newImageUrl,
-                                  filename: response.data.filename,
-                                  size: response.data.size,
-                                });
-                                
-                                setEditingTerm({
-                                  ...editingTerm,
-                                  term: { ...editingTerm.term, image: newImageUrl },
-                                });
-                                
-                                // Add a small delay to allow file system sync
-                                await new Promise(resolve => setTimeout(resolve, 300));
-                              }
-                            } catch (error: any) {
-                              console.error("Error uploading image:", error);
-                              alert(error.response?.data?.message || error.message || "Failed to upload image.");
-                            }
-                          }}
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Upload an image file (max 5MB)</p>
-                      </div>
-                      {/* Or Enter URL */}
-                      <div>
+                      {/* Image Picker - Shows Media Library First */}
+                      <SwatchImagePicker
+                        value={editingTerm.term?.image || null}
+                        onChange={(imageUrl) => {
+                          if (editingTerm?.term) {
+                            setEditingTerm({
+                              ...editingTerm,
+                              term: { ...editingTerm.term, image: imageUrl },
+                            });
+                          }
+                        }}
+                      />
+                      {/* Or Enter URL Manually */}
+                      <div className="mt-2">
                         <Input
                           value={editingTerm.term?.image || ""}
                           onChange={(e) => {
@@ -956,7 +867,7 @@ export function AdminAttributes() {
                               });
                             }
                           }}
-                          placeholder="Or enter image URL"
+                          placeholder="Or enter image URL manually"
                         />
                         <p className="text-xs text-gray-500 mt-1">Or paste an image URL</p>
                       </div>

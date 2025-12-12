@@ -373,6 +373,7 @@ export class UploadController {
   async listMedia(
     @Query("search") search?: string,
     @Query("type") type?: string, // 'image', 'all'
+    @Query("category") category?: string, // Filter by category: 'swatches', 'products', etc.
     @Query("page") page?: string,
     @Query("limit") limit?: string,
   ) {
@@ -381,8 +382,8 @@ export class UploadController {
     const limitNum = parseInt(limit || "50");
     const skip = (pageNum - 1) * limitNum;
 
-    // Scan all media directories
-    const directories = [
+    // Scan all media directories (filter by category if specified)
+    const allDirectories = [
       { path: path.join(MEDIA_DIR, "library"), category: "library" },
       { path: path.join(MEDIA_DIR, "products"), category: "products" },
       { path: path.join(MEDIA_DIR, "swatches"), category: "swatches" },
@@ -391,6 +392,11 @@ export class UploadController {
       { path: path.join(MEDIA_DIR, "collections"), category: "collections" },
       { path: path.join(MEDIA_DIR, "banners"), category: "banners" },
     ];
+
+    // Filter directories by category if specified
+    const directories = category
+      ? allDirectories.filter((dir) => dir.category === category)
+      : allDirectories;
 
     for (const dir of directories) {
       if (!fs.existsSync(dir.path)) continue;
