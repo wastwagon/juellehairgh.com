@@ -1,0 +1,12 @@
+# Run this command directly in Render Web Shell:
+
+# First, make sure you're in the backend directory:
+cd backend
+
+# Then run the script directly with ts-node:
+npx ts-node scripts/sync-color-terms-to-production.ts
+
+# Or if ts-node is installed globally:
+ts-node scripts/sync-color-terms-to-production.ts
+
+# Make sure DATABASE_URL_PROD is set in Render Environment variables first!
