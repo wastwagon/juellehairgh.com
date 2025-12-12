@@ -38,3 +38,7 @@ backups/
 
 # Prisma
 backend/prisma/migrations/
+
+# Uploaded media files (user-generated content)
+backend/uploads/
+frontend/public/uploads/
