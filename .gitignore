@@ -42,3 +42,9 @@ backend/prisma/migrations/
 # Uploaded media files (user-generated content)
 backend/uploads/
 frontend/public/uploads/
+
+# Export files (temporary data exports)
+*-export.json
+*export.json
+shipping-data-export.json
+color-terms-export.json
