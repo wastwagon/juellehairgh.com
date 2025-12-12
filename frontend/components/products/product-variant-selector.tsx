@@ -191,6 +191,8 @@ export function ProductVariantSelector({
                   let imageUrl: string | null = null;
                   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
                   
+                  // Only use color swatch images from variant.image (from ProductAttributeTerm)
+                  // Do NOT fall back to product images - use swatches only
                   if (variant.image) {
                     // If it's already a full URL, use it as-is
                     if (variant.image.startsWith("http")) {
@@ -203,25 +205,8 @@ export function ProductVariantSelector({
                       // This ensures images load correctly in production
                       imageUrl = `/api/media/swatches/${filename}`;
                     }
-                  } else if (productImages[index] || productImages[0]) {
-                    const productImage = productImages[index] || productImages[0];
-                    if (productImage) {
-                      if (productImage.startsWith("http://") || productImage.startsWith("https://")) {
-                        imageUrl = productImage;
-                      } else if (productImage.startsWith('/media/products/')) {
-                        // New media library format
-                        imageUrl = productImage;
-                      } else if (productImage.includes('/products/') || productImage.startsWith('products/')) {
-                        // Old product path format - convert to media library
-                        const filename = productImage.split('/').pop() || productImage;
-                        imageUrl = `/media/products/${filename}`;
-                      } else {
-                        // Fallback to API
-                        const filename = productImage.split('/').pop() || productImage;
-                        imageUrl = `${apiBaseUrl}/admin/upload/media/products/${filename}`;
-                      }
-                    }
                   }
+                  // No fallback to product images - only use swatch images
 
                   return (
                     <button

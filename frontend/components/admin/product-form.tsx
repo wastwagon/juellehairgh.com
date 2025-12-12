@@ -18,7 +18,7 @@ const productSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   brandId: z.string().optional(),
-  categoryId: z.string().optional(),
+  categoryId: z.string().min(1, "Category is required"),
   priceGhs: z.number().min(0, "Price must be positive"),
   compareAtPriceGhs: z.number().optional(),
   stock: z.number().min(0, "Stock must be positive").optional(),
@@ -34,6 +34,7 @@ interface ProductFormProps {
   product?: Product;
   onClose: () => void;
   onSuccess?: () => void;
+  asPage?: boolean;
 }
 
 interface ProductAttribute {
@@ -140,6 +141,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -157,12 +159,68 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     },
   });
 
+  // Reset form when product changes (for editing)
+  useEffect(() => {
+    if (product) {
+      reset({
+        title: product.title || "",
+        description: product.description || "",
+        brandId: typeof product.brand === "object" ? product.brand?.id : product.brandId || "",
+        categoryId: typeof product.category === "object" ? product.category?.id : product.categoryId || "",
+        priceGhs: product.priceGhs ? Number(product.priceGhs) : 0,
+        compareAtPriceGhs: product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : undefined,
+        stock: product.stock || 0,
+        sku: product.sku || "",
+        isActive: product.isActive ?? true,
+        images: product.images || [],
+        badges: product.badges || [],
+      });
+    }
+  }, [product?.id, reset]);
+
   // Update imageUrls when featuredImage or galleryImages change
   // Format: [featuredImage, ...galleryImages] - matches WooCommerce pattern where featured is first
   useEffect(() => {
     const allImages = featuredImage ? [featuredImage, ...galleryImages] : galleryImages;
     setImageUrls(allImages);
   }, [featuredImage, galleryImages]);
+
+  // Get first variation price for variable products
+  const firstVariationPrice = useMemo(() => {
+    if (productType === "variable" && variants.length > 0) {
+      // Find first variation with a price
+      const firstVariantWithPrice = variants.find(v => v.priceGhs && Number(v.priceGhs) > 0);
+      if (firstVariantWithPrice) {
+        return Number(firstVariantWithPrice.priceGhs);
+      }
+      // If no price found, check if we have existing product variants
+      if (product?.variants && product.variants.length > 0) {
+        const existingVariantWithPrice = product.variants.find((v: ProductVariant) => v.priceGhs && Number(v.priceGhs) > 0);
+        if (existingVariantWithPrice) {
+          return Number(existingVariantWithPrice.priceGhs);
+        }
+      }
+    }
+    return 0;
+  }, [productType, variants, product?.variants]);
+
+  // Update form values when product type changes
+  useEffect(() => {
+    if (productType === "variable") {
+      // Use first variation price instead of 0
+      const priceToUse = firstVariationPrice > 0 ? firstVariationPrice : 0;
+      setValue("priceGhs", priceToUse);
+      setValue("stock", 0);
+      setValue("compareAtPriceGhs", undefined);
+    }
+  }, [productType, setValue, firstVariationPrice]);
+
+  // Update form price when variants change (for variable products)
+  useEffect(() => {
+    if (productType === "variable" && firstVariationPrice > 0) {
+      setValue("priceGhs", firstVariationPrice);
+    }
+  }, [variants, productType, firstVariationPrice, setValue]);
 
   useEffect(() => {
     setValue("images", imageUrls);
@@ -394,6 +452,67 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     setVariationModalOpen(true);
   };
 
+  // Delete variation combination
+  const handleDeleteVariation = async (combo: typeof variationCombinations[0], e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the modal when clicking delete
+    
+    if (!confirm(`Are you sure you want to delete the variation "${combo.color}${combo.length ? ` / ${combo.length}` : ''}"?`)) {
+      return;
+    }
+
+    // If it's an existing variant, delete from database
+    if (combo.existingVariant?.id && product?.id) {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) throw new Error("Not authenticated");
+        
+        await api.delete(`/admin/product-variants/${combo.existingVariant.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Reload variants
+        const variantsResponse = await api.get(`/admin/product-variants?productId=${product.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (variantsResponse.data?.variants) {
+          setVariants(variantsResponse.data.variants);
+        }
+      } catch (error: any) {
+        console.error("Error deleting variation:", error);
+        alert(error.response?.data?.message || "Failed to delete variation");
+      }
+    } else {
+      // Remove from local state (for new products)
+      const variantName = combo.length ? "Color / Length" : "Color";
+      const variantValue = combo.length
+        ? `${combo.color} / ${combo.length}`
+        : combo.color;
+      
+      setVariants(prev => prev.filter(v => 
+        !(v.name === variantName && v.value === variantValue)
+      ));
+    }
+
+    // Remove from selected terms if no other variations use them
+    // Check if this color is still used by other combinations
+    const otherCombosUsingColor = variationCombinations.filter(c => 
+      c.color === combo.color && c !== combo
+    );
+    if (otherCombosUsingColor.length === 0) {
+      setSelectedColorTerms(prev => prev.filter(c => c !== combo.color));
+    }
+
+    // Check if this length is still used by other combinations
+    if (combo.length) {
+      const otherCombosUsingLength = variationCombinations.filter(c => 
+        c.length === combo.length && c !== combo
+      );
+      if (otherCombosUsingLength.length === 0) {
+        setSelectedLengthTerms(prev => prev.filter(l => l !== combo.length));
+      }
+    }
+  };
+
   // Save variation from modal
   const handleSaveVariation = async (data: VariationTermData) => {
     if (!selectedVariationCombo) return;
@@ -433,6 +552,11 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
         }
         return [...prev, newVariant];
       });
+
+      // Update product price to first variation price if this is the first variation
+      if (variants.length === 0 && data.regularPrice > 0) {
+        setValue("priceGhs", data.regularPrice);
+      }
 
       setVariationModalOpen(false);
       setSelectedVariationCombo(null);
@@ -542,7 +666,8 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
         images: imageUrls,
         badges,
       };
-      const response = await api.post("/products", productData, {
+      console.log("Creating product with data:", productData);
+      const response = await api.post("/admin/products", productData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -579,6 +704,11 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       onSuccess?.();
       onClose();
     },
+    onError: (error: any) => {
+      console.error("Error creating product:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create product";
+      alert(errorMessage);
+    },
   });
 
   const updateMutation = useMutation({
@@ -590,7 +720,8 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
         images: imageUrls,
         badges,
       };
-      await api.put(`/products/${product?.id}`, productData, {
+      console.log("Updating product with data:", productData);
+      await api.put(`/admin/products/${product?.id}`, productData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -604,14 +735,25 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       onSuccess?.();
       onClose();
     },
+    onError: (error: any) => {
+      console.error("Error updating product:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update product";
+      alert(errorMessage);
+    },
   });
 
   const onSubmit = (data: ProductFormData) => {
+    // Validate required fields
+    if (!data.categoryId || data.categoryId.trim() === "") {
+      alert("Please select a category");
+      return;
+    }
+
     const formData: any = {
       title: data.title,
       description: data.description || "",
-      brandId: data.brandId || undefined,
-      categoryId: data.categoryId || undefined,
+      brandId: data.brandId && data.brandId.trim() !== "" ? data.brandId : undefined,
+      categoryId: data.categoryId, // Required, don't allow empty
       isActive: data.isActive ?? true,
       images: imageUrls.length > 0 ? imageUrls : [],
       badges: badges.length > 0 ? badges : [],
@@ -622,15 +764,30 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       formData.priceGhs = Number(data.priceGhs);
       formData.compareAtPriceGhs = data.compareAtPriceGhs ? Number(data.compareAtPriceGhs) : undefined;
       formData.stock = data.stock ? Number(data.stock) : 0;
-      formData.sku = data.sku || undefined;
+      formData.sku = data.sku && data.sku.trim() !== "" ? data.sku : undefined;
     } else {
-      // For variable products, set prices to 0/null (variations have their own prices)
-      formData.priceGhs = 0;
+      // For variable products, use first variation's price instead of 0
+      // Find first variation with a price
+      let defaultPrice = 0;
+      if (variants.length > 0) {
+        const firstVariantWithPrice = variants.find(v => v.priceGhs && Number(v.priceGhs) > 0);
+        if (firstVariantWithPrice) {
+          defaultPrice = Number(firstVariantWithPrice.priceGhs);
+        }
+      } else if (product?.variants && product.variants.length > 0) {
+        // Check existing product variants if no new variants created yet
+        const existingVariantWithPrice = product.variants.find((v: ProductVariant) => v.priceGhs && Number(v.priceGhs) > 0);
+        if (existingVariantWithPrice) {
+          defaultPrice = Number(existingVariantWithPrice.priceGhs);
+        }
+      }
+      formData.priceGhs = defaultPrice;
       formData.stock = 0;
     }
 
-    // Remove undefined/null/empty values
+    // Remove undefined/null/empty values (but keep categoryId as it's required)
     Object.keys(formData).forEach((key) => {
+      if (key === "categoryId") return; // Don't delete required field
       if (formData[key] === undefined || formData[key] === null || formData[key] === "") {
         delete formData[key];
       }
@@ -682,7 +839,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
+                <label className="block text-sm font-medium mb-2">Category *</label>
                 <select
                   {...register("categoryId")}
                   className="w-full px-3 py-2 border rounded-md"
@@ -694,6 +851,9 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                     </option>
                   ))}
                 </select>
+                {errors.categoryId && (
+                  <p className="text-sm text-red-500 mt-1">{errors.categoryId.message}</p>
+                )}
               </div>
 
               <div>
@@ -794,6 +954,10 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
             {/* Variable Product: Attribute Selection */}
             {productType === "variable" && (
               <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
+                {/* Hidden inputs for variable products to satisfy form validation */}
+                {/* Use first variation price instead of 0 */}
+                <input type="hidden" {...register("priceGhs", { valueAsNumber: true, value: firstVariationPrice })} />
+                <input type="hidden" {...register("stock", { valueAsNumber: true, value: 0 })} />
                 <h3 className="text-sm font-semibold text-gray-900 mb-4">Product Variations</h3>
                 
                 {/* Color Selection */}
@@ -804,7 +968,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                     if (colorAttr && colorAttr.terms.length > 0) {
                       return (
                         <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-2 border rounded-md bg-white">
-                          {colorAttr.terms.map((term) => {
+                          {colorAttr.terms.map((term, index) => {
                             const isSelected = selectedColorTerms.includes(term.name);
                             // Handle different image path formats
                             let imageUrl: string | null = null;
@@ -828,7 +992,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                             
                             return (
                               <button
-                                key={term.id}
+                                key={`color-${colorAttr.id}-${term.id}-${index}`}
                                 type="button"
                                 onClick={() => {
                                   if (isSelected) {
@@ -869,11 +1033,11 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                     if (lengthAttr && lengthAttr.terms.length > 0) {
                       return (
                         <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border rounded-md bg-white">
-                          {lengthAttr.terms.map((term) => {
+                          {lengthAttr.terms.map((term, index) => {
                             const isSelected = selectedLengthTerms.includes(term.name);
                             return (
                               <button
-                                key={term.id}
+                                key={`length-${lengthAttr.id}-${term.id}-${index}`}
                                 type="button"
                                 onClick={() => {
                                   if (isSelected) {
@@ -929,42 +1093,55 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                         }
                         
                         return (
-                          <button
+                          <div
                             key={index}
-                            type="button"
-                            onClick={() => openVariationModal(combo)}
-                            className={`border-2 rounded-lg p-3 text-left transition-all hover:border-primary hover:shadow-md ${
+                            className={`relative border-2 rounded-lg p-3 transition-all hover:border-primary hover:shadow-md ${
                               combo.existingVariant
                                 ? "border-green-500 bg-green-50"
                                 : "border-gray-300 bg-white"
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-2">
-                              {colorImageUrl && (
-                                <img
-                                  src={colorImageUrl}
-                                  alt={combo.color}
-                                  className="w-8 h-8 object-cover rounded border"
-                                />
-                              )}
-                              <span className="text-xs font-medium text-gray-900">{combo.color}</span>
-                            </div>
-                            {combo.length && (
-                              <div className="text-xs text-gray-600 mb-2">{combo.length}</div>
-                            )}
-                            {combo.existingVariant ? (
-                              <div className="text-xs space-y-1">
-                                <div className="text-green-600 font-medium">
-                                  GH₵{Number(combo.existingVariant.priceGhs || 0).toFixed(2)}
-                                </div>
-                                <div className="text-gray-500">
-                                  Stock: {combo.existingVariant.stock}
-                                </div>
+                            <button
+                              type="button"
+                              onClick={() => openVariationModal(combo)}
+                              className="w-full text-left"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                {colorImageUrl && (
+                                  <img
+                                    src={colorImageUrl}
+                                    alt={combo.color}
+                                    className="w-8 h-8 object-cover rounded border"
+                                  />
+                                )}
+                                <span className="text-xs font-medium text-gray-900">{combo.color}</span>
                               </div>
-                            ) : (
-                              <div className="text-xs text-gray-400">Click to configure</div>
-                            )}
-                          </button>
+                              {combo.length && (
+                                <div className="text-xs text-gray-600 mb-2">{combo.length}</div>
+                              )}
+                              {combo.existingVariant ? (
+                                <div className="text-xs space-y-1">
+                                  <div className="text-green-600 font-medium">
+                                    GH₵{Number(combo.existingVariant.priceGhs || 0).toFixed(2)}
+                                  </div>
+                                  <div className={combo.existingVariant.stock === 0 ? "text-red-500 font-medium" : "text-gray-500"}>
+                                    {combo.existingVariant.stock === 0 ? "Out of Stock" : `Stock: ${combo.existingVariant.stock}`}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-xs text-gray-400">Click to configure</div>
+                              )}
+                            </button>
+                            {/* Delete button */}
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteVariation(combo, e)}
+                              className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors"
+                              title="Delete variation"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         );
                       })}
                     </div>
@@ -1375,7 +1552,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                                   return (
                                     <div className="space-y-2">
                                       <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-2 border rounded-md bg-gray-50">
-                                        {colorAttr.terms.map((term) => {
+                                        {colorAttr.terms.map((term, termIndex) => {
                                           const isSelected = attr.terms.includes(term.name);
                                           // Use Next.js API proxy route for production compatibility (same as frontend)
                                           const imageUrl = term.image 
@@ -1386,7 +1563,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                                           
                                           return (
                                             <button
-                                              key={term.id}
+                                              key={`attr-${attrIndex}-color-${colorAttr.id}-${term.id}-${termIndex}`}
                                               type="button"
                                               onClick={() => {
                                                 if (isSelected) {
@@ -1506,11 +1683,11 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                                     return (
                                       <div className="space-y-2">
                                         <div className="flex flex-wrap gap-2">
-                                          {selectedAttr.terms.map((term) => {
+                                          {selectedAttr.terms.map((term, termIndex) => {
                                             const isSelected = attr.terms.includes(term.name);
                                             return (
                                               <button
-                                                key={term.id}
+                                                key={`attr-${attrIndex}-term-${term.id}-${termIndex}`}
                                                 type="button"
                                                 onClick={() => {
                                                   if (isSelected) {

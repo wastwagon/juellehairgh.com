@@ -16,9 +16,8 @@ export class CreateProductDto {
   @IsString()
   brandId?: string;
 
-  @IsOptional()
   @IsString()
-  categoryId?: string;
+  categoryId: string;
 
   @IsNumber()
   priceGhs: number;

@@ -336,6 +336,11 @@ export class ProductsService {
   }
 
   async create(createProductDto: any) {
+    // Validate required fields
+    if (!createProductDto.categoryId || createProductDto.categoryId.trim() === "") {
+      throw new Error("Category is required");
+    }
+
     // Generate slug from title if not provided
     if (!createProductDto.slug) {
       createProductDto.slug = createProductDto.title
@@ -352,13 +357,28 @@ export class ProductsService {
       counter++;
     }
 
+    // Prepare data object, ensuring categoryId is properly set
+    const productData: any = {
+      title: createProductDto.title,
+      slug,
+      description: createProductDto.description || null,
+      categoryId: createProductDto.categoryId, // Required field
+      priceGhs: createProductDto.priceGhs || 0,
+      compareAtPriceGhs: createProductDto.compareAtPriceGhs || null,
+      images: createProductDto.images || [],
+      badges: createProductDto.badges || [],
+      stock: createProductDto.stock ?? 0,
+      sku: createProductDto.sku || null,
+      isActive: createProductDto.isActive ?? true,
+    };
+
+    // Add brandId only if provided
+    if (createProductDto.brandId && createProductDto.brandId.trim() !== "") {
+      productData.brandId = createProductDto.brandId;
+    }
+
     return this.prisma.product.create({
-      data: {
-        ...createProductDto,
-        slug,
-        isActive: createProductDto.isActive ?? true,
-        stock: createProductDto.stock ?? 0,
-      },
+      data: productData,
       include: {
         brand: true,
         category: true,
