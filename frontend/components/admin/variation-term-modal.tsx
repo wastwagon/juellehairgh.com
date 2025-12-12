@@ -91,16 +91,27 @@ export function VariationTermModal({
     }
   };
 
+  // Use React Portal to render modal outside the ProductForm's DOM hierarchy
+  // This ensures the modal appears above all other content regardless of z-index stacking context
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="variation-modal-title"
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" 
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 id="variation-modal-title" className="text-xl font-bold text-gray-900">
             Variation Details: {attributeName} - {termName}
           </h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close modal">
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -201,9 +212,10 @@ export function VariationTermModal({
   );
 
   // Use React Portal to render modal outside the ProductForm's DOM hierarchy
-  if (typeof window !== "undefined") {
+  // This ensures proper z-index stacking and prevents event propagation issues
+  if (typeof window !== "undefined" && document.body) {
     return createPortal(modalContent, document.body);
   }
 
-  return modalContent;
+  return null;
 }
