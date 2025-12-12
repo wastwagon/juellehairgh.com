@@ -16,8 +16,6 @@ import { ProductForm } from "./product-form";
 export function AdminProducts() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [mounted, setMounted] = useState(false);
 
   // Ensure component only renders client-side content after hydration
@@ -125,13 +123,12 @@ export function AdminProducts() {
             <Search className="h-4 w-4 mr-2" />
             Search
           </Button>
-          <Button onClick={() => {
-            setEditingProduct(null);
-            setShowForm(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
+          <Link href="/admin/products/new">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -244,17 +241,15 @@ export function AdminProducts() {
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingProduct(product);
-                            setShowForm(true);
-                          }}
-                        >
-                          <Edit className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
+                        <Link href={`/admin/products/${product.id}/edit`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                        </Link>
                         <Button
                           variant="outline"
                           size="sm"
@@ -282,20 +277,14 @@ export function AdminProducts() {
             ← Back to Dashboard
           </Button>
         </Link>
+        <Link href="/admin/products/new">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            New Product
+          </Button>
+        </Link>
       </div>
 
-      {showForm && (
-        <ProductForm
-          product={editingProduct || undefined}
-          onClose={() => {
-            setShowForm(false);
-            setEditingProduct(null);
-          }}
-          onSuccess={() => {
-            // Query will automatically refetch
-          }}
-        />
-      )}
     </div>
   );
 }

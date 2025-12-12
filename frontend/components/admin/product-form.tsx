@@ -42,7 +42,7 @@ interface ProductAttribute {
   usedForVariations: boolean;
 }
 
-export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
+export function ProductForm({ product, onClose, onSuccess, asPage = false }: ProductFormProps) {
   const queryClient = useQueryClient();
   const [imageUrls, setImageUrls] = useState<string[]>(product?.images || []);
   const [featuredImage, setFeaturedImage] = useState<string | null>(product?.images?.[0] || null);
@@ -643,16 +643,18 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+  // Render as page or modal based on asPage prop
+  const formContent = (
+    <>
+      {!asPage && (
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{product ? "Edit Product" : "Add New Product"}</CardTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+      )}
+      <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1793,6 +1795,42 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
             )}
           </form>
         </CardContent>
+      </>
+  );
+
+  // Render as page
+  if (asPage) {
+    return (
+      <>
+        <Card className="w-full">
+          {formContent}
+        </Card>
+
+        {/* Variation Modal */}
+        {variationModalOpen && selectedVariationCombo && (
+          <VariationTermModal
+            isOpen={variationModalOpen}
+            onClose={() => {
+              setVariationModalOpen(false);
+              setSelectedVariationCombo(null);
+            }}
+            onSave={handleSaveVariation}
+            attributeName={selectedVariationCombo.length ? "Color / Length" : "Color"}
+            termName={selectedVariationCombo.length 
+              ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
+              : selectedVariationCombo.color}
+            existingVariant={selectedVariationCombo.existingVariant || null}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Render as modal (default)
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {formContent}
       </Card>
 
       {/* Variation Modal */}
