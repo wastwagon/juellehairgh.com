@@ -46,15 +46,35 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
     // Check if product has variants and if all required variants are selected
     if (product.variants && product.variants.length > 0) {
       // Group variants by name to determine required attributes
+      // Use same normalization logic as ProductVariantSelector
       const variantGroups = new Set<string>();
       product.variants.forEach(v => {
-        const name = v.name.toLowerCase();
-        // Handle combined names
-        if (name.includes(" / ") || name.includes("/")) {
+        let normalizedName = v.name;
+        const nameLower = v.name.toLowerCase();
+        
+        // Handle combined names (e.g., "Color / Length")
+        if (nameLower.includes(" / ") || nameLower.includes("/")) {
           const parts = v.name.split(/[\/\s]+/).filter(p => p.trim().length > 0);
-          parts.forEach(part => variantGroups.add(part.trim().toLowerCase()));
+          parts.forEach(part => {
+            let partName = part.trim();
+            // Normalize old "Option" or "PA Color" variants to "Color"
+            if (partName.toLowerCase() === "option" || 
+                partName.toLowerCase().includes("pa color") || 
+                partName.toLowerCase().includes("pa_color") || 
+                partName.toLowerCase().includes("pa-color")) {
+              partName = "Color";
+            }
+            variantGroups.add(partName.toLowerCase());
+          });
         } else {
-          variantGroups.add(name);
+          // Normalize old "Option" or "PA Color" variants to "Color"
+          if (nameLower === "option" || 
+              nameLower.includes("pa color") || 
+              nameLower.includes("pa_color") || 
+              nameLower.includes("pa-color")) {
+            normalizedName = "Color";
+          }
+          variantGroups.add(normalizedName.toLowerCase());
         }
       });
       
@@ -89,6 +109,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       product,
     });
     // Track is already done in cart store, but we can also track here for quick view
+    const effectivePrice = isOnSale ? salePrice! : basePrice;
     if (typeof window !== "undefined") {
       import("@/lib/analytics").then(({ analytics }) => {
         analytics.addToCart(product.id, quantity, effectivePrice);
