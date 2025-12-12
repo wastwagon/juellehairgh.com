@@ -101,9 +101,18 @@ async function syncColorTermsToProduction() {
     }
 
     // Count terms with images
-    const termsWithImages = localColorAttribute.terms.filter(t => t.image).length;
+    const localTermsWithImages = localColorAttribute.terms.filter(t => t.image).length;
     console.log(`✅ Found Color attribute with ${localColorAttribute.terms.length} terms`);
-    console.log(`   ${termsWithImages} terms have images in local database\n`);
+    console.log(`   ${localTermsWithImages} terms have images in local database\n`);
+    
+    // Debug: Show all terms with their image status
+    if (localTermsWithImages < localColorAttribute.terms.length) {
+      console.log("🔍 Terms without images in local:");
+      localColorAttribute.terms
+        .filter(t => !t.image)
+        .forEach(t => console.log(`   - ${t.name} (slug: ${t.slug})`));
+      console.log("");
+    }
 
     // Get or create Color attribute in production
     console.log("🔍 Step 4: Ensuring Color attribute exists in production...");
@@ -220,9 +229,18 @@ async function syncColorTermsToProduction() {
       },
     });
 
-    const termsWithImages = prodTerms.filter(t => t.image).length;
+    const prodTermsWithImages = prodTerms.filter(t => t.image).length;
     console.log(`✅ Production now has ${prodTerms.length} color terms`);
-    console.log(`   ${termsWithImages} terms have images\n`);
+    console.log(`   ${prodTermsWithImages} terms have images\n`);
+    
+    // Show which terms have images in production
+    if (prodTermsWithImages > 0) {
+      console.log("🔍 Terms with images in production:");
+      prodTerms
+        .filter(t => t.image)
+        .forEach(t => console.log(`   ✅ ${t.name}: ${t.image}`));
+      console.log("");
+    }
 
     console.log("🎉 Color terms sync completed successfully!\n");
 
