@@ -25,9 +25,11 @@ import {
   Database,
   Wallet,
   FileText,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { logout } from "@/lib/auth";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -92,30 +94,46 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <p className="text-sm text-gray-500 mt-1">Management Dashboard</p>
           </div>
 
-          <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-120px)]">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/admin" && pathname?.startsWith(item.href));
+          <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-120px)] flex flex-col">
+            <div className="flex-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/admin" && pathname?.startsWith(item.href));
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-primary text-white shadow-md"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                      isActive
+                        ? "bg-primary text-white shadow-md"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+            {/* Logout Button */}
+            <div className="pt-4 border-t border-gray-200 mt-auto">
+              <button
+                onClick={() => {
+                  if (confirm("Are you sure you want to sign out?")) {
+                    logout();
+                  }
+                }}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 w-full transition-all"
+              >
+                <LogOut className="h-5 w-5" />
+                Sign Out
+              </button>
+            </div>
           </nav>
         </aside>
 

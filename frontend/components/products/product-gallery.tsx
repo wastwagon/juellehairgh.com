@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ProductGalleryProps {
@@ -16,8 +16,24 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
   const selectedIndex = controlledIndex !== undefined ? controlledIndex : internalIndex;
   const setSelectedIndex = onImageSelect || setInternalIndex;
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
-  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Handle keyboard navigation in lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        setSelectedIndex((prev) => (prev - 1 + images.length) % images.length);
+      } else if (e.key === "ArrowRight") {
+        setSelectedIndex((prev) => (prev + 1) % images.length);
+      } else if (e.key === "Escape") {
+        setLightboxOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen, images.length, setSelectedIndex]);
 
   if (!images || images.length === 0) {
     return (
@@ -62,33 +78,17 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
     setSelectedIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isZoomed) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setZoomPosition({ x, y });
-  };
-
   return (
     <>
       <div className="space-y-4">
         <div
-          className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-zoom-in"
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsZoomed(true)}
-          onMouseLeave={() => setIsZoomed(false)}
+          className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-pointer"
           onClick={() => setLightboxOpen(true)}
         >
           <img
             src={getImageUrl(images[selectedIndex])}
             alt={`${title} - Image ${selectedIndex + 1}`}
             className="w-full h-full object-cover"
-            style={{
-              transform: isZoomed ? `scale(2)` : 'scale(1)',
-              transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-              transition: isZoomed ? 'none' : 'transform 0.3s ease',
-            }}
           />
           {images.length > 1 && (
             <>
@@ -116,9 +116,8 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
               </Button>
             </>
           )}
-          <div className="absolute bottom-2 right-2 bg-white/90 hover:bg-white px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition flex items-center gap-2 text-sm">
-            <ZoomIn className="h-4 w-4" />
-            Click to enlarge
+          <div className="absolute bottom-2 right-2 bg-white/90 hover:bg-white px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition text-sm">
+            Click to view gallery
           </div>
         </div>
         {images.length > 1 && (
@@ -144,30 +143,35 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
         )}
       </div>
 
-      {/* Lightbox Modal */}
+      {/* Enhanced Lightbox Modal with Thumbnail Navigation */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4"
           onClick={() => setLightboxOpen(false)}
         >
+          {/* Close Button */}
           <button
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-2 transition"
             onClick={() => setLightboxOpen(false)}
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+
+          {/* Main Image Container */}
+          <div className="relative max-w-6xl w-full max-h-[calc(100vh-200px)] flex-1 flex items-center justify-center mb-24" onClick={(e) => e.stopPropagation()}>
             <img
               src={getImageUrl(images[selectedIndex])}
               alt={`${title} - Image ${selectedIndex + 1}`}
-              className="w-full h-auto rounded-lg"
+              className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"
             />
+            
+            {/* Navigation Arrows */}
             {images.length > 1 && (
               <>
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
                   onClick={prevImage}
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -175,25 +179,46 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
                   onClick={nextImage}
                 >
                   <ChevronRight className="h-5 w-5" />
                 </Button>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedIndex(index)}
-                      className={`w-2 h-2 rounded-full transition ${
-                        selectedIndex === index ? "bg-white" : "bg-white/50"
-                      }`}
-                    />
-                  ))}
-                </div>
               </>
             )}
+
+            {/* Image Counter */}
+            {images.length > 1 && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+                {selectedIndex + 1} / {images.length}
+              </div>
+            )}
           </div>
+
+          {/* Thumbnail Strip */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center px-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex gap-2 max-w-6xl overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                {images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedIndex(index)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedIndex === index
+                        ? "border-white scale-110 shadow-lg"
+                        : "border-white/30 hover:border-white/60 opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <img
+                      src={getImageUrl(image)}
+                      alt={`${title} thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

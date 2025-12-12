@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { ProductSEOForm } from "@/components/admin/seo/product-seo-form";
+import { VariationTermModal, VariationTermData } from "@/components/admin/variation-term-modal";
 
 const productSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -54,6 +55,25 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
   const [showSEO, setShowSEO] = useState(false);
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Product type: simple or variable
+  const [productType, setProductType] = useState<"simple" | "variable">(
+    product?.variants && product.variants.length > 0 ? "variable" : "simple"
+  );
+  
+  // Selected attribute terms for variable products
+  const [selectedColorTerms, setSelectedColorTerms] = useState<string[]>([]);
+  const [selectedLengthTerms, setSelectedLengthTerms] = useState<string[]>([]);
+  
+  // Variation modal state
+  const [variationModalOpen, setVariationModalOpen] = useState(false);
+  const [selectedVariationCombo, setSelectedVariationCombo] = useState<{
+    color: string;
+    length: string;
+    colorId?: string;
+    lengthId?: string;
+    existingVariant?: ProductVariant | null;
+  } | null>(null);
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ["categories", "all"],
@@ -163,6 +183,24 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
   useEffect(() => {
     setValue("badges", badges);
   }, [badges, setValue]);
+
+  // Initialize selected color and length terms from existing variants
+  useEffect(() => {
+    if (product?.variants && product.variants.length > 0) {
+      const colorVariants = product.variants.filter(v => 
+        v.name.toLowerCase().includes('color') || v.name.toLowerCase().includes('colour')
+      );
+      const lengthVariants = product.variants.filter(v => 
+        v.name.toLowerCase().includes('length')
+      );
+      
+      const colors = Array.from(new Set(colorVariants.map(v => v.value)));
+      const lengths = Array.from(new Set(lengthVariants.map(v => v.value)));
+      
+      setSelectedColorTerms(colors);
+      setSelectedLengthTerms(lengths);
+    }
+  }, [product?.id]);
 
   // Load variants when editing a product
   useEffect(() => {
@@ -309,6 +347,154 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
     setAttributes(updated);
   };
 
+  // Generate variation combinations (Color × Length)
+  const variationCombinations = useMemo(() => {
+    if (productType !== "variable" || selectedColorTerms.length === 0) {
+      return [];
+    }
+
+    const colors = selectedColorTerms;
+    const lengths = selectedLengthTerms.length > 0 ? selectedLengthTerms : [null]; // If no length, create single variant per color
+
+    return colors.flatMap(color => 
+      lengths.map(length => {
+        const comboKey = length ? `${color} / ${length}` : color;
+        
+        // Find existing variant for this combination
+        const existingVariant = variants.find(v => {
+          if (length) {
+            // Combined variant: "Color / Length" with value "1 / 18 inches"
+            return v.name.toLowerCase().includes('color') && 
+                   v.name.toLowerCase().includes('length') &&
+                   v.value === comboKey;
+          } else {
+            // Single color variant
+            return (v.name.toLowerCase().includes('color') || v.name.toLowerCase().includes('colour')) &&
+                   v.value === color;
+          }
+        });
+
+        return {
+          color,
+          length: length || null,
+          comboKey,
+          existingVariant: existingVariant || null,
+        };
+      })
+    );
+  }, [selectedColorTerms, selectedLengthTerms, variants, productType]);
+
+  // Open variation modal
+  const openVariationModal = (combo: typeof variationCombinations[0]) => {
+    setSelectedVariationCombo({
+      color: combo.color,
+      length: combo.length || '',
+      existingVariant: combo.existingVariant || null,
+    });
+    setVariationModalOpen(true);
+  };
+
+  // Save variation from modal
+  const handleSaveVariation = async (data: VariationTermData) => {
+    if (!selectedVariationCombo) return;
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) throw new Error("Not authenticated");
+
+    // For new products, store variation data temporarily
+    if (!product?.id) {
+      // Store in local state for now - will be created after product is saved
+      const variantName = selectedVariationCombo.length 
+        ? "Color / Length" 
+        : "Color";
+      const variantValue = selectedVariationCombo.length
+        ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
+        : selectedVariationCombo.color;
+
+      const newVariant: ProductVariant = {
+        id: `temp-${Date.now()}`,
+        productId: "",
+        name: variantName,
+        value: variantValue,
+        priceGhs: data.regularPrice,
+        compareAtPriceGhs: data.salePrice > 0 ? data.salePrice : null,
+        stock: data.stock,
+        sku: data.sku || null,
+      };
+
+      setVariants(prev => {
+        const existing = prev.find(v => 
+          v.name === variantName && v.value === variantValue
+        );
+        if (existing) {
+          return prev.map(v => 
+            v.name === variantName && v.value === variantValue ? newVariant : v
+          );
+        }
+        return [...prev, newVariant];
+      });
+
+      setVariationModalOpen(false);
+      setSelectedVariationCombo(null);
+      return;
+    }
+
+    // For existing products, save immediately
+    try {
+      const variantName = selectedVariationCombo.length 
+        ? "Color / Length" 
+        : "Color";
+      const variantValue = selectedVariationCombo.length
+        ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
+        : selectedVariationCombo.color;
+
+      if (selectedVariationCombo.existingVariant?.id) {
+        // Update existing variant
+        await api.put(
+          `/admin/product-variants/${selectedVariationCombo.existingVariant.id}`,
+          {
+            name: variantName,
+            value: variantValue,
+            priceGhs: data.regularPrice,
+            compareAtPriceGhs: data.salePrice > 0 ? data.salePrice : null,
+            stock: data.stock,
+            sku: data.sku || null,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // Create new variant
+        await api.post(
+          "/admin/product-variants",
+          {
+            productId: product.id,
+            name: variantName,
+            value: variantValue,
+            priceGhs: data.regularPrice,
+            compareAtPriceGhs: data.salePrice > 0 ? data.salePrice : null,
+            stock: data.stock,
+            sku: data.sku || null,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      // Reload variants
+      const variantsResponse = await api.get(`/admin/product-variants?productId=${product.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (variantsResponse.data?.variants) {
+        setVariants(variantsResponse.data.variants);
+      }
+
+      setVariationModalOpen(false);
+      setSelectedVariationCombo(null);
+    } catch (error: any) {
+      console.error("Error saving variation:", error);
+      throw error;
+    }
+  };
+
   const generateVariationsFromAttributes = async () => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (!token || !product?.id) return;
@@ -360,42 +546,27 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      // Create variants if product was created
-      if (response.data?.id) {
-        if (useAttributeSystem && attributes.length > 0) {
-          // Generate variations from attributes
-          const attributesForVariations = attributes.filter((attr) => attr.usedForVariations && attr.name && attr.terms.length > 0);
-          if (attributesForVariations.length > 0) {
-            await api.post(
-              `/admin/products/${response.data.id}/generate-variations`,
+      // Create variants if product was created and we have temp variants (from modal)
+      if (response.data?.id && variants.length > 0) {
+        const variantPromises = variants
+          .filter((v) => v.name && v.value && v.id?.startsWith("temp-"))
+          .map((variant) =>
+            api.post(
+              "/admin/product-variants",
               {
-                attributes: attributesForVariations.map((attr) => ({
-                  name: attr.name,
-                  terms: attr.terms,
-                })),
+                productId: response.data.id,
+                name: variant.name,
+                value: variant.value,
+                image: variant.image || null,
+                priceGhs: variant.priceGhs || null,
+                compareAtPriceGhs: variant.compareAtPriceGhs || null,
+                stock: variant.stock || 0,
+                sku: variant.sku || null,
               },
               { headers: { Authorization: `Bearer ${token}` } }
-            );
-          }
-        } else if (variants.length > 0) {
-          // Create manual variants
-          const variantPromises = variants
-            .filter((v) => v.name && v.value)
-            .map((variant) =>
-              api.post(
-                "/admin/product-variants",
-                {
-                  productId: response.data.id,
-                  name: variant.name,
-                  value: variant.value,
-                  image: variant.image || null,
-                  priceGhs: variant.priceGhs || null,
-                  stock: variant.stock || 0,
-                  sku: variant.sku || null,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-              )
-            );
+            )
+          );
+        if (variantPromises.length > 0) {
           await Promise.all(variantPromises);
         }
       }
@@ -423,76 +594,8 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Handle variants based on system used
-      if (useAttributeSystem && attributes.length > 0) {
-        // Generate variations from attributes
-        const attributesForVariations = attributes.filter((attr) => attr.usedForVariations && attr.name && attr.terms.length > 0);
-        if (attributesForVariations.length > 0) {
-          await api.post(
-            `/admin/products/${product?.id}/generate-variations`,
-            {
-              attributes: attributesForVariations.map((attr) => ({
-                name: attr.name,
-                terms: attr.terms,
-              })),
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        }
-      } else {
-        // Manual variant management
-        const existingVariantsResponse = await api.get(`/admin/product-variants?productId=${product?.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const existingVariants = existingVariantsResponse.data?.variants || [];
-
-        // Delete variants that were removed
-        const variantsToKeep = variants.filter((v) => v.id && !v.id.startsWith("temp-"));
-        const variantsToDelete = existingVariants.filter(
-          (ev: ProductVariant) => !variantsToKeep.find((v) => v.id === ev.id)
-        );
-        for (const variant of variantsToDelete) {
-          await api.delete(`/admin/product-variants/${variant.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-        }
-
-        // Create or update variants
-        for (const variant of variants) {
-          if (!variant.name || !variant.value) continue;
-
-          if (variant.id && !variant.id.startsWith("temp-")) {
-            // Update existing variant
-            await api.put(
-              `/admin/product-variants/${variant.id}`,
-              {
-                name: variant.name,
-                value: variant.value,
-                image: variant.image || null,
-                priceGhs: variant.priceGhs || null,
-                stock: variant.stock || 0,
-                sku: variant.sku || null,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-          } else {
-            // Create new variant
-            await api.post(
-              "/admin/product-variants",
-              {
-                productId: product?.id,
-                name: variant.name,
-                value: variant.value,
-                image: variant.image || null,
-                priceGhs: variant.priceGhs || null,
-                stock: variant.stock || 0,
-                sku: variant.sku || null,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-          }
-        }
-      }
+      // For variable products, variations are created manually via modal
+      // No auto-generation - admin must click each combination and set prices
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
@@ -509,14 +612,22 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
       description: data.description || "",
       brandId: data.brandId || undefined,
       categoryId: data.categoryId || undefined,
-      priceGhs: Number(data.priceGhs),
-      compareAtPriceGhs: data.compareAtPriceGhs ? Number(data.compareAtPriceGhs) : undefined,
-      stock: data.stock ? Number(data.stock) : 0,
-      sku: data.sku || undefined,
       isActive: data.isActive ?? true,
       images: imageUrls.length > 0 ? imageUrls : [],
       badges: badges.length > 0 ? badges : [],
     };
+
+    // For simple products, include pricing
+    if (productType === "simple") {
+      formData.priceGhs = Number(data.priceGhs);
+      formData.compareAtPriceGhs = data.compareAtPriceGhs ? Number(data.compareAtPriceGhs) : undefined;
+      formData.stock = data.stock ? Number(data.stock) : 0;
+      formData.sku = data.sku || undefined;
+    } else {
+      // For variable products, set prices to 0/null (variations have their own prices)
+      formData.priceGhs = 0;
+      formData.stock = 0;
+    }
 
     // Remove undefined/null/empty values
     Object.keys(formData).forEach((key) => {
@@ -526,17 +637,7 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
     });
 
     if (product) {
-      updateMutation.mutate(formData, {
-        onSuccess: async () => {
-          // Auto-generate variations if attributes are selected
-          if (useAttributeSystem && attributes.length > 0) {
-            const attributesForVariations = attributes.filter((attr) => attr.name && attr.terms.length > 0);
-            if (attributesForVariations.length > 0) {
-              await generateVariationsFromAttributes();
-            }
-          }
-        },
-      });
+      updateMutation.mutate(formData);
     } else {
       createMutation.mutate(formData);
     }
@@ -609,43 +710,266 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Regular Price (GHS) *</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  {...register("priceGhs", { valueAsNumber: true })}
-                />
-                {errors.priceGhs && (
-                  <p className="text-sm text-red-500 mt-1">{errors.priceGhs.message}</p>
-                )}
-                <p className="text-xs text-gray-500 mt-1">
-                  The regular price. Will be shown crossed out if a sale price is set.
-                </p>
+            {/* Product Type Toggle */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <label className="block text-sm font-medium mb-3">Product Type *</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="simple"
+                    checked={productType === "simple"}
+                    onChange={(e) => {
+                      setProductType(e.target.value as "simple" | "variable");
+                      if (e.target.value === "simple") {
+                        setSelectedColorTerms([]);
+                        setSelectedLengthTerms([]);
+                      }
+                    }}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm font-medium">Simple Product</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="variable"
+                    checked={productType === "variable"}
+                    onChange={(e) => setProductType(e.target.value as "simple" | "variable")}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm font-medium">Variable Product</span>
+                </label>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Sale Price (GHS)</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Leave empty if not on sale"
-                  {...register("compareAtPriceGhs", { valueAsNumber: true })}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Set a sale price lower than the regular price. The regular price will be shown crossed out.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Stock</label>
-                <Input
-                  type="number"
-                  {...register("stock", { valueAsNumber: true })}
-                />
-              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {productType === "simple" 
+                  ? "Simple products use product-level pricing and stock."
+                  : "Variable products have variations with individual prices and stock."}
+              </p>
             </div>
+
+            {/* Price Fields - Only show for Simple Products */}
+            {productType === "simple" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Regular Price (GHS) *</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...register("priceGhs", { valueAsNumber: true })}
+                  />
+                  {errors.priceGhs && (
+                    <p className="text-sm text-red-500 mt-1">{errors.priceGhs.message}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    The regular price. Will be shown crossed out if a sale price is set.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Sale Price (GHS)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Leave empty if not on sale"
+                    {...register("compareAtPriceGhs", { valueAsNumber: true })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Set a sale price lower than the regular price. The regular price will be shown crossed out.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Stock</label>
+                  <Input
+                    type="number"
+                    {...register("stock", { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Variable Product: Attribute Selection */}
+            {productType === "variable" && (
+              <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">Product Variations</h3>
+                
+                {/* Color Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Color *</label>
+                  {(() => {
+                    const colorAttr = availableAttributes?.find(a => a.name.toLowerCase() === 'color');
+                    if (colorAttr && colorAttr.terms.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-2 border rounded-md bg-white">
+                          {colorAttr.terms.map((term) => {
+                            const isSelected = selectedColorTerms.includes(term.name);
+                            // Handle different image path formats
+                            let imageUrl: string | null = null;
+                            if (term.image) {
+                              if (term.image.startsWith("http")) {
+                                imageUrl = term.image;
+                              } else if (term.image.startsWith("/media/swatches/")) {
+                                // Full path format: /media/swatches/filename.jpg
+                                const filename = term.image.replace("/media/swatches/", "");
+                                imageUrl = `/api/media/swatches/${filename}`;
+                              } else if (term.image.startsWith("media/swatches/")) {
+                                // Path without leading slash
+                                const filename = term.image.replace("media/swatches/", "");
+                                imageUrl = `/api/media/swatches/${filename}`;
+                              } else {
+                                // Just filename or relative path
+                                const filename = term.image.split('/').pop() || term.image;
+                                imageUrl = `/api/media/swatches/${filename}`;
+                              }
+                            }
+                            
+                            return (
+                              <button
+                                key={term.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedColorTerms(prev => prev.filter(c => c !== term.name));
+                                  } else {
+                                    setSelectedColorTerms(prev => [...prev, term.name]);
+                                  }
+                                }}
+                                className={`px-3 py-2 rounded-md border-2 text-sm font-medium transition-all flex items-center gap-2 ${
+                                  isSelected
+                                    ? "bg-primary text-white border-primary shadow-md"
+                                    : "bg-white text-gray-700 border-gray-300 hover:border-primary"
+                                }`}
+                              >
+                                {imageUrl && (
+                                  <img
+                                    src={imageUrl}
+                                    alt={term.name}
+                                    className="w-6 h-6 object-cover rounded border"
+                                  />
+                                )}
+                                <span>{term.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return <p className="text-sm text-gray-500">No colors available. Go to "Attributes & Variations" to add colors.</p>;
+                  })()}
+                </div>
+
+                {/* Length Selection */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Length (Optional)</label>
+                  {(() => {
+                    const lengthAttr = availableAttributes?.find(a => a.name.toLowerCase() === 'length');
+                    if (lengthAttr && lengthAttr.terms.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border rounded-md bg-white">
+                          {lengthAttr.terms.map((term) => {
+                            const isSelected = selectedLengthTerms.includes(term.name);
+                            return (
+                              <button
+                                key={term.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedLengthTerms(prev => prev.filter(l => l !== term.name));
+                                  } else {
+                                    setSelectedLengthTerms(prev => [...prev, term.name]);
+                                  }
+                                }}
+                                className={`px-4 py-2 rounded-md border-2 text-sm font-medium transition-all ${
+                                  isSelected
+                                    ? "bg-primary text-white border-primary shadow-md"
+                                    : "bg-white text-gray-700 border-gray-300 hover:border-primary"
+                                }`}
+                              >
+                                {term.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return <p className="text-sm text-gray-500">No lengths available. Go to "Attributes & Variations" to add lengths.</p>;
+                  })()}
+                </div>
+
+                {/* Variation Matrix */}
+                {selectedColorTerms.length > 0 && (
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium mb-3">
+                      Variation Combinations ({variationCombinations.length})
+                    </label>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Click on each combination to set price, stock, and other details. Variations are created manually.
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {variationCombinations.map((combo, index) => {
+                        const colorTerm = availableAttributes?.find(a => a.name.toLowerCase() === 'color')?.terms.find(t => t.name === combo.color);
+                        // Handle different image path formats
+                        let colorImageUrl: string | null = null;
+                        if (colorTerm?.image) {
+                          if (colorTerm.image.startsWith("http")) {
+                            colorImageUrl = colorTerm.image;
+                          } else if (colorTerm.image.startsWith("/media/swatches/")) {
+                            const filename = colorTerm.image.replace("/media/swatches/", "");
+                            colorImageUrl = `/api/media/swatches/${filename}`;
+                          } else if (colorTerm.image.startsWith("media/swatches/")) {
+                            const filename = colorTerm.image.replace("media/swatches/", "");
+                            colorImageUrl = `/api/media/swatches/${filename}`;
+                          } else {
+                            const filename = colorTerm.image.split('/').pop() || colorTerm.image;
+                            colorImageUrl = `/api/media/swatches/${filename}`;
+                          }
+                        }
+                        
+                        return (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => openVariationModal(combo)}
+                            className={`border-2 rounded-lg p-3 text-left transition-all hover:border-primary hover:shadow-md ${
+                              combo.existingVariant
+                                ? "border-green-500 bg-green-50"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              {colorImageUrl && (
+                                <img
+                                  src={colorImageUrl}
+                                  alt={combo.color}
+                                  className="w-8 h-8 object-cover rounded border"
+                                />
+                              )}
+                              <span className="text-xs font-medium text-gray-900">{combo.color}</span>
+                            </div>
+                            {combo.length && (
+                              <div className="text-xs text-gray-600 mb-2">{combo.length}</div>
+                            )}
+                            {combo.existingVariant ? (
+                              <div className="text-xs space-y-1">
+                                <div className="text-green-600 font-medium">
+                                  GH₵{Number(combo.existingVariant.priceGhs || 0).toFixed(2)}
+                                </div>
+                                <div className="text-gray-500">
+                                  Stock: {combo.existingVariant.stock}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-xs text-gray-400">Click to configure</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-2">Product Images</label>
@@ -1470,6 +1794,23 @@ export function ProductForm({ product, onClose, onSuccess }: ProductFormProps) {
           </form>
         </CardContent>
       </Card>
+
+      {/* Variation Modal */}
+      {variationModalOpen && selectedVariationCombo && (
+        <VariationTermModal
+          isOpen={variationModalOpen}
+          onClose={() => {
+            setVariationModalOpen(false);
+            setSelectedVariationCombo(null);
+          }}
+          onSave={handleSaveVariation}
+          attributeName={selectedVariationCombo.length ? "Color / Length" : "Color"}
+          termName={selectedVariationCombo.length 
+            ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
+            : selectedVariationCombo.color}
+          existingVariant={selectedVariationCombo.existingVariant || null}
+        />
+      )}
     </div>
   );
 }
