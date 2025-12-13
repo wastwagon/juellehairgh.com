@@ -185,7 +185,7 @@ export function ProductVariantSelector({
 
             {isColor && colorVariants.length > 0 ? (
               // Color swatches with images
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
                 {variantList.map((variant, index) => {
                   const isSelected = selectedId === variant.id;
                   // Use color swatch images from variant.image (enriched from ProductAttributeTerm by backend)
@@ -224,12 +224,12 @@ export function ProductVariantSelector({
                           }
                         }
                       }}
-                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                         isSelected
                           ? "border-primary ring-2 ring-primary ring-offset-2"
                           : "border-gray-300 hover:border-gray-400"
                       } ${variant.stock === 0 ? "opacity-50" : ""}`}
-                      style={{ width: '96px', height: '96px' }}
+                      style={{ width: '80px', height: '80px' }}
                       title={variant.value}
                       disabled={variant.stock === 0}
                     >
@@ -282,12 +282,12 @@ export function ProductVariantSelector({
                       )}
                       {/* Ship Today badge */}
                       {variant.stock > 0 && (
-                        <div className="absolute top-1 left-1 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md">
+                        <div className="absolute top-1 left-1 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
                           {getShippingStatus()}
                         </div>
                       )}
                       {/* Variant label overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs text-center py-1 px-1 truncate leading-tight">
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[11px] text-center py-1 px-1 truncate leading-tight">
                         {variant.value}
                       </div>
                     </button>

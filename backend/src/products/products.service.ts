@@ -37,7 +37,7 @@ export class ProductsService {
       if (maxPrice) where.priceGhs.lte = parseFloat(maxPrice);
     }
 
-    const [products, total] = await Promise.all([
+    const [productsData, total] = await Promise.all([
       this.prisma.product.findMany({
         where,
         include: {
@@ -69,6 +69,52 @@ export class ProductsService {
       }),
       this.prisma.product.count({ where }),
     ]);
+
+    // Enrich variants with attribute term images (same as findOne)
+    const colorAttribute = await this.prisma.productAttribute.findFirst({
+      where: { name: { equals: "Color", mode: "insensitive" } },
+      include: { terms: true },
+    });
+
+    const termImageMap = new Map<string, string | null>();
+    if (colorAttribute) {
+      colorAttribute.terms.forEach((term) => {
+        termImageMap.set(term.name.toLowerCase(), term.image);
+      });
+    }
+
+    // Enrich all products' variants with images
+    const products = productsData.map((product) => {
+      if (product.variants && product.variants.length > 0) {
+        product.variants = product.variants.map((variant) => {
+          if (variant.name.toLowerCase().includes("color")) {
+            const variantValueLower = variant.value.toLowerCase();
+            const termImage = termImageMap.get(variantValueLower);
+            
+            // Try exact match first
+            if (termImage) {
+              return { ...variant, image: termImage };
+            }
+            
+            // Try partial matching (e.g., "2T1B30" matches "2t1b/30")
+            for (const [termName, termImage] of termImageMap.entries()) {
+              const normalizedTerm = termName.replace(/[\/\s]/g, "").toLowerCase();
+              const normalizedVariant = variantValueLower.replace(/[\/\s]/g, "");
+              
+              if (normalizedTerm === normalizedVariant || 
+                  normalizedTerm.includes(normalizedVariant) ||
+                  normalizedVariant.includes(normalizedTerm)) {
+                if (termImage) {
+                  return { ...variant, image: termImage };
+                }
+              }
+            }
+          }
+          return variant;
+        });
+      }
+      return product;
+    });
 
     return {
       products,

@@ -183,14 +183,14 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
             {/* Image Gallery */}
             <div>
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative min-h-[400px] md:min-h-[500px]">
-                <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative">
+                <div className="absolute inset-0 flex items-center justify-center p-2">
                   {product.images && product.images.length > 0 ? (
                     <img
                       src={getImageUrl(product.images[selectedImage])}
                       alt={product.title}
                       className="max-w-full max-h-full w-auto h-auto object-contain"
-                      style={{ objectPosition: 'center center', minWidth: '200%', minHeight: '200%' }}
+                      style={{ objectPosition: 'center center' }}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
