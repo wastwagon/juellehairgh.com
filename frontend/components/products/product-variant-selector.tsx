@@ -185,7 +185,7 @@ export function ProductVariantSelector({
 
             {isColor && colorVariants.length > 0 ? (
               // Color swatches with images
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              <div className="flex flex-wrap gap-3 items-start">
                 {variantList.map((variant, index) => {
                   const isSelected = selectedId === variant.id;
                   // Use color swatch images from variant.image (enriched from ProductAttributeTerm by backend)
@@ -224,12 +224,12 @@ export function ProductVariantSelector({
                           }
                         }
                       }}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                         isSelected
                           ? "border-primary ring-2 ring-primary ring-offset-2"
                           : "border-gray-300 hover:border-gray-400"
                       } ${variant.stock === 0 ? "opacity-50" : ""}`}
-                      style={{ width: '80px', height: '80px' }}
+                      style={{ width: '100px', height: '100px' }}
                       title={variant.value}
                       disabled={variant.stock === 0}
                     >
@@ -271,8 +271,8 @@ export function ProductVariantSelector({
                         </div>
                       )}
                       {isSelected && (
-                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center pointer-events-none">
-                          <div className="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-md"></div>
+                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center pointer-events-none z-20">
+                          <div className="w-5 h-5 bg-primary rounded-full border-2 border-white shadow-lg"></div>
                         </div>
                       )}
                       {variant.stock === 0 && (
@@ -282,12 +282,12 @@ export function ProductVariantSelector({
                       )}
                       {/* Ship Today badge */}
                       {variant.stock > 0 && (
-                        <div className="absolute top-1 left-1 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
+                        <div className="absolute top-1 left-1 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10">
                           {getShippingStatus()}
                         </div>
                       )}
                       {/* Variant label overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[11px] text-center py-1 px-1 truncate leading-tight">
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white text-xs text-center py-1.5 px-1 truncate leading-tight font-medium">
                         {variant.value}
                       </div>
                     </button>
