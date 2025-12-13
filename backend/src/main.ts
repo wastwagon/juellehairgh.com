@@ -14,15 +14,69 @@ async function bootstrap() {
     ? [
         "https://juelle-hair-web.onrender.com",
         "https://juellehairgh.com",
+        "http://localhost:8002",
+        "http://localhost:3000",
         process.env.FRONTEND_URL,
       ].filter(Boolean) // Remove undefined values
     : true; // Allow all in development
   
+  console.log(`🌐 CORS Configuration:`);
+  console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`   Allowed Origins: ${Array.isArray(allowedOrigins) ? allowedOrigins.join(", ") : "ALL"}`);
+  console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || "not set"}`);
+  
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      // In development, allow all origins
+      if (process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      
+      // In production, check against allowed origins
+      if (Array.isArray(allowedOrigins)) {
+        const isAllowed = allowedOrigins.some(allowedOrigin => {
+          // Exact match
+          if (origin === allowedOrigin) return true;
+          // Wildcard subdomain match (e.g., *.onrender.com)
+          if (allowedOrigin.includes("*")) {
+            const pattern = allowedOrigin.replace("*", ".*");
+            const regex = new RegExp(`^${pattern}$`);
+            return regex.test(origin);
+          }
+          return false;
+        });
+        
+        if (isAllowed) {
+          return callback(null, true);
+        } else {
+          console.warn(`⚠️  CORS blocked origin: ${origin}`);
+          return callback(new Error(`Not allowed by CORS: ${origin}`), false);
+        }
+      }
+      
+      // Fallback: allow if origins array is not properly set
+      return callback(null, true);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Access-Control-Request-Method",
+      "Access-Control-Request-Headers"
+    ],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    maxAge: 86400, // 24 hours
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   // Register health endpoint BEFORE global prefix (for Render health checks)
