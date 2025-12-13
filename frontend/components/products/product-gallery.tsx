@@ -122,16 +122,17 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
           </div>
         </div>
         {images.length > 1 && (
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-3">
             {images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedIndex(index)}
                 className={`aspect-square rounded-md overflow-hidden border-2 transition ${
                   selectedIndex === index
-                    ? "border-primary"
+                    ? "border-primary ring-2 ring-primary ring-offset-1"
                     : "border-transparent hover:border-gray-300"
                 }`}
+                style={{ minWidth: '96px', minHeight: '96px' }}
               >
                 <img
                   src={getImageUrl(image)}
