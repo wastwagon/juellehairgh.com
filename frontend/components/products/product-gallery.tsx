@@ -82,13 +82,14 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
     <>
       <div className="space-y-4">
         <div
-          className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-pointer"
+          className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group cursor-pointer min-h-[500px] md:min-h-[600px]"
           onClick={() => setLightboxOpen(true)}
         >
           <img
             src={getImageUrl(images[selectedIndex])}
             alt={`${title} - Image ${selectedIndex + 1}`}
             className="w-full h-full object-cover"
+            style={{ minWidth: '200%', minHeight: '200%', objectFit: 'contain' }}
           />
           {images.length > 1 && (
             <>
