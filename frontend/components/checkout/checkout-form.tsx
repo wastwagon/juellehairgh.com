@@ -544,28 +544,28 @@ export function CheckoutForm() {
           </div>
 
           {/* Payment Method Selection */}
-          {isLoggedIn && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-lg font-bold mb-4 text-gray-900">Payment Method</h2>
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
-                  style={{ borderColor: formData.paymentMethod === "paystack" ? "#9333ea" : "#e5e7eb" }}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="paystack"
-                    checked={formData.paymentMethod === "paystack"}
-                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" })}
-                    className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900">Paystack</span>
-                      <span className="text-xs text-gray-500">🔒 Secure</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Pay with card, bank transfer, or mobile money</p>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h2 className="text-lg font-bold mb-4 text-gray-900">Payment Method</h2>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                style={{ borderColor: formData.paymentMethod === "paystack" ? "#9333ea" : "#e5e7eb" }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="paystack"
+                  checked={formData.paymentMethod === "paystack"}
+                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" })}
+                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900">Paystack</span>
+                    <span className="text-xs text-gray-500">🔒 Secure</span>
                   </div>
-                </label>
+                  <p className="text-xs text-gray-600 mt-1">Pay with card, bank transfer, or mobile money</p>
+                </div>
+              </label>
+              {isLoggedIn && (
                 <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
                   style={{ borderColor: formData.paymentMethod === "wallet" ? "#9333ea" : "#e5e7eb" }}>
                   <input
@@ -591,9 +591,9 @@ export function CheckoutForm() {
                     )}
                   </div>
                 </label>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         <div className="lg:col-span-1">
