@@ -56,6 +56,7 @@
     "export:shipping": "ts-node scripts/export-shipping-data.ts",
     "import:shipping": "ts-node scripts/import-shipping-data.ts",
     "update:variant-images": "ts-node scripts/update-variant-images-from-terms.ts",
+    "verify:paystack": "ts-node scripts/verify-paystack-config.ts",
     "seed:page-content": "ts-node scripts/seed-page-content.ts",
     "update:flash-sale-christmas": "ts-node scripts/update-flash-sale-to-christmas.ts",
     "fix:currency-rates": "ts-node scripts/fix-currency-rates.ts",
