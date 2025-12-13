@@ -122,6 +122,44 @@ export class ProductsService {
       throw new NotFoundException("Product not found");
     }
 
+    // Enrich variants with attribute term images
+    if (product.variants && product.variants.length > 0) {
+      // Get Color attribute terms
+      const colorAttribute = await this.prisma.productAttribute.findFirst({
+        where: { name: { equals: "Color", mode: "insensitive" } },
+        include: { terms: true },
+      });
+
+      if (colorAttribute) {
+        // Create a map of term names to images
+        const termImageMap = new Map<string, string | null>();
+        colorAttribute.terms.forEach((term) => {
+          termImageMap.set(term.name.toLowerCase(), term.image);
+        });
+
+        // Update variants with images from attribute terms
+        product.variants = product.variants.map((variant) => {
+          if (variant.name.toLowerCase().includes("color")) {
+            const variantValueLower = variant.value.toLowerCase();
+            const termImage = termImageMap.get(variantValueLower);
+            
+            // Try exact match first
+            if (termImage) {
+              return { ...variant, image: termImage };
+            }
+            
+            // Try partial match
+            for (const [termName, image] of termImageMap.entries()) {
+              if (variantValueLower.includes(termName) || termName.includes(variantValueLower)) {
+                return { ...variant, image: image || variant.image };
+              }
+            }
+          }
+          return variant;
+        });
+      }
+    }
+
     return product;
     } catch (error: any) {
       if (error instanceof NotFoundException) {

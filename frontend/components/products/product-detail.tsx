@@ -389,9 +389,9 @@ export function ProductDetail({ slug }: ProductDetailProps) {
             </div>
             <button
               onClick={handleAddToCart}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all duration-200"
+              className="flex-1 px-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 transition-all duration-200"
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-3.5 w-3.5" />
               Add to Cart
             </button>
           </div>

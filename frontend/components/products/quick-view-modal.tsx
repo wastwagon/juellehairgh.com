@@ -345,7 +345,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                 <div className="flex gap-3">
                   <Button
                     onClick={handleAddToCart}
-                    className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium"
+                    className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-medium"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Add to Cart

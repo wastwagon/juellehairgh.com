@@ -185,29 +185,29 @@ export function ProductVariantSelector({
 
             {isColor && colorVariants.length > 0 ? (
               // Color swatches with images
-              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
                 {variantList.map((variant, index) => {
                   const isSelected = selectedId === variant.id;
-                  // Use variant image if available, otherwise fall back to product images
+                  // Use color swatch images from variant.image (enriched from ProductAttributeTerm by backend)
                   let imageUrl: string | null = null;
-                  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
                   
-                  // Only use color swatch images from variant.image (from ProductAttributeTerm)
-                  // Do NOT fall back to product images - use swatches only
                   if (variant.image) {
                     // If it's already a full URL, use it as-is
                     if (variant.image.startsWith("http")) {
                       imageUrl = variant.image;
                     } 
-                    // Otherwise, use Next.js API proxy route for production compatibility
+                    // If it starts with /media/swatches/, use Next.js API proxy
+                    else if (variant.image.startsWith("/media/swatches/")) {
+                      const filename = variant.image.split('/').pop() || variant.image;
+                      imageUrl = `/api/media/swatches/${filename}`;
+                    }
+                    // If it's just a filename or path, extract filename and use API proxy
                     else {
                       const filename = variant.image.split('/').pop() || variant.image;
-                      // Use Next.js API proxy route (same as collection images)
-                      // This ensures images load correctly in production
+                      // Use Next.js API proxy route for production compatibility
                       imageUrl = `/api/media/swatches/${filename}`;
                     }
                   }
-                  // No fallback to product images - only use swatch images
 
                   return (
                     <button
@@ -224,11 +224,12 @@ export function ProductVariantSelector({
                           }
                         }
                       }}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
                         isSelected
-                          ? "border-primary ring-2 ring-primary ring-offset-2"
+                          ? "border-primary ring-1 ring-primary ring-offset-1"
                           : "border-gray-300 hover:border-gray-400"
                       } ${variant.stock === 0 ? "opacity-50" : ""}`}
+                      style={{ width: '48px', height: '48px' }}
                       title={variant.value}
                       disabled={variant.stock === 0}
                     >
@@ -281,12 +282,12 @@ export function ProductVariantSelector({
                       )}
                       {/* Ship Today badge */}
                       {variant.stock > 0 && (
-                        <div className="absolute top-1 left-1 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md">
+                        <div className="absolute top-0.5 left-0.5 bg-green-600 text-white text-[8px] font-bold px-1 py-0.5 rounded shadow-sm">
                           {getShippingStatus()}
                         </div>
                       )}
                       {/* Variant label overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs text-center py-1 px-1 truncate">
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[10px] text-center py-0.5 px-0.5 truncate leading-tight">
                         {variant.value}
                       </div>
                     </button>
