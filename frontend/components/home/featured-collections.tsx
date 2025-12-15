@@ -116,13 +116,6 @@ export function FeaturedCollections() {
     return null;
   };
 
-  // Get product count for collection
-  const getProductCount = (collection: Collection) => {
-    if (collection.products && collection.products.length > 0) {
-      return collection.products.length;
-    }
-    return 0;
-  };
 
   if (collectionsLoading) {
     return (
@@ -156,7 +149,6 @@ export function FeaturedCollections() {
         {backendCollections.map((collection) => {
           const IconComponent = getCollectionIcon(collection.name, collection.slug);
           const collectionImage = getCollectionImage(collection);
-          const productCount = getProductCount(collection);
 
           return (
             <div key={collection.id || collection.slug} className="flex flex-col">
