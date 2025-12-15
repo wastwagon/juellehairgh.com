@@ -222,16 +222,11 @@ export function FeaturedCollections() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
               </Link>
 
-              {/* Title and Product Count - Outside and below the card */}
+              {/* Title - Outside and below the card */}
               <div className="mt-3 text-center">
-                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1">
+                <h3 className="text-base md:text-lg font-bold text-gray-900">
                   {collection.name}
                 </h3>
-                {productCount > 0 && (
-                  <p className="text-sm text-gray-600">
-                    {productCount} {productCount === 1 ? 'Product' : 'Products'}
-                  </p>
-                )}
               </div>
             </div>
           );
