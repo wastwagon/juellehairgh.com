@@ -176,20 +176,21 @@ export function FeaturedCollections() {
                       const retryCount = parseInt(target.getAttribute('data-retry') || '0');
                       const originalSrc = target.getAttribute('data-original-src') || collectionImage;
                       
-                      if (retryCount < 2) {
+                      if (retryCount < 3) {
                         let fallbackUrl = '';
+                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+                        const backendBaseUrl = apiBaseUrl.replace('/api', '');
+                        const filename = originalSrc.split('/').pop() || '';
                         
                         if (retryCount === 0) {
-                          // Try direct backend URL
-                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
-                          const filename = originalSrc.split('/').pop() || '';
-                          fallbackUrl = `${apiBaseUrl}/admin/upload/media/collections/${filename}`;
+                          // Try API proxy route
+                          fallbackUrl = `/api/media/collections/${filename}`;
                         } else if (retryCount === 1) {
-                          // Try backend media path
-                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
-                          const baseUrl = apiBaseUrl.replace('/api', '');
-                          const filename = originalSrc.split('/').pop() || '';
-                          fallbackUrl = `${baseUrl}/media/collections/${filename}`;
+                          // Try backend admin upload endpoint
+                          fallbackUrl = `${apiBaseUrl}/admin/upload/media/collections/${filename}`;
+                        } else if (retryCount === 2) {
+                          // Try backend static file serving (last resort)
+                          fallbackUrl = `${backendBaseUrl}/media/collections/${filename}`;
                         }
                         
                         if (fallbackUrl) {
