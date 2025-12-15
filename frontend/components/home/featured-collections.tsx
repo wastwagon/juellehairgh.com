@@ -81,7 +81,9 @@ export function FeaturedCollections() {
     
     // If no image, try to use first product image as fallback
     if (collection.products && collection.products.length > 0) {
-      const firstProduct = collection.products[0]?.product || collection.products[0];
+      const firstProductItem = collection.products[0] as any;
+      // Handle both CollectionProduct (with nested product) and direct Product
+      const firstProduct = firstProductItem?.product || firstProductItem;
       if (firstProduct?.images && firstProduct.images.length > 0) {
         const productImage = firstProduct.images[0];
         if (productImage.startsWith("/media/")) {
