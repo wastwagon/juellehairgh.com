@@ -57,11 +57,18 @@ export function FeaturedCollections() {
       }
       
       // ALWAYS use Next.js API proxy route for /media/ paths
+      // Convert /media/collections/filename.jpg -> /api/media/collections/filename.jpg
+      if (imagePath.startsWith("/media/collections/")) {
+        const filename = imagePath.replace("/media/collections/", "");
+        return `/api/media/collections/${filename}`;
+      }
+      
+      // Handle /media/ paths (general case)
       if (imagePath.startsWith("/media/")) {
         return `/api${imagePath}`;
       }
       
-      // Handle paths that contain "collections" or "media"
+      // Handle paths that contain "collections" or "media" (fallback)
       if (imagePath.includes("collections") || imagePath.includes("media")) {
         const filename = imagePath.split("/").pop() || imagePath;
         return `/api/media/collections/${filename}`;
