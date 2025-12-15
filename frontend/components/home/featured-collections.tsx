@@ -56,34 +56,44 @@ export function FeaturedCollections() {
         return imagePath;
       }
       
-      // ALWAYS use Next.js API proxy route for /media/ paths
-      // Convert /media/collections/filename.jpg -> /api/media/collections/filename.jpg
+      // For /media/collections/ paths, use backend URL directly
+      // Backend serves static files at /media/collections/ via static assets middleware
       if (imagePath.startsWith("/media/collections/")) {
-        const filename = imagePath.replace("/media/collections/", "");
-        return `/api/media/collections/${filename}`;
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const backendBaseUrl = apiBaseUrl.replace('/api', '');
+        // Use backend static file serving: /media/collections/filename.jpg
+        return `${backendBaseUrl}${imagePath}`;
       }
       
-      // Handle /media/ paths (general case)
+      // Handle /media/ paths (general case) - use backend URL directly
       if (imagePath.startsWith("/media/")) {
-        return `/api${imagePath}`;
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const backendBaseUrl = apiBaseUrl.replace('/api', '');
+        return `${backendBaseUrl}${imagePath}`;
       }
       
       // Handle paths that contain "collections" or "media" (fallback)
       if (imagePath.includes("collections") || imagePath.includes("media")) {
         const filename = imagePath.split("/").pop() || imagePath;
-        return `/api/media/collections/${filename}`;
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const backendBaseUrl = apiBaseUrl.replace('/api', '');
+        return `${backendBaseUrl}/media/collections/${filename}`;
       }
       
       // For other absolute paths starting with /
       if (imagePath.startsWith("/")) {
         if (imagePath.includes("/media/")) {
-          return `/api${imagePath}`;
+          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+          const backendBaseUrl = apiBaseUrl.replace('/api', '');
+          return `${backendBaseUrl}${imagePath}`;
         }
         return imagePath;
       }
       
       // Relative filename - assume it's a collection image
-      return `/api/media/collections/${imagePath}`;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+      const backendBaseUrl = apiBaseUrl.replace('/api', '');
+      return `${backendBaseUrl}/media/collections/${imagePath}`;
     }
     
     // If no image, try to use first product image as fallback
