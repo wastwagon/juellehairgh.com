@@ -161,12 +161,41 @@ export function FeaturedCollections() {
                     alt={collection.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Hide image and show fallback gradient
+                      // Try fallback URLs if image fails
                       const target = e.target as HTMLImageElement;
+                      const retryCount = parseInt(target.getAttribute('data-retry') || '0');
+                      const originalSrc = target.getAttribute('data-original-src') || collectionImage;
+                      
+                      if (retryCount < 2) {
+                        let fallbackUrl = '';
+                        
+                        if (retryCount === 0) {
+                          // Try direct backend URL
+                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+                          const filename = originalSrc.split('/').pop() || '';
+                          fallbackUrl = `${apiBaseUrl}/admin/upload/media/collections/${filename}`;
+                        } else if (retryCount === 1) {
+                          // Try backend media path
+                          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+                          const baseUrl = apiBaseUrl.replace('/api', '');
+                          const filename = originalSrc.split('/').pop() || '';
+                          fallbackUrl = `${baseUrl}/media/collections/${filename}`;
+                        }
+                        
+                        if (fallbackUrl) {
+                          target.setAttribute('data-retry', String(retryCount + 1));
+                          target.setAttribute('data-original-src', originalSrc);
+                          target.src = fallbackUrl;
+                          return;
+                        }
+                      }
+                      
+                      // If all retries failed, hide image and show fallback gradient
                       target.style.display = 'none';
                       const fallback = target.parentElement?.querySelector('.fallback-gradient') as HTMLElement;
-                      if (fallback) fallback.style.display = 'block';
+                      if (fallback) fallback.style.display = 'flex';
                     }}
+                    data-original-src={collectionImage}
                   />
                 ) : null}
 
