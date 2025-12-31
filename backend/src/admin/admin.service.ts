@@ -1075,13 +1075,60 @@ export class AdminService {
 
   // Banners Management
   async createBanner(data: any) {
-    return this.prisma.banner.create({ data });
+    const { categoryIds, ...bannerData } = data;
+    
+    return this.prisma.banner.create({
+      data: {
+        ...bannerData,
+        categories: categoryIds && categoryIds.length > 0
+          ? {
+              create: categoryIds.map((categoryId: string) => ({
+                categoryId,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
   }
 
   async updateBanner(id: string, data: any) {
+    const { categoryIds, ...bannerData } = data;
+    
+    // If categoryIds are provided, update the relationships
+    if (categoryIds !== undefined) {
+      // Delete existing category relationships
+      await this.prisma.bannerCategory.deleteMany({
+        where: { bannerId: id },
+      });
+      
+      // Create new category relationships if provided
+      if (categoryIds && categoryIds.length > 0) {
+        await this.prisma.bannerCategory.createMany({
+          data: categoryIds.map((categoryId: string) => ({
+            bannerId: id,
+            categoryId,
+          })),
+        });
+      }
+    }
+    
     return this.prisma.banner.update({
       where: { id },
-      data,
+      data: bannerData,
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
     });
   }
 
@@ -1091,6 +1138,13 @@ export class AdminService {
 
   async getAllBanners() {
     return this.prisma.banner.findMany({
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
       orderBy: [{ position: "asc" }, { createdAt: "desc" }],
     });
   }

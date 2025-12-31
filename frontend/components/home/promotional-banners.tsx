@@ -7,6 +7,16 @@ import { ArrowRight, Sparkles, Layers, Droplet, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
+interface BannerCategory {
+  id: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+}
+
 interface Banner {
   id: string;
   title: string;
@@ -15,6 +25,7 @@ interface Banner {
   link?: string;
   isActive: boolean;
   position: number;
+  categories?: BannerCategory[];
 }
 
 // Fallback icons for each banner position
@@ -105,7 +116,15 @@ export function PromotionalBanners() {
           const imageUrl = getImageUrl(banner.image);
           const icon = fallbackIcons[index % fallbackIcons.length];
           const gradient = fallbackGradients[index % fallbackGradients.length];
-          const link = banner.link || "/categories/shop-all";
+          // If banner has categories, create a link to show products from those categories
+          // Otherwise use the provided link or default
+          const hasCategories = banner.categories && banner.categories.length > 0;
+          const categorySlugs = hasCategories 
+            ? banner.categories.map((bc: BannerCategory) => bc.category.slug).join(",")
+            : null;
+          const link = hasCategories && categorySlugs
+            ? `/categories/shop-all?categories=${categorySlugs}`
+            : banner.link || "/categories/shop-all";
           const buttonText = banner.link?.includes("lace") ? "Explore Collection" :
                            banner.link?.includes("braid") ? "View Styles" :
                            banner.link?.includes("care") ? "Shop Now" :

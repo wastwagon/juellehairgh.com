@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X } from "lucide-react";
+import { X, Upload, Check } from "lucide-react";
+import { Category } from "@/types";
+
+interface BannerCategory {
+  id: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+}
 
 interface Banner {
   id: string;
@@ -18,6 +29,7 @@ interface Banner {
   position: number;
   startDate?: string;
   endDate?: string;
+  categories?: BannerCategory[];
 }
 
 interface BannerFormProps {
@@ -30,6 +42,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -39,6 +52,19 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
     position: 0,
     startDate: "",
     endDate: "",
+  });
+
+  // Fetch all categories
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["admin", "categories"],
+    queryFn: async () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Not authenticated");
+      const response = await api.get("/admin/categories", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data || [];
+    },
   });
 
   useEffect(() => {
@@ -53,6 +79,10 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
         startDate: banner.startDate ? new Date(banner.startDate).toISOString().split("T")[0] : "",
         endDate: banner.endDate ? new Date(banner.endDate).toISOString().split("T")[0] : "",
       });
+      // Set selected categories
+      if (banner.categories && banner.categories.length > 0) {
+        setSelectedCategoryIds(banner.categories.map((bc: BannerCategory) => bc.categoryId));
+      }
     }
   }, [banner]);
 
@@ -65,6 +95,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
         startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
         position: parseInt(data.position.toString()),
+        categoryIds: selectedCategoryIds,
       };
       return api.post("/admin/banners", payload, {
         headers: { Authorization: `Bearer ${token}` },
@@ -86,6 +117,7 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
         startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
         position: parseInt(data.position.toString()),
+        categoryIds: selectedCategoryIds,
       };
       return api.put(`/admin/banners/${banner?.id}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
@@ -230,8 +262,53 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
                 type="text"
                 value={formData.link}
                 onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                placeholder="/products/example"
+                placeholder="/products/example (optional if categories selected)"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                If categories are selected, the banner will link to products from those categories. Otherwise, use this link.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Select Categories (Optional)</label>
+              <p className="text-xs text-gray-500 mb-3">
+                Select one or more categories. Products from these categories will be shown when users click this banner.
+              </p>
+              <div className="border rounded-lg p-4 max-h-60 overflow-y-auto space-y-2">
+                {categories.length === 0 ? (
+                  <p className="text-sm text-gray-500">No categories available</p>
+                ) : (
+                  categories.map((category) => {
+                    const isSelected = selectedCategoryIds.includes(category.id);
+                    return (
+                      <label
+                        key={category.id}
+                        className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCategoryIds([...selectedCategoryIds, category.id]);
+                            } else {
+                              setSelectedCategoryIds(selectedCategoryIds.filter((id) => id !== category.id));
+                            }
+                          }}
+                          className="rounded text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm flex-1">{category.name}</span>
+                        {isSelected && <Check className="h-4 w-4 text-primary" />}
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+              {selectedCategoryIds.length > 0 && (
+                <p className="text-xs text-primary mt-2 font-medium">
+                  {selectedCategoryIds.length} categor{selectedCategoryIds.length === 1 ? "y" : "ies"} selected
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -100,10 +100,11 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  parent   Category?    @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children Category[]   @relation("CategoryTree")
-  products Product[]
-  seo      CategorySEO?
+  parent           Category?         @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children         Category[]       @relation("CategoryTree")
+  products         Product[]
+  seo              CategorySEO?
+  bannerCategories BannerCategory[]
 
   @@map("categories")
 }
@@ -426,8 +427,26 @@ model Banner {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  // Relations
+  categories BannerCategory[]
+
   @@index([isActive, position])
   @@map("banners")
+}
+
+model BannerCategory {
+  id         String   @id @default(uuid())
+  bannerId   String
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  banner   Banner   @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([bannerId, categoryId])
+  @@index([bannerId])
+  @@index([categoryId])
+  @@map("banner_categories")
 }
 
 model DiscountCode {
