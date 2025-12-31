@@ -100,12 +100,19 @@ export function ProductVariantSelector({
     return colorKey ? groupedVariants[colorKey] : [];
   }, [groupedVariants]);
 
-  // Get selected variant price
+  // Get selected variant price (considering sale price)
   const selectedPrice = useMemo(() => {
     const selected = Object.values(selectedVariants)
       .map((variantId) => variants.find((v) => v.id === variantId))
       .find((v) => v?.priceGhs);
-    return selected?.priceGhs ? Number(selected.priceGhs) : basePrice;
+    if (!selected?.priceGhs) return basePrice;
+    
+    // If variant has sale price and it's lower than regular price, use sale price
+    const regularPrice = Number(selected.priceGhs);
+    const salePrice = selected.compareAtPriceGhs ? Number(selected.compareAtPriceGhs) : null;
+    const isOnSale = salePrice && salePrice < regularPrice;
+    
+    return isOnSale ? salePrice : regularPrice;
   }, [selectedVariants, variants, basePrice]);
 
   // Update parent when variants change
@@ -349,17 +356,45 @@ export function ProductVariantSelector({
         );
       })}
 
-      {/* Show price difference if variant has different price */}
-      {selectedPrice !== basePrice && (
-        <div className="pt-2 border-t">
-          <p className="text-sm text-gray-600">
-            Variant price:{" "}
-            <span className="font-semibold text-gray-900">
-              {formatCurrency(convert(selectedPrice), displayCurrency)}
-            </span>
-          </p>
-        </div>
-      )}
+      {/* Show price difference if variant has different price or is on sale */}
+      {(() => {
+        const selected = Object.values(selectedVariants)
+          .map((variantId) => variants.find((v) => v.id === variantId))
+          .find((v) => v?.priceGhs);
+        
+        if (!selected) return null;
+        
+        const regularPrice = Number(selected.priceGhs);
+        const salePrice = selected.compareAtPriceGhs ? Number(selected.compareAtPriceGhs) : null;
+        const isOnSale = salePrice && salePrice < regularPrice;
+        const variantPrice = isOnSale ? salePrice : regularPrice;
+        
+        // Show if price differs from base OR if variant is on sale
+        if (variantPrice !== basePrice || isOnSale) {
+          return (
+            <div className="pt-2 border-t">
+              <p className="text-sm text-gray-600">
+                Variant price:{" "}
+                {isOnSale ? (
+                  <>
+                    <span className="font-semibold text-primary">
+                      {formatCurrency(convert(salePrice!), displayCurrency)}
+                    </span>
+                    <span className="ml-2 text-gray-400 line-through">
+                      {formatCurrency(convert(regularPrice), displayCurrency)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(convert(variantPrice), displayCurrency)}
+                  </span>
+                )}
+              </p>
+            </div>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 }

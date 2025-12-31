@@ -101,9 +101,13 @@ export function ProductDetail({ slug }: ProductDetailProps) {
   }
 
   // Calculate price based on selected variant
-  const variantPrice = Object.values(selectedVariants).find((v) => v.priceGhs)?.priceGhs;
+  const selectedVariant = Object.values(selectedVariants).find((v) => v.priceGhs);
+  const variantPrice = selectedVariant?.priceGhs;
+  const variantSalePrice = selectedVariant?.compareAtPriceGhs;
+  
+  // Use variant prices if variant is selected, otherwise use product prices
   const basePrice = variantPrice ? Number(variantPrice) : Number(product.priceGhs);
-  const salePrice = product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : null;
+  const salePrice = variantSalePrice ? Number(variantSalePrice) : (product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : null);
   
   // WooCommerce-style: If sale price is set and lower than regular price, show sale price prominently
   const isOnSale = salePrice && salePrice < basePrice;
