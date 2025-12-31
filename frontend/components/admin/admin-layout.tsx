@@ -26,6 +26,7 @@ import {
   Wallet,
   FileText,
   LogOut,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -53,6 +54,7 @@ const navItems = [
   { href: "/admin/banners", label: "Banners", icon: Image },
   { href: "/admin/media", label: "Media Library", icon: Database },
   { href: "/admin/discount-codes", label: "Discount Codes", icon: Ticket },
+  { href: "/admin/flash-sales", label: "Flash Sales", icon: Zap },
   { href: "/admin/currency", label: "Currency Rates", icon: DollarSign },
   { href: "/admin/emails", label: "Email Templates", icon: Mail },
   { href: "/admin/pages", label: "Page Content", icon: FileText },
