@@ -64,9 +64,11 @@ export function FeaturesShowcase() {
   return (
     <section className="py-12 md:py-16 bg-white border-t border-b border-gray-200">
       <div className="container mx-auto px-4">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 text-center mb-8 md:mb-12 tracking-tight">
-          Why Shop With Us
-        </h2>
+        <div className="flex justify-center mb-8 md:mb-12">
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
+            Why Shop With Us
+          </span>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {features.map((feature, index) => (
             <div

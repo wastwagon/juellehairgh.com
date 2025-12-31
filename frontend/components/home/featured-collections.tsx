@@ -120,9 +120,11 @@ export function FeaturedCollections() {
   if (collectionsLoading) {
     return (
       <section className="py-8 md:py-16 container mx-auto px-4">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-center text-gray-800 tracking-tight">
-          Shop by Collection
-        </h2>
+        <div className="flex justify-center mb-6 md:mb-8">
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
+            Shop by Collection
+          </span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="animate-pulse">
@@ -142,9 +144,11 @@ export function FeaturedCollections() {
 
   return (
     <section className="py-8 md:py-16 container mx-auto px-4">
-      <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-center text-gray-800 tracking-tight">
-        Shop by Collection
-      </h2>
+      <div className="flex justify-center mb-6 md:mb-8">
+        <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
+          Shop by Collection
+        </span>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {backendCollections.map((collection) => {
           const IconComponent = getCollectionIcon(collection.name, collection.slug);

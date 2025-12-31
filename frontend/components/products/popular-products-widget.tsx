@@ -37,10 +37,10 @@ export function PopularProductsWidget({
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
         <div className="flex items-center justify-center mb-6 md:mb-8 gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 text-center tracking-tight">
+          <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
             {title}
-          </h2>
+          </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {[...Array(limit)].map((_, i) => (
@@ -79,14 +79,14 @@ export function PopularProductsWidget({
   }
 
   return (
-    <section className="py-8 md:py-12 container mx-auto px-4">
-      <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 text-center tracking-tight">
-            {title}
-          </h2>
-        </div>
+      <section className="py-8 md:py-12 container mx-auto px-4">
+        <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
+          <div className="flex items-center justify-center gap-2">
+            <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+            <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
+              {title}
+            </span>
+          </div>
         {showViewAll && (
           <Link href="/categories/shop-all">
             <Button variant="outline" size="sm">
