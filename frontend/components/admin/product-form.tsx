@@ -20,7 +20,7 @@ const productSchema = z.object({
   brandId: z.string().optional(),
   categoryId: z.string().min(1, "Category is required"),
   priceGhs: z.number().min(0, "Price must be positive"),
-  compareAtPriceGhs: z.number().optional(),
+  compareAtPriceGhs: z.union([z.number(), z.literal(""), z.null(), z.undefined()]).optional(),
   stock: z.number().min(0, "Stock must be positive").optional(),
   sku: z.string().optional(),
   isActive: z.boolean().optional(),
@@ -217,8 +217,15 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       setValue("priceGhs", priceToUse);
       setValue("stock", 0);
       setValue("compareAtPriceGhs", undefined);
+    } else if (productType === "simple") {
+      // When switching to simple, restore product prices if editing
+      if (product) {
+        setValue("priceGhs", product.priceGhs ? Number(product.priceGhs) : 0);
+        setValue("compareAtPriceGhs", product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : undefined);
+        setValue("stock", product.stock || 0);
+      }
     }
-  }, [productType, setValue, firstVariationPrice]);
+  }, [productType, setValue, firstVariationPrice, product]);
 
   // Update form price when variants change (for variable products)
   useEffect(() => {
@@ -784,8 +791,12 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
 
     // For simple products, include pricing
     if (productType === "simple") {
-      formData.priceGhs = Number(data.priceGhs);
-      formData.compareAtPriceGhs = data.compareAtPriceGhs ? Number(data.compareAtPriceGhs) : undefined;
+      formData.priceGhs = Number(data.priceGhs) || 0;
+      // Handle sale price: convert empty string, null, undefined, or 0 to undefined
+      const salePrice = data.compareAtPriceGhs === "" || data.compareAtPriceGhs === null || data.compareAtPriceGhs === undefined 
+        ? undefined 
+        : Number(data.compareAtPriceGhs);
+      formData.compareAtPriceGhs = salePrice && salePrice > 0 ? salePrice : undefined;
       formData.stock = data.stock ? Number(data.stock) : 0;
       formData.sku = data.sku && data.sku.trim() !== "" ? data.sku : undefined;
     } else {
@@ -941,7 +952,12 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                   <Input
                     type="number"
                     step="0.01"
-                    {...register("priceGhs", { valueAsNumber: true })}
+                    min="0"
+                    value={watch("priceGhs") === undefined || watch("priceGhs") === null ? "" : watch("priceGhs")}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                      setValue("priceGhs", isNaN(value) ? 0 : value, { shouldValidate: true });
+                    }}
                   />
                   {errors.priceGhs && (
                     <p className="text-sm text-red-500 mt-1">{errors.priceGhs.message}</p>
@@ -956,9 +972,17 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                   <Input
                     type="number"
                     step="0.01"
+                    min="0"
                     placeholder="Leave empty if not on sale"
-                    {...register("compareAtPriceGhs", { valueAsNumber: true })}
+                    value={watch("compareAtPriceGhs") === undefined || watch("compareAtPriceGhs") === null || watch("compareAtPriceGhs") === "" ? "" : watch("compareAtPriceGhs")}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                      setValue("compareAtPriceGhs", value === undefined || isNaN(value) ? undefined : value, { shouldValidate: true });
+                    }}
                   />
+                  {errors.compareAtPriceGhs && (
+                    <p className="text-sm text-red-500 mt-1">{errors.compareAtPriceGhs.message}</p>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     Set a sale price lower than the regular price. The regular price will be shown crossed out.
                   </p>
@@ -968,7 +992,12 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                   <label className="block text-sm font-medium mb-2">Stock</label>
                   <Input
                     type="number"
-                    {...register("stock", { valueAsNumber: true })}
+                    min="0"
+                    value={watch("stock") === undefined || watch("stock") === null ? "" : watch("stock")}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                      setValue("stock", isNaN(value) ? 0 : value, { shouldValidate: true });
+                    }}
                   />
                 </div>
               </div>
