@@ -100,9 +100,17 @@ export class OrdersService {
             variantId: item.variantId,
             variantIds: item.variantIds && item.variantIds.length > 0 ? item.variantIds : undefined,
             quantity: item.quantity,
-            priceGhs: item.variant?.priceGhs
-              ? Number(item.variant.priceGhs)
-              : Number(item.product.priceGhs),
+            priceGhs: (() => {
+              // Use variant price if available, considering sale price
+              if (item.variant?.priceGhs) {
+                const regularPrice = Number(item.variant.priceGhs);
+                const salePrice = item.variant.compareAtPriceGhs ? Number(item.variant.compareAtPriceGhs) : null;
+                // Use sale price if available and lower than regular price
+                return salePrice && salePrice < regularPrice ? salePrice : regularPrice;
+              }
+              // Fall back to product price
+              return Number(item.product.priceGhs);
+            })(),
           })),
         },
       },

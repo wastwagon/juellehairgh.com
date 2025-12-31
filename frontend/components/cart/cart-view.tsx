@@ -10,10 +10,31 @@ export function CartView() {
   const { items, removeItem, updateQuantity, clearCart } = useCartStore();
   const { displayCurrency, convert } = useCurrencyStore();
 
+  // Helper function to get effective price (considering variant sale price)
+  const getEffectivePrice = (item: any) => {
+    // Check if item has variants with prices
+    if (item.variants && item.variants.length > 0) {
+      // Find variant with price (prefer first variant with price)
+      const variantWithPrice = item.variants.find((v: any) => v.priceGhs);
+      if (variantWithPrice) {
+        const regularPrice = Number(variantWithPrice.priceGhs);
+        const salePrice = variantWithPrice.compareAtPriceGhs ? Number(variantWithPrice.compareAtPriceGhs) : null;
+        // Use sale price if available and lower than regular price
+        return salePrice && salePrice < regularPrice ? salePrice : regularPrice;
+      }
+    }
+    // Fall back to variant price (backward compatibility)
+    if (item.variant?.priceGhs) {
+      const regularPrice = Number(item.variant.priceGhs);
+      const salePrice = item.variant.compareAtPriceGhs ? Number(item.variant.compareAtPriceGhs) : null;
+      return salePrice && salePrice < regularPrice ? salePrice : regularPrice;
+    }
+    // Fall back to product price
+    return item.product?.priceGhs ? Number(item.product.priceGhs) : 0;
+  };
+
   const totalGhs = items.reduce((sum, item) => {
-    const price = item.product?.priceGhs
-      ? Number(item.product.priceGhs)
-      : 0;
+    const price = getEffectivePrice(item);
     return sum + price * item.quantity;
   }, 0);
 
@@ -99,16 +120,29 @@ export function CartView() {
                       className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
                     />
                   </div>
-                  <span className="font-bold text-gray-900">
-                    {formatCurrency(
-                      convert(
-                        item.product?.priceGhs
-                          ? Number(item.product.priceGhs) * item.quantity
-                          : 0
-                      ),
-                      displayCurrency
-                    )}
-                  </span>
+                  {(() => {
+                    const effectivePrice = getEffectivePrice(item);
+                    const regularPrice = item.variants && item.variants.length > 0
+                      ? (item.variants.find((v: any) => v.priceGhs)?.priceGhs ? Number(item.variants.find((v: any) => v.priceGhs).priceGhs) : (item.variant?.priceGhs ? Number(item.variant.priceGhs) : (item.product?.priceGhs ? Number(item.product.priceGhs) : 0)))
+                      : (item.variant?.priceGhs ? Number(item.variant.priceGhs) : (item.product?.priceGhs ? Number(item.product.priceGhs) : 0));
+                    const salePrice = item.variants && item.variants.length > 0
+                      ? (item.variants.find((v: any) => v.priceGhs)?.compareAtPriceGhs ? Number(item.variants.find((v: any) => v.priceGhs).compareAtPriceGhs) : null)
+                      : (item.variant?.compareAtPriceGhs ? Number(item.variant.compareAtPriceGhs) : null);
+                    const isOnSale = salePrice && salePrice < regularPrice;
+                    
+                    return (
+                      <span className="font-bold text-gray-900">
+                        {isOnSale ? (
+                          <>
+                            <span className="text-primary">{formatCurrency(convert(salePrice * item.quantity), displayCurrency)}</span>
+                            <span className="ml-2 text-gray-400 line-through text-sm">{formatCurrency(convert(regularPrice * item.quantity), displayCurrency)}</span>
+                          </>
+                        ) : (
+                          formatCurrency(convert(effectivePrice * item.quantity), displayCurrency)
+                        )}
+                      </span>
+                    );
+                  })()}
                   <button
                     onClick={() => removeItem(item.productId, item.variantId)}
                     className="ml-auto p-2 hover:bg-red-50 rounded transition-colors"
