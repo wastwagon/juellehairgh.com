@@ -10,57 +10,73 @@ async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Enable CORS - allow all origins in development, specific origins in production
-  const allowedOrigins = process.env.NODE_ENV === "production" 
-    ? [
-        "https://juelle-hair-web.onrender.com",
-        "https://juellehairgh.com",
-        "http://localhost:8002",
-        "http://localhost:3000",
-        process.env.FRONTEND_URL,
-      ].filter(Boolean) // Remove undefined values
-    : true; // Allow all in development
+  // Build allowed origins list - include both explicit and from env
+  const allowedOriginsList = [
+    "https://juelle-hair-web.onrender.com",
+    "https://juellehairgh.com",
+    "https://www.juellehairgh.com",
+    "http://localhost:8002",
+    "http://localhost:3000",
+    process.env.FRONTEND_URL,
+  ].filter(Boolean); // Remove undefined values
+  
+  // Determine if we're in production (check multiple indicators)
+  const isProduction = process.env.NODE_ENV === "production" || 
+                       process.env.RENDER === "true" ||
+                       process.env.PORT !== undefined;
   
   console.log(`🌐 CORS Configuration:`);
   console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`   Allowed Origins: ${Array.isArray(allowedOrigins) ? allowedOrigins.join(", ") : "ALL"}`);
+  console.log(`   Is Production: ${isProduction}`);
+  console.log(`   Allowed Origins: ${allowedOriginsList.join(", ")}`);
   console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || "not set"}`);
   
   app.enableCors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) {
+        console.log("✅ CORS: Allowing request with no origin");
         return callback(null, true);
       }
       
       // In development, allow all origins
-      if (process.env.NODE_ENV !== "production") {
+      if (!isProduction) {
+        console.log(`✅ CORS: Development mode - allowing origin: ${origin}`);
         return callback(null, true);
       }
       
       // In production, check against allowed origins
-      if (Array.isArray(allowedOrigins)) {
-        const isAllowed = allowedOrigins.some(allowedOrigin => {
-          // Exact match
-          if (origin === allowedOrigin) return true;
-          // Wildcard subdomain match (e.g., *.onrender.com)
-          if (allowedOrigin.includes("*")) {
-            const pattern = allowedOrigin.replace("*", ".*");
-            const regex = new RegExp(`^${pattern}$`);
-            return regex.test(origin);
-          }
-          return false;
-        });
-        
-        if (isAllowed) {
-          return callback(null, true);
-        } else {
-          console.warn(`⚠️  CORS blocked origin: ${origin}`);
-          return callback(new Error(`Not allowed by CORS: ${origin}`), false);
+      const isAllowed = allowedOriginsList.some(allowedOrigin => {
+        // Exact match
+        if (origin === allowedOrigin) {
+          console.log(`✅ CORS: Exact match for origin: ${origin}`);
+          return true;
         }
-      }
+        // Check if origin matches any allowed origin (subdomain matching)
+        if (allowedOrigin && origin.includes(allowedOrigin.replace("https://", "").replace("http://", ""))) {
+          console.log(`✅ CORS: Subdomain match for origin: ${origin} (allowed: ${allowedOrigin})`);
+          return true;
+        }
+        // Wildcard subdomain match (e.g., *.onrender.com)
+        if (allowedOrigin && allowedOrigin.includes("*")) {
+          const pattern = allowedOrigin.replace("*", ".*");
+          const regex = new RegExp(`^${pattern}$`);
+          if (regex.test(origin)) {
+            console.log(`✅ CORS: Wildcard match for origin: ${origin}`);
+            return true;
+          }
+        }
+        return false;
+      });
       
-      // Fallback: allow if origins array is not properly set
-      return callback(null, true);
+      if (isAllowed) {
+        return callback(null, true);
+      } else {
+        console.warn(`⚠️  CORS blocked origin: ${origin}`);
+        console.warn(`   Allowed origins: ${allowedOriginsList.join(", ")}`);
+        // In production, be strict - block the request
+        return callback(new Error(`Not allowed by CORS: ${origin}`), false);
+      }
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
