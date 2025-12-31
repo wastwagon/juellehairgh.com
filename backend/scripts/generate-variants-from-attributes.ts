@@ -50,6 +50,8 @@ async function generateVariantsFromAttributes() {
     let totalErrors = 0;
 
     // 3. For each product, generate variants from attributes
+    // Strategy: Create variants for ALL Color and Length terms
+    // This makes products variable so they show "View Options" button
     for (const product of products) {
       // Skip if product already has variants
       if (product.variants && product.variants.length > 0) {
@@ -66,7 +68,7 @@ async function generateVariantsFromAttributes() {
           image?: string | null;
         }> = [];
 
-        // Generate Color variants
+        // Generate Color variants (all color terms)
         if (colorAttribute && colorAttribute.terms.length > 0) {
           for (const colorTerm of colorAttribute.terms) {
             variantsToCreate.push({
@@ -79,7 +81,7 @@ async function generateVariantsFromAttributes() {
           }
         }
 
-        // Generate Length variants
+        // Generate Length variants (all length terms)
         if (lengthAttribute && lengthAttribute.terms.length > 0) {
           for (const lengthTerm of lengthAttribute.terms) {
             variantsToCreate.push({
@@ -107,6 +109,8 @@ async function generateVariantsFromAttributes() {
 
           totalCreated += variantsToCreate.length;
           console.log(`✅ ${product.title.substring(0, 40)}... - Created ${variantsToCreate.length} variants`);
+        } else {
+          totalSkipped++;
         }
       } catch (error: any) {
         console.error(`❌ Error for ${product.title}:`, error.message);
