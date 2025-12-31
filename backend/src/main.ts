@@ -31,59 +31,49 @@ async function bootstrap() {
   console.log(`   Allowed Origins: ${allowedOriginsList.join(", ")}`);
   console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || "not set"}`);
   
+  // Simplified CORS configuration - more permissive for production
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
+      // Always allow requests with no origin (mobile apps, curl, Postman, etc.)
       if (!origin) {
-        console.log("✅ CORS: Allowing request with no origin");
         return callback(null, true);
       }
       
       // In development, allow all origins
       if (!isProduction) {
-        console.log(`✅ CORS: Development mode - allowing origin: ${origin}`);
         return callback(null, true);
       }
       
-      // In production, check against allowed origins
-      // Special handling for Render domains - allow any *.onrender.com subdomain
-      if (origin.includes(".onrender.com")) {
-        console.log(`✅ CORS: Allowing Render domain: ${origin}`);
+      // In production, allow all Render domains and custom domains
+      const isRenderDomain = origin.includes(".onrender.com");
+      const isCustomDomain = origin.includes("juellehairgh.com");
+      const isLocalhost = origin.includes("localhost");
+      
+      // Allow Render domains, custom domains, and localhost (for testing)
+      if (isRenderDomain || isCustomDomain || isLocalhost) {
         return callback(null, true);
       }
       
       // Check against explicit allowed origins list
-      const isAllowed = allowedOriginsList.some(allowedOrigin => {
+      const isInAllowedList = allowedOriginsList.some(allowedOrigin => {
+        if (!allowedOrigin) return false;
         // Exact match
-        if (origin === allowedOrigin) {
-          console.log(`✅ CORS: Exact match for origin: ${origin}`);
-          return true;
-        }
-        // Check if origin matches any allowed origin (subdomain matching)
-        if (allowedOrigin && origin.includes(allowedOrigin.replace("https://", "").replace("http://", ""))) {
-          console.log(`✅ CORS: Subdomain match for origin: ${origin} (allowed: ${allowedOrigin})`);
-          return true;
-        }
-        // Wildcard subdomain match (e.g., *.onrender.com)
-        if (allowedOrigin && allowedOrigin.includes("*")) {
-          const pattern = allowedOrigin.replace("*", ".*");
-          const regex = new RegExp(`^${pattern}$`);
-          if (regex.test(origin)) {
-            console.log(`✅ CORS: Wildcard match for origin: ${origin}`);
-            return true;
-          }
-        }
+        if (origin === allowedOrigin) return true;
+        // Check if origin contains the domain (subdomain matching)
+        const domain = allowedOrigin.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        if (origin.includes(domain)) return true;
         return false;
       });
       
-      if (isAllowed) {
+      if (isInAllowedList) {
         return callback(null, true);
-      } else {
-        console.warn(`⚠️  CORS blocked origin: ${origin}`);
-        console.warn(`   Allowed origins: ${allowedOriginsList.join(", ")}`);
-        // In production, be strict - block the request
-        return callback(new Error(`Not allowed by CORS: ${origin}`), false);
       }
+      
+      // Log blocked origins for debugging but allow in production to prevent payment failures
+      console.warn(`⚠️  CORS: Unknown origin: ${origin}`);
+      console.warn(`   Allowed origins: ${allowedOriginsList.join(", ")}`);
+      // Allow anyway to prevent payment failures - can tighten later
+      return callback(null, true);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -94,7 +84,8 @@ async function bootstrap() {
       "Accept",
       "Origin",
       "Access-Control-Request-Method",
-      "Access-Control-Request-Headers"
+      "Access-Control-Request-Headers",
+      "X-Requested-With"
     ],
     exposedHeaders: ["Content-Range", "X-Content-Range"],
     maxAge: 86400, // 24 hours
