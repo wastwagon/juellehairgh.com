@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { CheckCircle2, Package, Truck, Home, ShoppingBag, Phone, Mail } from "lucide-react";
+import { CheckCircle2, Package, Truck, Home, ShoppingBag, Phone, Mail, Sparkles, Gift, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +19,7 @@ export default function ThankYouPage() {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(true);
   const orderId = searchParams.get("orderId");
 
   useEffect(() => {
@@ -44,14 +45,27 @@ export default function ThankYouPage() {
     }
   }, [orderId]);
 
+  // Hide confetti after animation
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => setShowConfetti(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti]);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading order details...</p>
+            <div className="relative inline-block">
+              <div className="w-16 h-16 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+              </div>
+            </div>
+            <p className="text-gray-600 mt-4">Loading order details...</p>
           </div>
         </main>
         <Footer />
@@ -62,14 +76,14 @@ export default function ThankYouPage() {
 
   if (!order && !loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30">
         <Header />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-              <CheckCircle2 className="h-12 w-12 text-green-600" />
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full mb-6 shadow-lg animate-scale-in">
+              <CheckCircle2 className="h-14 w-14 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Thank You for Your Order!
             </h1>
             <p className="text-lg text-gray-600 mb-8">
@@ -78,14 +92,14 @@ export default function ThankYouPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/account/orders"
-                className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 View Orders
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-700 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg"
               >
                 <Home className="h-5 w-5 mr-2" />
                 Continue Shopping
@@ -100,112 +114,181 @@ export default function ThankYouPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30 relative overflow-hidden">
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 rounded-full animate-confetti"
+              style={{
+                left: `${Math.random() * 100}%`,
+                backgroundColor: ['#a855f7', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'][Math.floor(Math.random() * 5)],
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${2 + Math.random() * 2}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <Header />
-      <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          {/* Success Header */}
+      <main className="flex-1 relative z-10">
+        <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
+          {/* Success Header with Celebration */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-              <CheckCircle2 className="h-12 w-12 text-green-600" />
+            <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-green-400 to-green-600 rounded-full mb-6 shadow-2xl animate-scale-in relative">
+              <CheckCircle2 className="h-16 w-16 text-white" />
+              <div className="absolute -top-2 -right-2">
+                <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Thank You for Your Order!
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent animate-fade-in">
+              🎉 Order Confirmed! 🎉
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-2">
+              Thank you for your purchase!
+            </p>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
               We've received your order and will begin processing it right away. You'll receive an email confirmation shortly.
             </p>
           </div>
 
-          {/* Order Summary Card */}
+          {/* Order Summary Card - Premium Design */}
           {order && (
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-200">
-              <div className="flex items-center gap-3 mb-6 pb-6 border-b">
-                <Image
-                  src="/logo.png"
-                  alt="Juelle Hair"
-                  width={50}
-                  height={50}
-                  className="object-contain"
-                />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Order Confirmation</h2>
-                  <p className="text-sm text-gray-600">Order #{order.id.slice(0, 8).toUpperCase()}</p>
+            <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 mb-8 border border-gray-100 transform transition-all hover:shadow-3xl">
+              {/* Header with Logo */}
+              <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-gradient-to-r from-purple-100 to-pink-100">
+                <div className="relative">
+                  <Image
+                    src="/logo.png"
+                    alt="Juelle Hair"
+                    width={60}
+                    height={60}
+                    className="object-contain"
+                  />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900">Order Confirmation</h2>
+                  <p className="text-sm text-gray-500">Order #{order.id.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(order.createdAt).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                  <Gift className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-semibold text-purple-600">Order Placed</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Order Details</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p><strong>Order Date:</strong> {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}</p>
-                    <p><strong>Order Total:</strong> <span className="font-bold text-gray-900">{formatCurrency(Number(order.totalGhs), "GHS")}</span></p>
-                    <p><strong>Payment Status:</strong> <span className="text-green-600 font-semibold">{order.paymentStatus}</span></p>
-                    <p><strong>Order Status:</strong> <span className="text-purple-600 font-semibold">{order.status}</span></p>
+              {/* Order Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Package className="h-5 w-5 text-purple-600" />
+                    Order Details
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">Order Total:</span>
+                      <span className="font-bold text-xl text-gray-900">{formatCurrency(Number(order.totalGhs), "GHS")}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                      <span className="text-gray-600">Payment Status:</span>
+                      <span className="font-semibold text-green-600 flex items-center gap-1">
+                        <CheckCircle2 className="h-4 w-4" />
+                        {order.paymentStatus}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                      <span className="text-gray-600">Order Status:</span>
+                      <span className="font-semibold text-purple-600">{order.status}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Shipping Address</h3>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Truck className="h-5 w-5 text-purple-600" />
+                    Shipping Address
+                  </h3>
+                  <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600 space-y-2">
+                    <p className="font-semibold text-gray-900">{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
                     <p>{order.shippingAddress?.addressLine1}</p>
                     {order.shippingAddress?.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
                     <p>{order.shippingAddress?.city}, {order.shippingAddress?.region}</p>
                     <p>{order.shippingAddress?.country}</p>
-                    <p className="mt-2">Phone: {order.shippingAddress?.phone}</p>
+                    <p className="pt-2 border-t border-gray-200">
+                      <Phone className="h-4 w-4 inline mr-1" />
+                      {order.shippingAddress?.phone}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Order Items */}
-              <div className="border-t pt-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Order Items</h3>
+              {/* Order Items - Enhanced */}
+              <div className="border-t-2 border-gray-100 pt-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <ShoppingBag className="h-5 w-5 text-purple-600" />
+                  Order Items ({order.items?.length || 0})
+                </h3>
                 <div className="space-y-4">
-                  {order.items?.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                  {order.items?.map((item, index) => (
+                    <div 
+                      key={item.id} 
+                      className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-purple-50/30 rounded-xl border border-gray-100 hover:shadow-md transition-all animate-slide-in"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-100">
                         {item.product?.images?.[0] ? (
                           <Image
                             src={item.product.images[0]}
                             alt={item.product.title || "Product"}
-                            width={64}
-                            height={64}
+                            width={80}
+                            height={80}
                             className="object-cover rounded-lg"
                           />
                         ) : (
-                          <Package className="h-8 w-8 text-gray-400" />
+                          <Package className="h-10 w-10 text-gray-400" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900">{item.product?.title || "Product"}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 mb-1">{item.product?.title || "Product"}</p>
                         {item.variantIds && item.variantIds.length > 0 ? (
-                          <div className="text-sm text-gray-600 space-y-0.5">
+                          <div className="text-xs text-gray-600 space-y-0.5 mb-2">
                             {item.variantIds.map((variantId, idx) => {
-                              // Try to find variant from product variants
                               const variant = item.product?.variants?.find((v: any) => v.id === variantId);
                               return variant ? (
-                                <p key={idx}>
+                                <span key={idx} className="inline-block mr-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded">
                                   {variant.name}: {variant.value}
-                                </p>
+                                </span>
                               ) : null;
                             })}
                           </div>
                         ) : item.variant ? (
-                          <p className="text-sm text-gray-600">
+                          <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs mb-2">
                             {item.variant.name}: {item.variant.value}
-                          </p>
+                          </span>
                         ) : null}
-                        <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                        <p className="text-xs text-gray-500">Quantity: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-bold text-lg text-gray-900">
                           {formatCurrency(Number(item.priceGhs) * item.quantity, "GHS")}
                         </p>
+                        {item.quantity > 1 && (
+                          <p className="text-xs text-gray-500">
+                            {formatCurrency(Number(item.priceGhs), "GHS")} each
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -214,64 +297,73 @@ export default function ThankYouPage() {
             </div>
           )}
 
-          {/* Next Steps */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-8 mb-8 border border-purple-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">What's Next?</h2>
+          {/* What's Next Section - Premium */}
+          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 rounded-2xl p-8 md:p-10 mb-8 border-2 border-purple-100 shadow-xl">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What Happens Next?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
-                  <Package className="h-6 w-6 text-purple-600" />
+              <div className="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full mb-4 shadow-lg">
+                  <Package className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Order Processing</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-lg">Order Processing</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   We're preparing your order for shipment. This usually takes 1-2 business days.
                 </p>
               </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
-                  <Truck className="h-6 w-6 text-purple-600" />
+              <div className="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full mb-4 shadow-lg">
+                  <Truck className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Shipping</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-lg">Shipping</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Once shipped, you'll receive a tracking number via email to monitor your package.
                 </p>
               </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
-                  <CheckCircle2 className="h-6 w-6 text-purple-600" />
+              <div className="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full mb-4 shadow-lg">
+                  <CheckCircle2 className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Delivery</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-lg">Delivery</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Your order will arrive within 3-7 business days. We'll notify you when it's out for delivery.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Need Help?</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              If you have any questions about your order, please don't hesitate to contact us.
+          {/* Contact Information - Enhanced */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Mail className="h-5 w-5 text-purple-600" />
+              Need Help?
+            </h3>
+            <p className="text-gray-600 mb-6">
+              If you have any questions about your order, please don't hesitate to contact us. We're here to help!
             </p>
-            <div className="flex flex-wrap gap-6 text-sm">
-              <a href="mailto:sales@juellehairgh.com" className="flex items-center gap-2 text-purple-600 hover:text-purple-700">
-                <Mail className="h-4 w-4" />
-                sales@juellehairgh.com
+            <div className="flex flex-wrap gap-6">
+              <a 
+                href="mailto:sales@juellehairgh.com" 
+                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-purple-600 hover:from-purple-100 hover:to-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+              >
+                <Mail className="h-5 w-5" />
+                <span className="font-semibold">sales@juellehairgh.com</span>
               </a>
-              <a href="tel:+233539506949" className="flex items-center gap-2 text-purple-600 hover:text-purple-700">
-                <Phone className="h-4 w-4" />
-                +233 539506949
+              <a 
+                href="tel:+233539506949" 
+                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-purple-600 hover:from-purple-100 hover:to-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+              >
+                <Phone className="h-5 w-5" />
+                <span className="font-semibold">+233 539506949</span>
               </a>
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Premium */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {order && (
               <Link
                 href={`/account/orders/${order.id}`}
-                className="inline-flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 View Order Details
@@ -279,13 +371,13 @@ export default function ThankYouPage() {
             )}
             <Link
               href="/account/orders"
-              className="inline-flex items-center justify-center px-6 py-3 bg-white text-purple-600 border-2 border-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-purple-600 border-2 border-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all shadow-md hover:shadow-lg"
             >
               View All Orders
             </Link>
             <Link
               href="/"
-              className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              className="inline-flex items-center justify-center px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all shadow-md hover:shadow-lg"
             >
               <Home className="h-5 w-5 mr-2" />
               Continue Shopping
@@ -295,8 +387,62 @@ export default function ThankYouPage() {
       </main>
       <Footer />
       <MobileBottomNav />
+      
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes scale-in {
+          from {
+            transform: scale(0.8);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        @keyframes slide-in {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes confetti {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .animate-scale-in {
+          animation: scale-in 0.6s ease-out;
+        }
+        .animate-slide-in {
+          animation: slide-in 0.5s ease-out forwards;
+          opacity: 0;
+        }
+        .animate-confetti {
+          animation: confetti linear forwards;
+        }
+      `}</style>
     </div>
   );
 }
-
-
