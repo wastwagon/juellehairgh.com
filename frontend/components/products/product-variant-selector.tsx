@@ -210,87 +210,91 @@ export function ProductVariantSelector({
                   }
 
                   return (
-                    <button
-                      key={variant.id}
-                      type="button"
-                      onClick={() => {
-                        handleColorSelect(variant, index);
-                        // Update main product image when color is selected
-                        if (onImageChange && variant.image) {
-                          // Find the index of this variant's image in product images
-                          const imgIndex = productImages.findIndex(img => img === variant.image);
-                          if (imgIndex !== -1) {
-                            onImageChange(imgIndex);
+                    <div key={variant.id} className="flex flex-col items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleColorSelect(variant, index);
+                          // Update main product image when color is selected
+                          if (onImageChange && variant.image) {
+                            // Find the index of this variant's image in product images
+                            const imgIndex = productImages.findIndex(img => img === variant.image);
+                            if (imgIndex !== -1) {
+                              onImageChange(imgIndex);
+                            }
                           }
-                        }
-                      }}
-                      className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                        isSelected
-                          ? "border-primary ring-2 ring-primary ring-offset-2"
-                          : "border-gray-300 hover:border-gray-400"
-                      } ${variant.stock === 0 ? "opacity-50" : ""}`}
-                      style={{ width: '100px', height: '100px' }}
-                      title={variant.value}
-                      disabled={variant.stock === 0}
-                    >
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={variant.value}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            const retryCount = parseInt(img.getAttribute('data-retry') || '0');
-                            
-                            // Try Next.js API proxy route fallback if direct path fails
-                            if (retryCount < 3 && variant.image) {
-                              // Extract filename from image path
-                              const filename = variant.image.split('/').pop() || variant.image;
-                              // Use Next.js API proxy route (same as collection images)
-                              const fallbackUrl = `/api/media/swatches/${filename}`;
+                        }}
+                        className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                          isSelected
+                            ? "border-primary ring-2 ring-primary ring-offset-2"
+                            : "border-gray-300 hover:border-gray-400"
+                        } ${variant.stock === 0 ? "opacity-50" : ""}`}
+                        style={{ width: '100px', height: '100px' }}
+                        title={variant.value}
+                        disabled={variant.stock === 0}
+                      >
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={variant.value}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              const retryCount = parseInt(img.getAttribute('data-retry') || '0');
                               
-                              img.setAttribute('data-retry', String(retryCount + 1));
-                              img.src = fallbackUrl;
-                              return;
-                            }
-                            
-                            // Final fallback: show text
-                            img.style.display = 'none';
-                            const parent = img.parentElement;
-                            if (parent && !parent.querySelector('.fallback-text')) {
-                              const fallback = document.createElement('div');
-                              fallback.className = 'fallback-text w-full h-full bg-gray-200 flex items-center justify-center';
-                              fallback.innerHTML = `<span class="text-xs text-gray-500">${variant.value}</span>`;
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-xs text-gray-500 text-center px-1">{variant.value}</span>
-                        </div>
-                      )}
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center pointer-events-none z-20">
-                          <div className="w-5 h-5 bg-primary rounded-full border-2 border-white shadow-lg"></div>
-                        </div>
-                      )}
-                      {variant.stock === 0 && (
-                        <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center pointer-events-none">
-                          <span className="text-xs text-white font-medium">OOS</span>
-                        </div>
-                      )}
-                      {/* Ship Today badge */}
-                      {variant.stock > 0 && (
-                        <div className="absolute top-1 left-1 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10">
-                          {getShippingStatus()}
-                        </div>
-                      )}
-                      {/* Variant label overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white text-xs text-center py-1.5 px-1 truncate leading-tight font-medium">
-                        {variant.value}
+                              // Try Next.js API proxy route fallback if direct path fails
+                              if (retryCount < 3 && variant.image) {
+                                // Extract filename from image path
+                                const filename = variant.image.split('/').pop() || variant.image;
+                                // Use Next.js API proxy route (same as collection images)
+                                const fallbackUrl = `/api/media/swatches/${filename}`;
+                                
+                                img.setAttribute('data-retry', String(retryCount + 1));
+                                img.src = fallbackUrl;
+                                return;
+                              }
+                              
+                              // Final fallback: show text
+                              img.style.display = 'none';
+                              const parent = img.parentElement;
+                              if (parent && !parent.querySelector('.fallback-text')) {
+                                const fallback = document.createElement('div');
+                                fallback.className = 'fallback-text w-full h-full bg-gray-200 flex items-center justify-center';
+                                fallback.innerHTML = `<span class="text-xs text-gray-500">${variant.value}</span>`;
+                                parent.appendChild(fallback);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-xs text-gray-500 text-center px-1">{variant.value}</span>
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center pointer-events-none z-20">
+                            <div className="w-5 h-5 bg-primary rounded-full border-2 border-white shadow-lg"></div>
+                          </div>
+                        )}
+                        {variant.stock === 0 && (
+                          <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center pointer-events-none">
+                            <span className="text-xs text-white font-medium">OOS</span>
+                          </div>
+                        )}
+                      </button>
+                      {/* Labels outside the image */}
+                      <div className="w-full flex flex-col items-center gap-1">
+                        {/* Shipping status badge */}
+                        {variant.stock > 0 && (
+                          <div className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
+                            {getShippingStatus()}
+                          </div>
+                        )}
+                        {/* Color name */}
+                        <span className={`text-xs text-center font-medium ${variant.stock === 0 ? 'text-gray-400' : 'text-gray-700'} truncate w-full px-1`}>
+                          {variant.value}
+                        </span>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
