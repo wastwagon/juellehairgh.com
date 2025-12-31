@@ -46,6 +46,13 @@ async function bootstrap() {
       }
       
       // In production, check against allowed origins
+      // Special handling for Render domains - allow any *.onrender.com subdomain
+      if (origin.includes(".onrender.com")) {
+        console.log(`✅ CORS: Allowing Render domain: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Check against explicit allowed origins list
       const isAllowed = allowedOriginsList.some(allowedOrigin => {
         // Exact match
         if (origin === allowedOrigin) {
