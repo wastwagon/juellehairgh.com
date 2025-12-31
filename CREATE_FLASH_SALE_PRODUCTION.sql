@@ -2,7 +2,7 @@
 -- Run in Render Shell: psql $DATABASE_URL < CREATE_FLASH_SALE_PRODUCTION.sql
 
 -- Step 1: Create the flash sale
-INSERT INTO "FlashSale" (
+INSERT INTO flash_sales (
   id,
   title,
   description,
@@ -28,24 +28,22 @@ INSERT INTO "FlashSale" (
 -- Replace FLASH_SALE_ID with the ID returned above
 
 -- Get some product IDs to add (first 10 active products)
--- SELECT id, slug, title FROM "Product" WHERE "isActive" = true LIMIT 10;
+-- SELECT id, slug, title FROM products WHERE "isActive" = true LIMIT 10;
 
--- Step 3: Add products to flash sale (uncomment and replace FLASH_SALE_ID and PRODUCT_IDs)
+-- Step 3: Add products to flash sale (uncomment and replace FLASH_SALE_ID)
 /*
-INSERT INTO "FlashSaleProduct" (
+INSERT INTO flash_sale_products (
   id,
   "flashSaleId",
   "productId",
-  "createdAt",
-  "updatedAt"
+  "createdAt"
 )
 SELECT 
   gen_random_uuid(),
   'FLASH_SALE_ID',  -- Replace with actual flash sale ID from Step 1
   id,
-  NOW(),
   NOW()
-FROM "Product"
+FROM products
 WHERE "isActive" = true
 LIMIT 10;  -- Add first 10 active products
 */
@@ -58,8 +56,8 @@ SELECT
   "startDate",
   "endDate",
   "discountPercent",
-  (SELECT COUNT(*) FROM "FlashSaleProduct" WHERE "flashSaleId" = "FlashSale".id) as product_count
-FROM "FlashSale"
+  (SELECT COUNT(*) FROM flash_sale_products WHERE "flashSaleId" = flash_sales.id) as product_count
+FROM flash_sales
 WHERE "isActive" = true
 ORDER BY "createdAt" DESC
 LIMIT 1;

@@ -24,13 +24,13 @@
 
 **Step 1:** Create flash sale
 ```bash
-psql $DATABASE_URL -c "INSERT INTO \"FlashSale\" (id, title, description, \"startDate\", \"endDate\", \"discountPercent\", \"isActive\", \"createdAt\", \"updatedAt\") VALUES (gen_random_uuid(), '⚡ Christmas Mega Sale', 'Celebrate the holidays with amazing deals!', NOW() - INTERVAL '1 day', '2026-01-31 23:59:59', 30, true, NOW(), NOW()) RETURNING id, title;"
+psql $DATABASE_URL -c "INSERT INTO flash_sales (id, title, description, \"startDate\", \"endDate\", \"discountPercent\", \"isActive\", \"createdAt\", \"updatedAt\") VALUES (gen_random_uuid(), '⚡ Christmas Mega Sale', 'Celebrate the holidays with amazing deals!', NOW() - INTERVAL '1 day', '2026-01-31 23:59:59', 30, true, NOW(), NOW()) RETURNING id, title;"
 ```
 
 **Step 2:** Copy the flash sale ID from output, then add products:
 ```bash
 # Replace FLASH_SALE_ID with the ID from Step 1
-psql $DATABASE_URL -c "INSERT INTO \"FlashSaleProduct\" (id, \"flashSaleId\", \"productId\", \"createdAt\", \"updatedAt\") SELECT gen_random_uuid(), 'FLASH_SALE_ID', id, NOW(), NOW() FROM \"Product\" WHERE \"isActive\" = true LIMIT 10;"
+psql $DATABASE_URL -c "INSERT INTO flash_sale_products (id, \"flashSaleId\", \"productId\", \"createdAt\") SELECT gen_random_uuid(), 'FLASH_SALE_ID', id, NOW() FROM products WHERE \"isActive\" = true LIMIT 10;"
 ```
 
 **Step 3:** Verify:
