@@ -117,7 +117,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-sm shadow-sm">
       {/* Top Bar - Phone, Email, Order Tracking, Social Media */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm">
+      <div className="bg-black text-white text-xs md:text-sm">
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex items-center justify-between py-2 md:py-2.5">
             {/* Left Side - Phone & Email */}
@@ -125,7 +125,7 @@ export function Header() {
               {phone && (
                 <a
                   href={`tel:${phone.replace(/\s+/g, "")}`}
-                  className="flex items-center gap-1.5 hover:text-purple-200 transition-colors"
+                  className="flex items-center gap-1.5 hover:text-gray-300 transition-colors"
                 >
                   <Phone className="h-3.5 w-3.5" />
                   <span>{phone}</span>
@@ -136,7 +136,7 @@ export function Header() {
                   <span className="text-white/60">|</span>
                   <a
                     href={`mailto:${email}`}
-                    className="flex items-center gap-1.5 hover:text-purple-200 transition-colors"
+                    className="flex items-center gap-1.5 hover:text-gray-300 transition-colors"
                   >
                     <Mail className="h-3.5 w-3.5" />
                     <span>{email}</span>
@@ -187,7 +187,7 @@ export function Header() {
             <div className="flex items-center gap-3 md:gap-4">
               <Link
                 href="/orders/track"
-                className="flex items-center gap-1.5 hover:text-purple-200 transition-colors"
+                className="flex items-center gap-1.5 hover:text-gray-300 transition-colors"
               >
                 <Package className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Order Tracking</span>
