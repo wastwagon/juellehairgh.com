@@ -2,6 +2,7 @@
 
 # Create Flash Sale in Production Database
 # Run in Render Shell: bash scripts/create-flash-sale-production.sh
+# Or if already in backend directory: bash scripts/create-flash-sale-production.sh
 
 echo "🎯 Creating Flash Sale in Production..."
 echo ""
@@ -21,7 +22,7 @@ echo ""
 
 # Step 2: Add products to flash sale
 echo "Step 2: Adding products to flash sale..."
-PRODUCT_COUNT=$(psql $DATABASE_URL -t -c "INSERT INTO flash_sale_products (id, \"flashSaleId\", \"productId\", \"createdAt\") SELECT gen_random_uuid(), '$FLASH_SALE_ID', id, NOW() FROM products WHERE \"isActive\" = true LIMIT 10;" | wc -l)
+psql $DATABASE_URL -c "INSERT INTO flash_sale_products (id, \"flashSaleId\", \"productId\", \"createdAt\") SELECT gen_random_uuid(), '$FLASH_SALE_ID', id, NOW() FROM products WHERE \"isActive\" = true LIMIT 10;"
 
 echo "✅ Added products to flash sale"
 echo ""
