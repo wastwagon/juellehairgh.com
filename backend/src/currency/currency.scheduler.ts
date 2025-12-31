@@ -6,10 +6,10 @@ import { CurrencyService } from "./currency.service";
 export class CurrencyScheduler {
   constructor(private currencyService: CurrencyService) {}
 
-  // Update currency rates every 24 hours at 2 AM UTC
-  @Cron("0 2 * * *")
+  // Update currency rates every 12 hours at midnight and noon UTC
+  @Cron("0 */12 * * *")
   async updateRates() {
-    console.log("🔄 [Currency Scheduler] Updating currency rates (scheduled daily update)...");
+    console.log("🔄 [Currency Scheduler] Updating currency rates (scheduled every 12 hours)...");
     const result = await this.currencyService.updateRates();
     if (result.success) {
       console.log("✅ [Currency Scheduler] Currency rates updated successfully");

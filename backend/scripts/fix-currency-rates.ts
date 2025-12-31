@@ -21,9 +21,9 @@ async function fixCurrencyRates() {
   console.log("🔄 Fixing Currency Rates...\n");
 
   try {
-    // 1. Fetch rates from free API
-    console.log("📡 Fetching rates from exchangerate-api.com...");
-    const apiUrl = `https://v6.exchangerate-api.com/v6/latest/${baseCurrency}`;
+    // 1. Fetch rates from free API (exchangerate-api.com Open Access - completely free, no API key needed)
+    console.log("📡 Fetching rates from exchangerate-api.com Open Access (free, no API key required)...");
+    const apiUrl = `https://open.er-api.com/v6/latest/${baseCurrency}`;
     
     const response = await axios.get(apiUrl, {
       timeout: 30000,
@@ -33,6 +33,10 @@ async function fixCurrencyRates() {
     });
 
     if (!response.data || !response.data.rates) {
+      // Check for error response
+      if (response.data?.error || response.data?.result === "error") {
+        throw new Error(`API Error: ${response.data.error?.info || response.data["error-type"] || "Unknown error"}`);
+      }
       throw new Error("Invalid API response: rates not found");
     }
 
