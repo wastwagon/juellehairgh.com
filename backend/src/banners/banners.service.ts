@@ -17,13 +17,6 @@ export class BannersService {
           { OR: [{ endDate: null }, { endDate: { gte: new Date() } }] },
         ],
       },
-      include: {
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
       orderBy: {
         position: "asc",
       },

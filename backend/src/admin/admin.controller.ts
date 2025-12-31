@@ -550,19 +550,4 @@ export class AdminController {
   async getBanners() {
     return this.adminService.getAllBanners();
   }
-
-  @Post("banners")
-  async createBanner(@Body() data: any) {
-    return this.adminService.createBanner(data);
-  }
-
-  @Put("banners/:id")
-  async updateBanner(@Param("id") id: string, @Body() data: any) {
-    return this.adminService.updateBanner(id, data);
-  }
-
-  @Delete("banners/:id")
-  async deleteBanner(@Param("id") id: string) {
-    return this.adminService.deleteBanner(id);
-  }
 }
