@@ -60,6 +60,7 @@
     "seed:page-content": "ts-node scripts/seed-page-content.ts",
     "update:flash-sale-christmas": "ts-node scripts/update-flash-sale-to-christmas.ts",
     "fix:currency-rates": "ts-node scripts/fix-currency-rates.ts",
+    "generate:variants-from-attributes": "ts-node scripts/generate-variants-from-attributes.ts",
     "sync:variations": "ts-node scripts/sync-variations-to-production.ts",
     "sync:variations-enhanced": "ts-node scripts/sync-variations-with-images.ts",
     "migrate:variants": "ts-node scripts/migrate-variants-from-attributes.ts",
