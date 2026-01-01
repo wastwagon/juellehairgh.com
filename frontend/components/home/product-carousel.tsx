@@ -14,7 +14,7 @@ interface ProductCarouselProps {
 }
 
 export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps) {
-  // All hooks must be called at the top level, before any conditional returns
+  // ALL hooks must be called at the top level, before any conditional returns
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   
@@ -155,6 +155,24 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
   console.log(`🎯 ${title} - Display products:`, displayProducts.length);
   console.log(`🔍 ${title} - Products data:`, displayProducts);
 
+  // Limit to 8 products for slider - compute early so useEffect can use it
+  const maxProducts = 8;
+  const productsToShow = displayProducts.slice(0, maxProducts);
+  const totalSlides = productsToShow.length > 0 ? Math.ceil(productsToShow.length / itemsPerSlide) : 0;
+
+  // Auto-play functionality - MUST be called before any conditional returns
+  useEffect(() => {
+    if (!productsToShow || productsToShow.length === 0 || !isAutoPlaying || totalSlides <= 1) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalSlides);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [productsToShow.length, isAutoPlaying, totalSlides]);
+
   if (isLoading || isLoadingFallback) {
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
@@ -181,25 +199,6 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     // Don't render if no products and not loading
     return null;
   }
-
-  // Limit to 8 products for slider
-  const maxProducts = 8;
-  const productsToShow = displayProducts.slice(0, maxProducts);
-  
-  const totalSlides = productsToShow.length > 0 ? Math.ceil(productsToShow.length / itemsPerSlide) : 0;
-
-  // Auto-play functionality
-  useEffect(() => {
-    if (!productsToShow || productsToShow.length === 0 || !isAutoPlaying || totalSlides <= 1) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % totalSlides);
-    }, 5000); // Change slide every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [productsToShow.length, isAutoPlaying, totalSlides]);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
