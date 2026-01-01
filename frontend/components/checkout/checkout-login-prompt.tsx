@@ -62,7 +62,7 @@ export function CheckoutLoginPrompt({ onLoginSuccess }: CheckoutLoginPromptProps
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center">
                 <UserPlus className="h-5 w-5 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">
@@ -91,7 +91,7 @@ export function CheckoutLoginPrompt({ onLoginSuccess }: CheckoutLoginPromptProps
             <Link href={loginUrl}>
               <Button
                 type="button"
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <LogIn className="h-4 w-4" />
                 Sign In

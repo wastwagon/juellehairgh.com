@@ -69,7 +69,7 @@ export function MobileBottomNav() {
                     className={cn(
                       "p-2.5 rounded-xl transition-all duration-200 flex items-center justify-center",
                       active
-                        ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg"
+                        ? "bg-pink-600 shadow-lg"
                         : "hover:bg-gray-50"
                     )}
                   >

@@ -4,7 +4,7 @@ import { Truck, Package, Clock, MapPin } from "lucide-react";
 
 export function ShippingInfo() {
   return (
-    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 md:p-6 mb-6">
+    <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 md:p-6 mb-6">
       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <Truck className="h-5 w-5 text-purple-600" />
         Shipping Information

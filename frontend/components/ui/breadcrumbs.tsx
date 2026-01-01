@@ -86,7 +86,7 @@ export function Breadcrumbs({ items, generateSchema = true, className }: Breadcr
           className={cn(
             "group relative flex items-center justify-center",
             "w-8 h-8 md:w-9 md:h-9 rounded-lg",
-            "bg-gradient-to-br from-purple-500 to-pink-500",
+            "bg-pink-600",
             "text-white shadow-md shadow-purple-200/50",
             "hover:shadow-lg hover:shadow-purple-300/50",
             "hover:scale-110 active:scale-95",
@@ -121,7 +121,7 @@ export function Breadcrumbs({ items, generateSchema = true, className }: Breadcr
               >
                 <span className="relative z-10">{item.label}</span>
                 {/* Hover underline effect */}
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-pink-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full" />
               </Link>
             ) : (
               <span
@@ -129,14 +129,14 @@ export function Breadcrumbs({ items, generateSchema = true, className }: Breadcr
                   "relative px-3 py-1.5 md:px-4 md:py-2",
                   "text-sm md:text-base font-semibold",
                   "text-gray-900",
-                  "bg-gradient-to-r from-purple-50 to-pink-50",
+                  "bg-pink-50",
                   "rounded-lg border border-purple-200/50",
                   "shadow-sm"
                 )}
               >
                 {item.label}
                 {/* Active indicator */}
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-pink-600 rounded-full" />
               </span>
             )}
           </div>

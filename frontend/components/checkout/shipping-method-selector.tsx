@@ -121,7 +121,7 @@ export function ShippingMethodSelector({
 
       {/* Free Shipping Message */}
       {amountLeftForFreeShipping && amountLeftForFreeShipping > 0 && (
-        <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
+        <div className="mb-4 p-3 bg-pink-50 border border-pink-200 rounded-lg">
           <p className="text-sm text-gray-700">
             <span className="font-semibold text-purple-700">
               Spend {formatCurrency(convert(amountLeftForFreeShipping), displayCurrency)}
