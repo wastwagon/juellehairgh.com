@@ -239,15 +239,15 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Action Button */}
         <div className="mt-auto">
           {hasVariants ? (
-            // Variation products: Show "View Options" button
+            // Variation products: Show "Select Options" button
             <Link href={`/products/${product.slug}`}>
               <Button
                 variant="default"
                 size="sm"
-                className="w-full h-8 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium"
+                className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium px-2 py-1"
                 disabled={isOutOfStock}
               >
-                View Options
+                Select Options
               </Button>
             </Link>
           ) : (
@@ -256,10 +256,10 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleAddToCart}
               variant="default"
               size="sm"
-              className="w-full h-8 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium flex items-center justify-center gap-1.5"
+              className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium flex items-center justify-center gap-1 px-2 py-1"
               disabled={isOutOfStock}
             >
-              <ShoppingCart className="h-3.5 w-3.5" />
+              <ShoppingCart className="h-3 w-3" />
               Add to Cart
             </Button>
           )}

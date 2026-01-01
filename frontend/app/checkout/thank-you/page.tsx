@@ -92,16 +92,16 @@ export default function ThankYouPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/account/orders"
-                className="inline-flex items-center justify-center px-8 py-4 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center justify-center px-4 py-2 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
               >
-                <ShoppingBag className="h-5 w-5 mr-2" />
+                <ShoppingBag className="h-4 w-4 mr-1.5" />
                 View Orders
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-700 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg"
+                className="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 border-2 border-gray-200 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-md hover:shadow-lg text-sm"
               >
-                <Home className="h-5 w-5 mr-2" />
+                <Home className="h-4 w-4 mr-1.5" />
                 Continue Shopping
               </Link>
             </div>
@@ -343,14 +343,14 @@ export default function ThankYouPage() {
             <div className="flex flex-wrap gap-6">
               <a 
                 href="mailto:sales@juellehairgh.com" 
-                className="flex items-center gap-3 px-6 py-3 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                className="flex items-center gap-2 px-3 py-1.5 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm"
               >
                 <Mail className="h-5 w-5" />
                 <span className="font-semibold">sales@juellehairgh.com</span>
               </a>
               <a 
                 href="tel:+233539506949" 
-                className="flex items-center gap-3 px-6 py-3 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                className="flex items-center gap-2 px-3 py-1.5 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm"
               >
                 <Phone className="h-5 w-5" />
                 <span className="font-semibold">+233 539506949</span>
@@ -363,23 +363,23 @@ export default function ThankYouPage() {
             {order && (
               <Link
                 href={`/account/orders/${order.id}`}
-                className="inline-flex items-center justify-center px-8 py-4 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center justify-center px-4 py-2 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
               >
-                <ShoppingBag className="h-5 w-5 mr-2" />
+                <ShoppingBag className="h-4 w-4 mr-1.5" />
                 View Order Details
               </Link>
             )}
             <Link
               href="/account/orders"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-purple-600 border-2 border-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center px-4 py-2 bg-white text-pink-600 border-2 border-pink-600 rounded-lg font-semibold hover:bg-pink-50 transition-all shadow-md hover:shadow-lg text-sm"
             >
               View All Orders
             </Link>
             <Link
               href="/"
-              className="inline-flex items-center justify-center px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all shadow-md hover:shadow-lg text-sm"
             >
-              <Home className="h-5 w-5 mr-2" />
+              <Home className="h-4 w-4 mr-1.5" />
               Continue Shopping
             </Link>
           </div>

@@ -23,6 +23,7 @@ import { MetaTags } from "@/components/seo/meta-tags-app";
 import { ProductReviews } from "./product-reviews";
 import { toast } from "sonner";
 import { getShippingBannerText, getShippingStatus, isBeforeCutoff } from "@/lib/shipping-time";
+import { processDescription } from "@/lib/process-description";
 
 interface ProductDetailProps {
   slug: string;
@@ -362,8 +363,11 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
           {product.description && (
             <div className="mb-6">
-              <h2 className="font-semibold mb-2 text-gray-900">Description</h2>
-              <div className="text-gray-600 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.description }} />
+              <h2 className="font-semibold mb-4 text-gray-900">Description</h2>
+              <div 
+                className="text-gray-600 prose prose-sm max-w-none product-description" 
+                dangerouslySetInnerHTML={{ __html: processDescription(product.description) }} 
+              />
             </div>
           )}
 
@@ -372,7 +376,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
               <button
                 type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2 hover:bg-gray-100 transition-colors"
+                className="px-2 py-1 hover:bg-gray-100 transition-colors text-sm"
               >
                 -
               </button>
@@ -381,19 +385,19 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-16 text-center border-0 focus:ring-0"
+                className="w-14 text-center border-0 focus:ring-0 text-sm"
               />
               <button
                 type="button"
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2 hover:bg-gray-100 transition-colors"
+                className="px-2 py-1 hover:bg-gray-100 transition-colors text-sm"
               >
                 +
               </button>
             </div>
             <button
               onClick={handleAddToCart}
-              className="flex-1 px-2.5 py-1.5 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md flex items-center justify-center gap-1 transition-all duration-200"
+              className="flex-1 px-2 py-1 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md flex items-center justify-center gap-1 transition-all duration-200"
             >
               <ShoppingCart className="h-3 w-3" />
               Add to Cart

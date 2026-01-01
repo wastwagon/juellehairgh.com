@@ -114,3 +114,53 @@ body.mobile-menu-open {
   overflow: hidden;
 }
 
+/* Product Description Styling */
+.product-description {
+  line-height: 1.7;
+}
+
+.product-description p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.product-description p:last-child {
+  margin-bottom: 0;
+}
+
+.product-description br {
+  display: block;
+  content: "";
+  margin-top: 0.5rem;
+}
+
+/* YouTube Embed Styling */
+.youtube-embed-wrapper {
+  margin: 1.5rem 0;
+}
+
+.youtube-embed-wrapper iframe {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Ensure images in descriptions don't overflow */
+.product-description img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* List styling in descriptions */
+.product-description ul,
+.product-description ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.product-description li {
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+}
+

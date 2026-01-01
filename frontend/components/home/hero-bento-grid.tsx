@@ -107,8 +107,8 @@ export function HeroBentoGrid() {
                 </div>
               )}
 
-              <span className="inline-block mt-2 sm:mt-3 md:mt-4 px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs sm:text-sm md:text-base font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
-                {largeProduct.variants && largeProduct.variants.length > 0 ? "View Options" : "Shop Now"}
+              <span className="inline-block mt-2 sm:mt-3 md:mt-4 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs sm:text-xs md:text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
+                {largeProduct.variants && largeProduct.variants.length > 0 ? "Select Options" : "Shop Now"}
               </span>
             </div>
           </div>
@@ -156,8 +156,8 @@ export function HeroBentoGrid() {
                   </div>
                 )}
 
-                <span className="inline-block mt-1.5 sm:mt-2 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs sm:text-xs md:text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
-                  {topRightProduct.variants && topRightProduct.variants.length > 0 ? "View Options" : "Shop Now"}
+                <span className="inline-block mt-1.5 sm:mt-2 px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 md:py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
+                  {topRightProduct.variants && topRightProduct.variants.length > 0 ? "Select Options" : "Shop Now"}
                 </span>
               </div>
             </div>
@@ -206,8 +206,8 @@ export function HeroBentoGrid() {
                   </div>
                 )}
 
-                <span className="inline-block mt-1.5 sm:mt-2 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs sm:text-xs md:text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
-                  {bottomLeftProduct.variants && bottomLeftProduct.variants.length > 0 ? "View Options" : "Shop Now"}
+                <span className="inline-block mt-1.5 sm:mt-2 px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 md:py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
+                  {bottomLeftProduct.variants && bottomLeftProduct.variants.length > 0 ? "Select Options" : "Shop Now"}
                 </span>
               </div>
             </div>
@@ -256,8 +256,8 @@ export function HeroBentoGrid() {
                   </div>
                 )}
 
-                <span className="inline-block mt-1.5 sm:mt-2 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs sm:text-xs md:text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
-                  {bottomRightProduct.variants && bottomRightProduct.variants.length > 0 ? "View Options" : "Shop Now"}
+                <span className="inline-block mt-1.5 sm:mt-2 px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 md:py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-xs font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer touch-manipulation">
+                  {bottomRightProduct.variants && bottomRightProduct.variants.length > 0 ? "Select Options" : "Shop Now"}
                 </span>
               </div>
             </div>

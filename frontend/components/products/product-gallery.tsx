@@ -88,7 +88,7 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
           <img
             src={getImageUrl(images[selectedIndex])}
             alt={`${title} - Image ${selectedIndex + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
           {images.length > 1 && (
             <>
@@ -136,7 +136,7 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
                 <img
                   src={getImageUrl(image)}
                   alt={`${title} thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </button>
             ))}
@@ -213,7 +213,7 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
                     <img
                       src={getImageUrl(image)}
                       alt={`${title} thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </button>
                 ))}

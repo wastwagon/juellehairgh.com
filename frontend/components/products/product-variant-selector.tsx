@@ -244,7 +244,7 @@ export function ProductVariantSelector({
                           <img
                             src={imageUrl}
                             alt={variant.value}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
                               const retryCount = parseInt(img.getAttribute('data-retry') || '0');
@@ -318,7 +318,7 @@ export function ProductVariantSelector({
                       type="button"
                       onClick={() => handleVariantSelect(variantName, variant.id)}
                       disabled={isOutOfStock}
-                      className={`px-4 py-2 rounded-md border-2 text-sm font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-md border-2 text-xs font-medium transition-all ${
                         isSelected
                           ? "border-primary bg-primary text-white"
                           : isOutOfStock

@@ -217,7 +217,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                       <img
                         src={getImageUrl(image)}
                         alt={`${product.title} ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </button>
                   ))}
@@ -326,7 +326,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                     <button
                       type="button"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="px-3 py-2 hover:bg-gray-100 transition-colors"
+                      className="px-2 py-1 hover:bg-gray-100 transition-colors text-sm"
                     >
                       -
                     </button>
@@ -335,28 +335,28 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                       min="1"
                       value={quantity}
                       onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-16 text-center border-0 focus:ring-0"
+                      className="w-14 text-center border-0 focus:ring-0 text-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setQuantity(quantity + 1)}
-                      className="px-3 py-2 hover:bg-gray-100 transition-colors"
+                      className="px-2 py-1 hover:bg-gray-100 transition-colors text-sm"
                     >
                       +
                     </button>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <Button
                     onClick={handleAddToCart}
-                    className="flex-1 px-3 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-medium"
+                    className="flex-1 px-2 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium"
                   >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    <ShoppingCart className="h-3 w-3 mr-1.5" />
                     Add to Cart
                   </Button>
-                  <Button variant="outline" className="px-4">
-                    <Heart className="h-4 w-4" />
+                  <Button variant="outline" className="px-2.5 py-1.5">
+                    <Heart className="h-3 w-3" />
                   </Button>
                 </div>
 

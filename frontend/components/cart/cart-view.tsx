@@ -46,7 +46,7 @@ export function CartView() {
         <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
         <Link
           href="/"
-          className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg inline-block shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] font-semibold"
+          className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg inline-block shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] font-semibold text-sm"
         >
           Continue Shopping
         </Link>
@@ -180,7 +180,7 @@ export function CartView() {
             )}
             <Link
               href="/checkout"
-              className="w-full px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl text-center block transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl text-center block transition-all duration-300 transform hover:scale-[1.02] text-sm"
             >
               Checkout
             </Link>

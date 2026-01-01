@@ -722,7 +722,7 @@ export function CheckoutForm() {
             <Button
               type="submit"
               disabled={loading || (formData.paymentMethod === "wallet" && walletBalance < totalGhs)}
-              className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none"
+              className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none text-sm px-4"
             >
               {loading ? "Processing..." : formData.paymentMethod === "wallet" ? `Pay with Wallet (${formatCurrency(walletBalance, "GHS")})` : "Pay Securely with Paystack"}
             </Button>
