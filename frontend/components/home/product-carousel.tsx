@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { ProductCard } from "@/components/products/product-card";
 import { Product } from "@/types";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductCarouselProps {
   title: string;
@@ -12,6 +14,9 @@ interface ProductCarouselProps {
 }
 
 export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  
   // Map title to collection slug if not provided
   const slug = collectionSlug || (title === "New Arrivals" ? "new-arrivals" : title === "Best Sellers" ? "best-sellers" : null);
 
@@ -157,9 +162,64 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     return null;
   }
 
-  // Limit to 4 products for both New Arrivals and Best Sellers
-  const maxProducts = 4;
+  // Limit to 8 products for slider
+  const maxProducts = 8;
   const productsToShow = displayProducts.slice(0, maxProducts);
+  
+  // Calculate items per slide based on screen size
+  const getItemsPerSlide = () => {
+    if (typeof window === "undefined") return 4;
+    if (window.innerWidth >= 1280) return 4; // xl: 4 items
+    if (window.innerWidth >= 1024) return 3; // lg: 3 items
+    if (window.innerWidth >= 640) return 2;  // sm: 2 items
+    return 1; // mobile: 1 item
+  };
+
+  const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerSlide(getItemsPerSlide());
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const totalSlides = productsToShow.length > 0 ? Math.ceil(productsToShow.length / itemsPerSlide) : 0;
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!productsToShow || productsToShow.length === 0 || !isAutoPlaying || totalSlides <= 1) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalSlides);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [productsToShow.length, isAutoPlaying, totalSlides]);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
+    // Resume auto-play after 10 seconds
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const nextSlide = () => {
+    goToSlide((currentIndex + 1) % totalSlides);
+  };
+
+  const prevSlide = () => {
+    goToSlide((currentIndex - 1 + totalSlides) % totalSlides);
+  };
+
+  // Group products into slides
+  const slides = [];
+  for (let i = 0; i < productsToShow.length; i += itemsPerSlide) {
+    slides.push(productsToShow.slice(i, i + itemsPerSlide));
+  }
 
   // Debug logging
   if (productsToShow.length === 0 && !isLoading && !isLoadingFallback) {
@@ -186,22 +246,77 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
           </Link>
         )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-        {productsToShow.map((product: Product) => {
-          if (!product || !product.id || !product.title) {
-            console.warn("Invalid product:", product);
-            return null;
-          }
-          // Ensure priceGhs is a number
-          const productWithPrice = {
-            ...product,
-            priceGhs: typeof product.priceGhs === 'string' ? parseFloat(product.priceGhs) : product.priceGhs,
-            compareAtPriceGhs: product.compareAtPriceGhs 
-              ? (typeof product.compareAtPriceGhs === 'string' ? parseFloat(product.compareAtPriceGhs) : product.compareAtPriceGhs)
-              : null,
-          };
-          return <ProductCard key={product.id} product={productWithPrice} />;
-        })}
+      <div className="relative">
+        {/* Slider Container */}
+        <div className="overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${currentIndex * 100}%)`,
+            }}
+          >
+            {slides.map((slideProducts, slideIndex) => (
+              <div
+                key={slideIndex}
+                className="min-w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+              >
+                {slideProducts.map((product: Product) => {
+                  if (!product || !product.id || !product.title) {
+                    console.warn("Invalid product:", product);
+                    return null;
+                  }
+                  // Ensure priceGhs is a number
+                  const productWithPrice = {
+                    ...product,
+                    priceGhs: typeof product.priceGhs === 'string' ? parseFloat(product.priceGhs) : product.priceGhs,
+                    compareAtPriceGhs: product.compareAtPriceGhs 
+                      ? (typeof product.compareAtPriceGhs === 'string' ? parseFloat(product.compareAtPriceGhs) : product.compareAtPriceGhs)
+                      : null,
+                  };
+                  return <ProductCard key={product.id} product={productWithPrice} />;
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation Arrows */}
+        {totalSlides > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all z-10 hidden lg:flex items-center justify-center"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-700" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all z-10 hidden lg:flex items-center justify-center"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="h-6 w-6 text-gray-700" />
+            </button>
+          </>
+        )}
+
+        {/* Slide Indicators */}
+        {totalSlides > 1 && (
+          <div className="flex justify-center gap-2 mt-6">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`h-2 rounded-full transition-all ${
+                  index === currentIndex
+                    ? "bg-pink-600 w-8"
+                    : "bg-gray-300 w-2 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
