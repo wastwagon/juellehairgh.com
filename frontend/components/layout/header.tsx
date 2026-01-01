@@ -222,6 +222,16 @@ export function Header() {
         href: `/brands/${brand.slug}`,
       })) || [],
     },
+    {
+      name: "Wig Care",
+      href: "/categories/wig-care",
+      hasDropdown: false,
+    },
+    {
+      name: "Contact Us",
+      href: "/contact",
+      hasDropdown: false,
+    },
   ];
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -503,25 +513,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Secondary Navigation Row */}
-        <div className="hidden lg:block border-t border-gray-200">
-          <div className="container mx-auto px-3 md:px-4">
-            <nav className="flex items-center gap-4 xl:gap-6 py-2">
-              <Link
-                href="/categories/wig-care"
-                className="text-xs xl:text-sm text-gray-700 hover:text-pink-600 transition-colors whitespace-nowrap"
-              >
-                Wig Care
-              </Link>
-              <Link
-                href="/contact"
-                className="text-xs xl:text-sm text-gray-700 hover:text-pink-600 transition-colors whitespace-nowrap"
-              >
-                Contact Us
-              </Link>
-            </nav>
-          </div>
-        </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
@@ -584,23 +575,6 @@ export function Header() {
                   </div>
                 );
               })}
-              {/* Secondary nav items in mobile */}
-              <div className="pt-4 border-t mt-4 space-y-1">
-                <Link
-                  href="/categories/wig-care"
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Wig Care
-                </Link>
-                <Link
-                  href="/contact"
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Contact Us
-                </Link>
-              </div>
               <button
                 onClick={() => {
                   setSearchModalOpen(true);
