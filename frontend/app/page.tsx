@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { HeroBentoGrid } from "@/components/home/hero-bento-grid";
+import { HeroBanner } from "@/components/home/hero-banner";
 import { FeaturedCollections } from "@/components/home/featured-collections";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { ClearanceProducts } from "@/components/home/clearance-products";
@@ -20,7 +20,7 @@ export default function HomePage() {
       <HashScrollHandler />
       <Header />
       <main className="flex-1 w-full overflow-x-hidden">
-        <HeroBentoGrid />
+        <HeroBanner />
         <div className="bg-white w-full">
           <FeaturedCollections />
         </div>
