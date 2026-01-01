@@ -14,8 +14,28 @@ interface ProductCarouselProps {
 }
 
 export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps) {
+  // All hooks must be called at the top level, before any conditional returns
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  
+  // Calculate items per slide based on screen size
+  const getItemsPerSlide = () => {
+    if (typeof window === "undefined") return 4;
+    if (window.innerWidth >= 1280) return 4; // xl: 4 items
+    if (window.innerWidth >= 1024) return 3; // lg: 3 items
+    if (window.innerWidth >= 640) return 2;  // sm: 2 items
+    return 1; // mobile: 1 item
+  };
+
+  const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerSlide(getItemsPerSlide());
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   
   // Map title to collection slug if not provided
   const slug = collectionSlug || (title === "New Arrivals" ? "new-arrivals" : title === "Best Sellers" ? "best-sellers" : null);
@@ -166,25 +186,6 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
   const maxProducts = 8;
   const productsToShow = displayProducts.slice(0, maxProducts);
   
-  // Calculate items per slide based on screen size
-  const getItemsPerSlide = () => {
-    if (typeof window === "undefined") return 4;
-    if (window.innerWidth >= 1280) return 4; // xl: 4 items
-    if (window.innerWidth >= 1024) return 3; // lg: 3 items
-    if (window.innerWidth >= 640) return 2;  // sm: 2 items
-    return 1; // mobile: 1 item
-  };
-
-  const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
-
-  useEffect(() => {
-    const handleResize = () => {
-      setItemsPerSlide(getItemsPerSlide());
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const totalSlides = productsToShow.length > 0 ? Math.ceil(productsToShow.length / itemsPerSlide) : 0;
 
   // Auto-play functionality
