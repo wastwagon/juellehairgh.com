@@ -416,9 +416,9 @@ export function Header() {
       {/* Main Header */}
       <div className="bg-white/95 backdrop-blur-sm">
         <div className="container mx-auto px-3 md:px-4">
-          <div className="flex h-14 md:h-16 items-center justify-between">
+          <div className="flex h-14 md:h-16 items-center justify-between gap-2">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
               <img
                 src="/logo.png"
                 alt="Juelle Hair"
@@ -427,7 +427,7 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1 relative">
+            <nav className="hidden lg:flex items-center gap-0.5 flex-nowrap relative">
               {navItems.map((item) => {
                 const active = isActive(item.href);
                 const Icon = item.icon;
@@ -436,24 +436,24 @@ export function Header() {
                 return (
                   <div
                     key={item.name}
-                    className="relative"
+                    className="relative flex-shrink-0"
                     onMouseEnter={() => item.hasDropdown && setOpenDropdown(item.name)}
                     onMouseLeave={() => setOpenDropdown(null)}
                   >
                     <Link
                       href={item.href}
                       className={cn(
-                        "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2",
+                        "px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1 xl:gap-1.5 whitespace-nowrap",
                         active
                         ? "bg-pink-600 text-white shadow-lg font-semibold"
                         : "text-gray-700 hover:text-pink-600 hover:bg-pink-50"
                       )}
                     >
-                      {Icon && <Icon className="h-4 w-4" />}
-                      {item.name}
+                      {Icon && <Icon className="h-3.5 w-3.5 xl:h-4 xl:w-4 flex-shrink-0" />}
+                      <span className="truncate">{item.name}</span>
                       {item.hasDropdown && (
                         <ChevronDown className={cn(
-                          "h-3.5 w-3.5 transition-transform duration-200",
+                          "h-3 w-3 xl:h-3.5 xl:w-3.5 transition-transform duration-200 flex-shrink-0",
                           isDropdownOpen && "rotate-180"
                         )} />
                       )}
@@ -506,16 +506,16 @@ export function Header() {
         {/* Secondary Navigation Row */}
         <div className="hidden lg:block border-t border-gray-200">
           <div className="container mx-auto px-3 md:px-4">
-            <nav className="flex items-center space-x-6 py-2">
+            <nav className="flex items-center gap-4 xl:gap-6 py-2">
               <Link
                 href="/categories/wig-care"
-                className="text-sm text-gray-700 hover:text-purple-600 transition-colors"
+                className="text-xs xl:text-sm text-gray-700 hover:text-pink-600 transition-colors whitespace-nowrap"
               >
                 Wig Care
               </Link>
               <Link
                 href="/contact"
-                className="text-sm text-gray-700 hover:text-purple-600 transition-colors"
+                className="text-xs xl:text-sm text-gray-700 hover:text-pink-600 transition-colors whitespace-nowrap"
               >
                 Contact Us
               </Link>
