@@ -6,14 +6,9 @@ export class BrandsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
+    // Return all brands for navigation menu
+    // Brands without products will still show in navigation
     return this.prisma.brand.findMany({
-      where: {
-        products: {
-          some: {
-            isActive: true,
-          },
-        },
-      },
       include: {
         _count: {
           select: {
