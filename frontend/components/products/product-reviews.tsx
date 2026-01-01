@@ -25,8 +25,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   // Check if user is logged in
   const isAuthenticated = typeof window !== "undefined" && !!localStorage.getItem("token");
 
-  // Debug: Log productId on mount
-  if (typeof window !== "undefined") {
+  // Debug: Log productId on mount (development only)
+  if (process.env.NODE_ENV === 'development' && typeof window !== "undefined") {
     console.log("🔍 ProductReviews - productId:", productId, "enabled:", !!productId);
   }
 
@@ -34,17 +34,25 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const { data: reviews = [], isLoading, error } = useQuery<Review[]>({
     queryKey: ["reviews", productId],
     queryFn: async () => {
-      console.log("📥 ProductReviews - Fetching reviews for productId:", productId);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("📥 ProductReviews - Fetching reviews for productId:", productId);
+      }
       if (!productId) {
-        console.warn("⚠️ ProductReviews - No productId provided");
+        if (process.env.NODE_ENV === 'development') {
+          console.warn("⚠️ ProductReviews - No productId provided");
+        }
         return [];
       }
       try {
         const response = await api.get(`/reviews/product/${productId}`);
-        console.log("✅ ProductReviews - Reviews fetched:", response.data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✅ ProductReviews - Reviews fetched:", response.data);
+        }
         return response.data || [];
       } catch (err: any) {
-        console.error("❌ ProductReviews - Error fetching reviews:", err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error("❌ ProductReviews - Error fetching reviews:", err);
+        }
         throw err;
       }
     },
@@ -127,8 +135,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     return `${years} ${years === 1 ? "year" : "years"} ago`;
   };
 
-  // Debug logging
-  if (typeof window !== "undefined") {
+  // Debug logging (development only)
+  if (process.env.NODE_ENV === 'development' && typeof window !== "undefined") {
     console.log("🔍 ProductReviews Debug:", { 
       productId, 
       reviewsCount: reviews.length, 

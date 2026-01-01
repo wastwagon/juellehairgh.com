@@ -93,8 +93,8 @@ export const api = axios.create({
   },
 });
 
-// Log the resolved API base URL on client-side initialization
-if (typeof window !== "undefined") {
+// Log the resolved API base URL on client-side initialization (development only)
+if (process.env.NODE_ENV === 'development' && typeof window !== "undefined") {
   const resolvedUrl = getApiBaseUrl();
   console.log("🔧 API Base URL configured:", resolvedUrl);
 }

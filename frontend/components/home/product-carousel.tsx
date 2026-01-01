@@ -46,10 +46,14 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
       if (!slug) return null;
       try {
         const response = await api.get(`/collections/${slug}`);
-        console.log(`✅ Fetched collection ${slug}:`, response.data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Fetched collection ${slug}:`, response.data);
+        }
         return response.data;
       } catch (err: any) {
-        console.error(`❌ Error fetching collection ${slug}:`, err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`❌ Error fetching collection ${slug}:`, err);
+        }
         return null;
       }
     },
@@ -88,9 +92,12 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
         })
     : [];
 
-  console.log(`📦 ${title} - Products extracted:`, products.length);
-  if (products.length > 0) {
-    console.log(`📦 ${title} - First product:`, products[0]);
+  // Debug logging only in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`📦 ${title} - Products extracted:`, products.length);
+    if (products.length > 0) {
+      console.log(`📦 ${title} - First product:`, products[0]);
+    }
   }
 
   // If no collection or products, fetch recent products instead
@@ -128,7 +135,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
           fetchedProducts = response.data.products || [];
         }
         
-        console.log(`✅ Fetched fallback products for ${title}:`, fetchedProducts.length);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Fetched fallback products for ${title}:`, fetchedProducts.length);
+        }
         // Ensure prices are numbers
         return fetchedProducts.map((p: any) => ({
           ...p,
@@ -138,7 +147,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
             : null,
         }));
       } catch (err: any) {
-        console.error(`❌ Error fetching fallback products for ${title}:`, err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`❌ Error fetching fallback products for ${title}:`, err);
+        }
         return [];
       }
     },
@@ -152,8 +163,11 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     ? products 
     : (fallbackProducts || []).filter((p: Product) => p && p.id && p.title && p.priceGhs);
 
-  console.log(`🎯 ${title} - Display products:`, displayProducts.length);
-  console.log(`🔍 ${title} - Products data:`, displayProducts);
+  // Debug logging only in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🎯 ${title} - Display products:`, displayProducts.length);
+    console.log(`🔍 ${title} - Products data:`, displayProducts);
+  }
 
   // Limit to 8 products for slider - compute early so useEffect can use it
   const maxProducts = 8;
@@ -192,7 +206,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
 
   // Show error state (but still try to show products if available)
   if ((error || fallbackError) && displayProducts.length === 0) {
-    console.error(`❌ ${title} - Error and no products:`, error || fallbackError);
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`❌ ${title} - Error and no products:`, error || fallbackError);
+    }
   }
 
   if (displayProducts.length === 0 && !isLoading && !isLoadingFallback) {
@@ -221,8 +237,8 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     slides.push(productsToShow.slice(i, i + itemsPerSlide));
   }
 
-  // Debug logging
-  if (productsToShow.length === 0 && !isLoading && !isLoadingFallback) {
+  // Debug logging only in development
+  if (process.env.NODE_ENV === 'development' && productsToShow.length === 0 && !isLoading && !isLoadingFallback) {
     console.warn(`⚠️ ${title} - No products to display after filtering`);
     console.warn(`   Collection products:`, collection?.products?.length || 0);
     console.warn(`   Extracted products:`, products.length);
@@ -262,7 +278,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
               >
                 {slideProducts.map((product: Product) => {
                   if (!product || !product.id || !product.title) {
-                    console.warn("Invalid product:", product);
+                    if (process.env.NODE_ENV === 'development') {
+                      console.warn("Invalid product:", product);
+                    }
                     return null;
                   }
                   // Ensure priceGhs is a number

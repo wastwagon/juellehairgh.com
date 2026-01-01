@@ -99,8 +99,8 @@ export function Header() {
         const response = await api.get("/categories");
         const categoriesData = response.data || [];
         
-        // Debug logging in production to help diagnose issues
-        if (typeof window !== "undefined") {
+        // Debug logging only in development
+        if (process.env.NODE_ENV === 'development' && typeof window !== "undefined") {
           console.log("📋 Categories fetched:", categoriesData.length, "categories");
           const braidsCat = categoriesData.find((cat: Category) => cat.slug === "braids");
           if (braidsCat) {
@@ -148,9 +148,9 @@ export function Header() {
   const clipInsCategory = getCategoryBySlug("clip-ins");
   const hairGrowthOilsCategory = getCategoryBySlug("hair-growth-oils");
 
-  // Debug: Log category children counts
+  // Debug: Log category children counts (development only)
   useEffect(() => {
-    if (categories && typeof window !== "undefined") {
+    if (process.env.NODE_ENV === 'development' && categories && typeof window !== "undefined") {
       console.log("📋 Navigation Debug:", {
         braidsChildren: braidsCategory?.children?.length || 0,
         ponytailsChildren: ponytailsCategory?.children?.length || 0,
