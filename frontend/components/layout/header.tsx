@@ -92,18 +92,33 @@ export function Header() {
   }, [flashSale]);
 
   // Fetch categories for navigation
-  const { data: categories } = useQuery<Category[]>({
+  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ["categories", "navigation"],
     queryFn: async () => {
       try {
         const response = await api.get("/categories");
-        return response.data || [];
+        const categoriesData = response.data || [];
+        
+        // Debug logging in production to help diagnose issues
+        if (typeof window !== "undefined") {
+          console.log("📋 Categories fetched:", categoriesData.length, "categories");
+          const braidsCat = categoriesData.find((cat: Category) => cat.slug === "braids");
+          if (braidsCat) {
+            console.log("📋 Braids category children:", braidsCat.children?.length || 0, braidsCat.children);
+          }
+        }
+        
+        return categoriesData;
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("❌ Error fetching categories:", error);
         return [];
       }
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes (reduced for production debugging)
+    retry: 3, // Retry failed requests
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnMount: true, // Always refetch on mount
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
   // Fetch brands for navigation
@@ -132,6 +147,20 @@ export function Header() {
   const laceWigsCategory = getCategoryBySlug("lace-wigs");
   const clipInsCategory = getCategoryBySlug("clip-ins");
   const hairGrowthOilsCategory = getCategoryBySlug("hair-growth-oils");
+
+  // Debug: Log category children counts
+  useEffect(() => {
+    if (categories && typeof window !== "undefined") {
+      console.log("📋 Navigation Debug:", {
+        braidsChildren: braidsCategory?.children?.length || 0,
+        ponytailsChildren: ponytailsCategory?.children?.length || 0,
+        laceWigsChildren: laceWigsCategory?.children?.length || 0,
+        clipInsChildren: clipInsCategory?.children?.length || 0,
+        categoriesError: categoriesError?.message,
+        categoriesLoading,
+      });
+    }
+  }, [categories, braidsCategory, ponytailsCategory, laceWigsCategory, clipInsCategory, categoriesError, categoriesLoading]);
 
   const navItems = [
     { name: "Home", href: "/", icon: Home, hasDropdown: false },
@@ -431,18 +460,26 @@ export function Header() {
                     </Link>
                     
                     {/* Dropdown Menu */}
-                    {item.hasDropdown && isDropdownOpen && item.subItems && item.subItems.length > 0 && (
+                    {item.hasDropdown && isDropdownOpen && (
                       <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-2">
-                        {item.subItems.map((subItem) => (
-                          <Link
-                            key={subItem.href}
-                            href={subItem.href}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
-                            onClick={() => setOpenDropdown(null)}
-                          >
-                            {subItem.name}
-                          </Link>
-                        ))}
+                        {categoriesLoading ? (
+                          <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>
+                        ) : item.subItems && item.subItems.length > 0 ? (
+                          item.subItems.map((subItem) => (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-pink-600 transition-colors"
+                              onClick={() => setOpenDropdown(null)}
+                            >
+                              {subItem.name}
+                            </Link>
+                          ))
+                        ) : (
+                          <div className="px-4 py-2 text-sm text-gray-500">
+                            No subcategories available
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
