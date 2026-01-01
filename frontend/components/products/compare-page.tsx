@@ -20,7 +20,7 @@ export function ComparePage() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Product Comparison</h1>
         <p className="text-gray-600 mb-6">You haven't added any products to compare yet.</p>
         <Link href="/shop-all">
-          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+          <Button className="bg-pink-600 hover:bg-pink-700">
             <ShoppingCart className="h-4 w-4 mr-2" />
             Start Shopping
           </Button>
@@ -88,7 +88,7 @@ export function ComparePage() {
                         )}
                       </p>
                       <Link href={`/products/${product.slug}`}>
-                        <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                        <Button size="sm" className="w-full bg-pink-600 hover:bg-pink-700">
                           View Details
                         </Button>
                       </Link>

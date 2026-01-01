@@ -208,14 +208,14 @@ export function FeaturedCollections() {
 
                 {/* Fallback gradient background if no image */}
                 <div 
-                  className="fallback-gradient absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-500 group-hover:from-pink-600 group-hover:to-purple-600 transition-all duration-300 flex items-center justify-center" 
+                  className="fallback-gradient absolute inset-0 bg-pink-600 group-hover:bg-pink-700 transition-all duration-300 flex items-center justify-center" 
                   style={{ display: collectionImage ? 'none' : 'flex' }}
                 >
                   <IconComponent className="w-16 h-16 text-white/50" />
                 </div>
 
                 {/* Shimmer Effect on Hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
               </Link>
 
               {/* Title - Outside and below the card */}

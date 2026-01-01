@@ -231,7 +231,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
               <Button
                 type="submit"
                 disabled={isSubmitting || rating === 0}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                className="bg-pink-600 hover:bg-pink-700 text-white"
               >
                 <Send className="h-4 w-4 mr-2" />
                 {isSubmitting ? "Submitting..." : "Submit Review"}

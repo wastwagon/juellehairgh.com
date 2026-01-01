@@ -90,9 +90,9 @@ export function HeroBento() {
         {/* Featured Product - Large Card (2x2) */}
         <Link
           href={`/products/${featuredProduct.slug}`}
-          className="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 hover:shadow-2xl transition-all duration-300"
+          className="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-3xl bg-pink-50 hover:shadow-2xl transition-all duration-300"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           <div className="relative h-full flex flex-col p-6 md:p-8">
             {/* Badge */}
@@ -266,7 +266,7 @@ export function HeroBento() {
       <div className="mt-8 md:mt-12 text-center">
         <Link
           href="/shop-all"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-pink-600 text-white rounded-full font-semibold hover:bg-pink-700 hover:shadow-lg hover:scale-105 transition-all duration-300"
         >
           <span>View All Products</span>
           <TrendingUp className="h-5 w-5" />

@@ -196,7 +196,7 @@ export function AppointmentSection() {
                   <Button
                     type="submit"
                     disabled={appointmentMutation.isPending}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="w-full bg-pink-600 hover:bg-pink-700"
                   >
                     <Send className="h-4 w-4 mr-2" />
                     {appointmentMutation.isPending ? "Sending..." : "Book Appointment"}

@@ -256,7 +256,7 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleAddToCart}
               variant="default"
               size="sm"
-              className="w-full h-8 text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium flex items-center justify-center gap-1.5"
+              className="w-full h-8 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium flex items-center justify-center gap-1.5"
               disabled={isOutOfStock}
             >
               <ShoppingCart className="h-3.5 w-3.5" />

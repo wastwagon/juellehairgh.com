@@ -92,7 +92,7 @@ export function HeroBentoGrid() {
           </div>
 
           {/* Text Overlay - Semi-transparent background for text visibility */}
-          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-purple-600/90 via-purple-500/80 to-purple-400/60 p-4 sm:p-6 md:p-8">
+          <div className="absolute inset-x-0 bottom-0 z-20 bg-pink-600/90 p-4 sm:p-6 md:p-8">
             <div className="text-white">
               <h3 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold mb-1.5 sm:mb-2 md:mb-4 line-clamp-2">
                 {largeProduct.title}
@@ -141,7 +141,7 @@ export function HeroBentoGrid() {
             </div>
 
             {/* Text Overlay - Semi-transparent background for text visibility */}
-            <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-pink-500/90 via-pink-400/80 to-pink-300/60 p-3 sm:p-4 md:p-6">
+            <div className="absolute inset-x-0 bottom-0 z-20 bg-pink-600/90 p-3 sm:p-4 md:p-6">
               <div className="text-white">
                 <h3 className="text-sm sm:text-base md:text-lg font-bold mb-1.5 sm:mb-2 line-clamp-2">
                   {topRightProduct.title}
@@ -191,7 +191,7 @@ export function HeroBentoGrid() {
             </div>
 
             {/* Text Overlay - Semi-transparent background for text visibility */}
-            <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-red-500/90 via-pink-400/80 to-orange-300/60 p-3 sm:p-4 md:p-6">
+            <div className="absolute inset-x-0 bottom-0 z-20 bg-pink-600/90 p-3 sm:p-4 md:p-6">
               <div className="text-white">
                 <h3 className="text-sm sm:text-base md:text-lg font-bold mb-1.5 sm:mb-2 line-clamp-2">
                   {bottomLeftProduct.title}
@@ -241,7 +241,7 @@ export function HeroBentoGrid() {
             </div>
 
             {/* Text Overlay - Semi-transparent background for text visibility */}
-            <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-purple-400/90 via-purple-300/80 to-pink-200/60 p-3 sm:p-4 md:p-6">
+            <div className="absolute inset-x-0 bottom-0 z-20 bg-pink-600/90 p-3 sm:p-4 md:p-6">
               <div className="text-white">
                 <h3 className="text-sm sm:text-base md:text-lg font-bold mb-1.5 sm:mb-2 line-clamp-2">
                   {bottomRightProduct.title}
