@@ -165,14 +165,14 @@ export function ProductCard({ product }: ProductCardProps) {
           
           {/* Sale Badge - Hide if out of stock */}
           {!isOutOfStock && displayComparePrice && discountPercent > 0 && (
-            <div className="absolute top-2 left-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
+            <div className="absolute top-2 left-2 bg-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
               Save {discountPercent}%
             </div>
           )}
           
           {/* NEW Badge */}
           {product.badges?.includes("NEW") && (
-            <div className="absolute top-2 left-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
+            <div className="absolute top-2 left-2 bg-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
               NEW
             </div>
           )}
@@ -190,7 +190,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="p-3 md:p-4 flex flex-col flex-grow">
         {/* Title */}
         <Link href={`/products/${product.slug}`}>
-          <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 transition-all text-gray-900">
+          <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 hover:text-pink-600 transition-all text-gray-900">
             {product.title}
           </h3>
         </Link>
@@ -244,7 +244,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <Button
                 variant="default"
                 size="sm"
-                className="w-full h-8 text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium"
+                className="w-full h-8 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium"
                 disabled={isOutOfStock}
               >
                 View Options

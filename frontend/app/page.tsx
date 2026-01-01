@@ -16,7 +16,7 @@ import { HashScrollHandler } from "@/components/home/hash-scroll-handler";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-purple-50/20 to-pink-50/20">
+    <div className="min-h-screen flex flex-col bg-white">
       <HashScrollHandler />
       <Header />
       <main className="flex-1 w-full overflow-x-hidden">

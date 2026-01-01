@@ -58,7 +58,7 @@ export default function CheckoutCallbackPage() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1 flex items-center justify-center px-4">
         <div className="max-w-md w-full">

@@ -416,8 +416,8 @@ export function Header() {
                       className={cn(
                         "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2",
                         active
-                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg font-semibold"
-                          : "text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                        ? "bg-pink-600 text-white shadow-lg font-semibold"
+                        : "text-gray-700 hover:text-pink-600 hover:bg-pink-50"
                       )}
                     >
                       {Icon && <Icon className="h-4 w-4" />}

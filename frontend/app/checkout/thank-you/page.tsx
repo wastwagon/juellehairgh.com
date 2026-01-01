@@ -55,7 +55,7 @@ export default function ThankYouPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -76,14 +76,14 @@ export default function ThankYouPage() {
 
   if (!order && !loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full mb-6 shadow-lg animate-scale-in">
               <CheckCircle2 className="h-14 w-14 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-pink-600">
               Thank You for Your Order!
             </h1>
             <p className="text-lg text-gray-600 mb-8">
@@ -92,7 +92,7 @@ export default function ThankYouPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/account/orders"
-                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center justify-center px-8 py-4 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 View Orders
@@ -144,7 +144,7 @@ export default function ThankYouPage() {
                 <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
               </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent animate-fade-in">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-pink-600 animate-fade-in">
               🎉 Order Confirmed! 🎉
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-2">
@@ -159,7 +159,7 @@ export default function ThankYouPage() {
           {order && (
             <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 mb-8 border border-gray-100 transform transition-all hover:shadow-3xl">
               {/* Header with Logo */}
-              <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-gradient-to-r from-purple-100 to-pink-100">
+              <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-pink-100">
                 <div className="relative">
                   <Image
                     src="/logo.png"
@@ -183,7 +183,7 @@ export default function ThankYouPage() {
                     })}
                   </p>
                 </div>
-                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-pink-50 rounded-lg">
                   <Gift className="h-5 w-5 text-purple-600" />
                   <span className="text-sm font-semibold text-purple-600">Order Placed</span>
                 </div>
@@ -244,7 +244,7 @@ export default function ThankYouPage() {
                   {order.items?.map((item, index) => (
                     <div 
                       key={item.id} 
-                      className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-purple-50/30 rounded-xl border border-gray-100 hover:shadow-md transition-all animate-slide-in"
+                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all animate-slide-in"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-100">
@@ -298,11 +298,11 @@ export default function ThankYouPage() {
           )}
 
           {/* What's Next Section - Premium */}
-          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 rounded-2xl p-8 md:p-10 mb-8 border-2 border-purple-100 shadow-xl">
+          <div className="bg-pink-50 rounded-2xl p-8 md:p-10 mb-8 border-2 border-pink-100 shadow-xl">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What Happens Next?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full mb-4 shadow-lg">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-600 rounded-full mb-4 shadow-lg">
                   <Package className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2 text-lg">Order Processing</h3>
@@ -311,7 +311,7 @@ export default function ThankYouPage() {
                 </p>
               </div>
               <div className="text-center p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full mb-4 shadow-lg">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-600 rounded-full mb-4 shadow-lg">
                   <Truck className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2 text-lg">Shipping</h3>
@@ -343,14 +343,14 @@ export default function ThankYouPage() {
             <div className="flex flex-wrap gap-6">
               <a 
                 href="mailto:sales@juellehairgh.com" 
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-purple-600 hover:from-purple-100 hover:to-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                className="flex items-center gap-3 px-6 py-3 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 <Mail className="h-5 w-5" />
                 <span className="font-semibold">sales@juellehairgh.com</span>
               </a>
               <a 
                 href="tel:+233539506949" 
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-purple-600 hover:from-purple-100 hover:to-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                className="flex items-center gap-3 px-6 py-3 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 <Phone className="h-5 w-5" />
                 <span className="font-semibold">+233 539506949</span>
@@ -363,7 +363,7 @@ export default function ThankYouPage() {
             {order && (
               <Link
                 href={`/account/orders/${order.id}`}
-                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center justify-center px-8 py-4 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 View Order Details

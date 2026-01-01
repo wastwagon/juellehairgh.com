@@ -9,9 +9,9 @@ interface SectionBadgeProps {
 
 export function SectionBadge({ children, variant = "gradient", className }: SectionBadgeProps) {
   const variantClasses = {
-    purple: "bg-gradient-to-r from-purple-600 to-purple-700",
-    pink: "bg-gradient-to-r from-pink-600 to-rose-600",
-    gradient: "bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600",
+    purple: "bg-pink-600",
+    pink: "bg-pink-600",
+    gradient: "bg-pink-600",
   };
 
   return (

@@ -62,17 +62,17 @@ export function RegisterForm() {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-purple-500 to-rose-500 rounded-3xl opacity-10 blur-3xl" />
+      {/* Background */}
+      <div className="absolute inset-0 bg-pink-600 rounded-3xl opacity-5 blur-3xl" />
       
       <Card className="relative border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-8 pt-8">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+          <div className="mx-auto mb-4 w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl md:text-3xl font-bold text-pink-600">
             Join Us Today
           </CardTitle>
           <CardDescription className="text-base mt-2">
