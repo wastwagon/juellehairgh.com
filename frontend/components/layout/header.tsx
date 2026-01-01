@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Heart, Search, Menu, X, Home, Phone, Mail, Package, Facebook, Instagram, Twitter, Clock, Zap, Sparkles } from "lucide-react";
+import { ShoppingCart, User, Heart, Search, Menu, X, Home, Phone, Mail, Package, Facebook, Instagram, Twitter, Clock, Zap, Sparkles, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { SearchBar } from "./search-bar";
@@ -11,6 +11,7 @@ import { SearchModal } from "./search-modal";
 import { CurrencySelector } from "./currency-selector";
 import { useCartStore } from "@/store/cart-store";
 import { cn } from "@/lib/utils";
+import { Category, Brand } from "@/types";
 
 export function Header() {
   const { getTotalItems, items } = useCartStore();
@@ -90,16 +91,111 @@ export function Header() {
     return () => clearInterval(interval);
   }, [flashSale]);
 
+  // Fetch categories for navigation
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["categories", "navigation"],
+    queryFn: async () => {
+      try {
+        const response = await api.get("/categories");
+        return response.data || [];
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch brands for navigation
+  const { data: brands } = useQuery<Brand[]>({
+    queryKey: ["brands", "navigation"],
+    queryFn: async () => {
+      try {
+        const response = await api.get("/brands");
+        return response.data || [];
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Build navigation structure matching the website menu
+  // Order: Home, Shop All, Braids, Ponytails, Lace Wigs, Clip-Ins, Hair Growth Oils, Brands
+  const getCategoryBySlug = (slug: string) => {
+    return categories?.find((cat) => cat.slug === slug);
+  };
+
+  const braidsCategory = getCategoryBySlug("braids");
+  const ponytailsCategory = getCategoryBySlug("ponytails");
+  const laceWigsCategory = getCategoryBySlug("lace-wigs");
+  const clipInsCategory = getCategoryBySlug("clip-ins");
+  const hairGrowthOilsCategory = getCategoryBySlug("hair-growth-oils");
+
   const navItems = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Shop All", href: "/categories/shop-all" },
-    { name: "Sale", href: "/sale" },
-    { name: "Lace Wigs", href: "/categories/lace-wigs" },
-    { name: "Braids", href: "/categories/braids" },
-    { name: "Ponytails", href: "/categories/ponytails" },
-    { name: "Hair Care", href: "/categories/wig-care" },
-    { name: "Clip-ins", href: "/categories/clip-ins" },
+    { name: "Home", href: "/", icon: Home, hasDropdown: false },
+    { name: "Shop All", href: "/categories/shop-all", hasDropdown: false },
+    {
+      name: "Braids",
+      href: "/categories/braids",
+      hasDropdown: true,
+      subItems: braidsCategory?.children?.map((child) => ({
+        name: child.name,
+        href: `/categories/${child.slug}`,
+      })) || [],
+    },
+    {
+      name: "Ponytails",
+      href: "/categories/ponytails",
+      hasDropdown: true,
+      subItems: ponytailsCategory?.children?.map((child) => ({
+        name: child.name,
+        href: `/categories/${child.slug}`,
+      })) || [],
+    },
+    {
+      name: "Lace Wigs",
+      href: "/categories/lace-wigs",
+      hasDropdown: true,
+      subItems: [
+        ...(laceWigsCategory?.children?.map((child) => ({
+          name: child.name,
+          href: `/categories/${child.slug}`,
+        })) || []),
+        // Add Wig Care to Lace Wigs dropdown (it's standalone but appears here too)
+        ...(getCategoryBySlug("wig-care") ? [{
+          name: "Wig Care",
+          href: "/categories/wig-care",
+        }] : []),
+      ],
+    },
+    {
+      name: "Clip-Ins",
+      href: "/categories/clip-ins",
+      hasDropdown: true,
+      subItems: clipInsCategory?.children?.map((child) => ({
+        name: child.name,
+        href: `/categories/${child.slug}`,
+      })) || [],
+    },
+    {
+      name: "Hair Growth Oils",
+      href: "/categories/hair-growth-oils",
+      hasDropdown: false,
+    },
+    {
+      name: "Brands",
+      href: "/brands",
+      hasDropdown: true,
+      subItems: brands?.map((brand) => ({
+        name: brand.name,
+        href: `/brands/${brand.slug}`,
+      })) || [],
+    },
   ];
+
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -247,24 +343,54 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1">
+            <nav className="hidden lg:flex items-center space-x-1 relative">
               {navItems.map((item) => {
                 const active = isActive(item.href);
                 const Icon = item.icon;
+                const isDropdownOpen = openDropdown === item.name;
+                
                 return (
-                  <Link
+                  <div
                     key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2",
-                      active
-                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg font-semibold"
-                        : "text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
-                    )}
+                    className="relative"
+                    onMouseEnter={() => item.hasDropdown && setOpenDropdown(item.name)}
+                    onMouseLeave={() => setOpenDropdown(null)}
                   >
-                    {Icon && <Icon className="h-4 w-4" />}
-                    {item.name}
-                  </Link>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2",
+                        active
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg font-semibold"
+                          : "text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                      )}
+                    >
+                      {Icon && <Icon className="h-4 w-4" />}
+                      {item.name}
+                      {item.hasDropdown && (
+                        <ChevronDown className={cn(
+                          "h-3.5 w-3.5 transition-transform duration-200",
+                          isDropdownOpen && "rotate-180"
+                        )} />
+                      )}
+                    </Link>
+                    
+                    {/* Dropdown Menu */}
+                    {item.hasDropdown && isDropdownOpen && item.subItems && item.subItems.length > 0 && (
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-2">
+                        {item.subItems.map((subItem) => (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
+                            onClick={() => setOpenDropdown(null)}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </nav>
@@ -311,6 +437,26 @@ export function Header() {
           </div>
         </div>
 
+        {/* Secondary Navigation Row */}
+        <div className="hidden lg:block border-t border-gray-200">
+          <div className="container mx-auto px-3 md:px-4">
+            <nav className="flex items-center space-x-6 py-2">
+              <Link
+                href="/categories/wig-care"
+                className="text-sm text-gray-700 hover:text-purple-600 transition-colors"
+              >
+                Wig Care
+              </Link>
+              <Link
+                href="/contact"
+                className="text-sm text-gray-700 hover:text-purple-600 transition-colors"
+              >
+                Contact Us
+              </Link>
+            </nav>
+          </div>
+        </div>
+
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t bg-white shadow-lg">
@@ -318,23 +464,77 @@ export function Header() {
               {navItems.map((item) => {
                 const active = isActive(item.href);
                 const Icon = item.icon;
+                const isDropdownOpen = openDropdown === item.name;
+                
                 return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all",
-                      active
-                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg font-semibold"
-                        : "text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                  <div key={item.name}>
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all flex-1",
+                          active
+                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg font-semibold"
+                            : "text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                        )}
+                        onClick={() => {
+                          if (!item.hasDropdown) {
+                            setMobileMenuOpen(false);
+                          }
+                        }}
+                      >
+                        {Icon && <Icon className="h-5 w-5" />}
+                        {item.name}
+                      </Link>
+                      {item.hasDropdown && (
+                        <button
+                          onClick={() => setOpenDropdown(isDropdownOpen ? null : item.name)}
+                          className="px-4 py-3 text-gray-700"
+                        >
+                          <ChevronDown className={cn(
+                            "h-4 w-4 transition-transform duration-200",
+                            isDropdownOpen && "rotate-180"
+                          )} />
+                        </button>
+                      )}
+                    </div>
+                    {item.hasDropdown && isDropdownOpen && item.subItems && item.subItems.length > 0 && (
+                      <div className="pl-8 pr-4 pb-2 space-y-1">
+                        {item.subItems.map((subItem) => (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className="block px-4 py-2 text-sm text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              setOpenDropdown(null);
+                            }}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
                     )}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {Icon && <Icon className="h-5 w-5" />}
-                    {item.name}
-                  </Link>
+                  </div>
                 );
               })}
+              {/* Secondary nav items in mobile */}
+              <div className="pt-4 border-t mt-4 space-y-1">
+                <Link
+                  href="/categories/wig-care"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Wig Care
+                </Link>
+                <Link
+                  href="/contact"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact Us
+                </Link>
+              </div>
               <button
                 onClick={() => {
                   setSearchModalOpen(true);
