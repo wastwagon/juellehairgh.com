@@ -173,7 +173,7 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     <section className="py-8 md:py-12 container mx-auto px-4">
       <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
         <div className="flex flex-col items-center gap-3">
-          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
             {title}
           </span>
         </div>

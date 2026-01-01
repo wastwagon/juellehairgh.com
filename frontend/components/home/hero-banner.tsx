@@ -48,7 +48,7 @@ export function HeroBanner() {
       >
         <source src="/hero-banner-video.mp4" type="video/mp4" />
         {/* Fallback for browsers that don't support video */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600" />
+        <div className="absolute inset-0 bg-pink-600" />
       </video>
 
     </section>

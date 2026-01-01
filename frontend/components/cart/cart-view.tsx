@@ -46,7 +46,7 @@ export function CartView() {
         <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
         <Link
           href="/"
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg inline-block shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] font-semibold"
+          className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg inline-block shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] font-semibold"
         >
           Continue Shopping
         </Link>
@@ -82,7 +82,7 @@ export function CartView() {
               </div>
               <div className="flex-1 min-w-0">
                 <Link href={`/products/${item.product?.slug}`}>
-                  <h3 className="font-semibold text-gray-900 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 transition-all">
+                  <h3 className="font-semibold text-gray-900 hover:text-pink-600 transition-all">
                     {item.product?.title || "Product"}
                   </h3>
                 </Link>
@@ -180,7 +180,7 @@ export function CartView() {
             )}
             <Link
               href="/checkout"
-              className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl text-center block transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl text-center block transition-all duration-300 transform hover:scale-[1.02]"
             >
               Checkout
             </Link>

@@ -25,12 +25,12 @@ const fallbackIcons = [
   <Zap key="zap" className="h-8 w-8" />,
 ];
 
-// Fallback gradients
-const fallbackGradients = [
-  "from-purple-500 via-pink-500 to-purple-600",
-  "from-pink-500 via-rose-500 to-pink-600",
-  "from-rose-500 via-purple-500 to-pink-600",
-  "from-purple-600 via-pink-600 to-rose-600",
+// Fallback colors (no gradients)
+const fallbackColors = [
+  "bg-pink-600",
+  "bg-pink-600",
+  "bg-pink-600",
+  "bg-pink-600",
 ];
 
 export function PromotionalBanners() {
@@ -104,7 +104,7 @@ export function PromotionalBanners() {
         {activeBanners.map((banner, index) => {
           const imageUrl = getImageUrl(banner.image);
           const icon = fallbackIcons[index % fallbackIcons.length];
-          const gradient = fallbackGradients[index % fallbackGradients.length];
+          const bgColor = fallbackColors[index % fallbackColors.length];
           const link = banner.link || "/categories/shop-all";
           const buttonText = banner.link?.includes("lace") ? "Explore Collection" :
                            banner.link?.includes("braid") ? "View Styles" :
@@ -115,7 +115,7 @@ export function PromotionalBanners() {
             <Link
               key={banner.id}
               href={link}
-              className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${gradient} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 aspect-[4/3]`}
+              className={`group relative overflow-hidden rounded-xl ${bgColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 aspect-[4/3]`}
             >
               {/* Background Image */}
               {imageUrl ? (
