@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export function HeroBanner() {
   return (
-    <section className="relative w-full h-[350px] md:h-[450px] lg:h-[550px] overflow-hidden">
+    <section className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
       {/* Hero Image */}
       <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
         <Image
