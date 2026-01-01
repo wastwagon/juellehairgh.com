@@ -299,11 +299,6 @@ export function Header() {
                 <Heart className="h-4 w-4 md:h-4.5 md:w-4.5 text-white hover:text-pink-300 transition-colors" />
               </Link>
               
-              {/* Currency Selector */}
-              <div className="hidden md:block">
-                <CurrencySelector />
-              </div>
-              
               {/* Shopping Cart Icon */}
               <Link 
                 href="/cart" 
@@ -376,6 +371,14 @@ export function Header() {
                   <Twitter className="h-4 w-4" />
                 </a>
               )}
+              
+              {/* Separator */}
+              <span className="text-white/30 hidden md:inline mx-1">|</span>
+              
+              {/* Currency Selector */}
+              <div className="hidden md:block">
+                <CurrencySelector />
+              </div>
             </div>
           </div>
         </div>
