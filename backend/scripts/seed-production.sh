@@ -24,9 +24,25 @@ fi
 echo "✅ DATABASE_URL is set"
 echo ""
 
-# Check if we're in the backend directory
+# Check if we're in the backend directory or need to navigate
+if [ ! -f "package.json" ]; then
+    if [ -d "backend" ]; then
+        echo "📁 Navigating to backend directory..."
+        cd backend
+    elif [ -f "../package.json" ] && [ -d "../prisma" ]; then
+        echo "📁 Navigating to backend directory..."
+        cd ..
+    else
+        echo "❌ ERROR: Please run this script from the backend directory or project root"
+        echo "   Current directory: $(pwd)"
+        exit 1
+    fi
+fi
+
+# Verify we're in the right place
 if [ ! -f "package.json" ] || [ ! -d "prisma" ]; then
-    echo "❌ ERROR: Please run this script from the backend directory"
+    echo "❌ ERROR: Could not find package.json or prisma directory"
+    echo "   Current directory: $(pwd)"
     exit 1
 fi
 
