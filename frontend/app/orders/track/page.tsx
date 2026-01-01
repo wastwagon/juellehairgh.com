@@ -271,7 +271,7 @@ export default function OrderTrackingPage() {
                           {/* Connecting line */}
                           {index < statusSteps.length - 1 && (
                             <div className={`absolute left-5 top-10 w-0.5 h-full ${
-                              isCompleted ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-gray-200"
+                              isCompleted ? "bg-pink-600" : "bg-gray-200"
                             }`} />
                           )}
                           <div className={`relative flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-lg transition-all duration-300 ${
@@ -384,7 +384,7 @@ export default function OrderTrackingPage() {
               {/* Contact Information */}
               <div className="relative mb-8">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-200/30 via-pink-200/30 to-purple-200/30 rounded-3xl blur-3xl" />
-                <div className="relative bg-gradient-to-r from-purple-50/90 to-pink-50/90 backdrop-blur-xl rounded-2xl p-6 md:p-8 border-2 border-purple-200/50 shadow-xl">
+                <div className="relative bg-pink-50/90 backdrop-blur-xl rounded-2xl p-6 md:p-8 border-2 border-pink-200/50 shadow-xl">
                 <h3 className="font-semibold text-gray-900 mb-4">Need Help?</h3>
                 <p className="text-sm text-gray-600 mb-4">
                   If you have any questions about your order, please contact us.
