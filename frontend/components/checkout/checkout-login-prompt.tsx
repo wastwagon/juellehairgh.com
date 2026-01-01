@@ -57,7 +57,7 @@ export function CheckoutLoginPrompt({ onLoginSuccess }: CheckoutLoginPromptProps
   const registerUrl = `/auth/register?redirect=${encodeURIComponent("/checkout")}`;
 
   return (
-    <Card className="mb-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 shadow-lg">
+    <Card className="mb-6 border-2 border-pink-200 bg-pink-50 shadow-lg">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">

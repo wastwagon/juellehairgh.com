@@ -249,7 +249,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                   window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
                 }
               }}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              className="bg-pink-600 hover:bg-pink-700 text-white"
             >
               Login to Review
             </Button>

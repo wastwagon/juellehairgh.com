@@ -145,7 +145,7 @@ export function FeaturedCollections() {
   return (
     <section className="py-8 md:py-16 container mx-auto px-4">
       <div className="flex justify-center mb-6 md:mb-8">
-        <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white text-xs md:text-sm font-bold shadow-lg">
+        <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
           Shop by Collection
         </span>
       </div>

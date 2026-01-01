@@ -114,7 +114,7 @@ export default function ThankYouPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-white relative overflow-hidden">
       {/* Confetti Animation */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">

@@ -104,7 +104,7 @@ export default function OrderTrackingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50/40 via-white to-pink-50/40">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
       <main className="flex-1">
         <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
@@ -115,11 +115,11 @@ export default function OrderTrackingPage() {
           {/* Premium Search Form */}
           <div className="relative mb-8">
             {/* Decorative background elements */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-purple-100/20 rounded-3xl blur-3xl" />
+            <div className="absolute inset-0 bg-pink-100/20 rounded-3xl blur-3xl" />
             <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-100/50 border border-purple-100/50 p-8 md:p-10">
               <form onSubmit={handleSearch} className="space-y-6">
                 <div className="text-center mb-6">
-                  <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-200/50 mb-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-pink-600 shadow-lg shadow-pink-200/50 mb-4">
                     <Search className="h-8 w-8 md:h-10 md:w-10 text-white" />
                   </div>
                   <p className="text-gray-600 text-sm md:text-base">
@@ -162,7 +162,7 @@ export default function OrderTrackingPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-200/50 hover:shadow-xl hover:shadow-purple-300/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full px-8 py-4 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-pink-200/50 hover:shadow-xl hover:shadow-pink-300/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {loading ? (
                     <>
@@ -192,12 +192,12 @@ export default function OrderTrackingPage() {
             <>
               {/* Order Summary */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-purple-100/20 rounded-3xl blur-3xl" />
+                <div className="absolute inset-0 bg-pink-100/20 rounded-3xl blur-3xl" />
                 <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl shadow-purple-100/50 border border-purple-100/50 p-8 md:p-10">
                 <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-purple-100/50">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl blur-md opacity-30" />
-                    <div className="relative bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl shadow-lg">
+                    <div className="absolute inset-0 bg-pink-600 rounded-xl blur-md opacity-30" />
+                    <div className="relative bg-pink-600 p-3 rounded-xl shadow-lg">
                       <Image
                         src="/logo.png"
                         alt="Juelle Hair"
@@ -208,7 +208,7 @@ export default function OrderTrackingPage() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <h2 className="text-2xl md:text-3xl font-bold text-pink-600">
                       Order #{order.id.slice(0, 8).toUpperCase()}
                     </h2>
                     <p className="text-sm text-gray-600 mt-1">
@@ -222,7 +222,7 @@ export default function OrderTrackingPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
-                  <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl p-4 border border-purple-100/50">
+                  <div className="bg-pink-50/50 rounded-xl p-4 border border-pink-100/50">
                     <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Order Status</p>
                     <div className="flex items-center gap-2">
                       {getStatusIcon(order.status)}
@@ -231,24 +231,24 @@ export default function OrderTrackingPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl p-4 border border-purple-100/50">
+                  <div className="bg-pink-50/50 rounded-xl p-4 border border-pink-100/50">
                     <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Payment Status</p>
                     <p className={`text-lg font-bold ${order.paymentStatus === "PAID" ? "text-green-600" : "text-yellow-600"}`}>
                       {order.paymentStatus}
                     </p>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl p-4 border border-purple-100/50">
+                  <div className="bg-pink-50/50 rounded-xl p-4 border border-pink-100/50">
                     <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Order Total</p>
-                    <p className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <p className="text-xl font-bold text-pink-600">
                       {formatCurrency(Number(order.totalGhs), "GHS")}
                     </p>
                   </div>
                 </div>
 
                 {order.trackingNumber && (
-                  <div className="bg-gradient-to-r from-purple-50/80 to-pink-50/80 backdrop-blur-sm border-2 border-purple-200/50 rounded-xl p-5 mb-6 shadow-sm">
+                  <div className="bg-pink-50/80 backdrop-blur-sm border-2 border-pink-200/50 rounded-xl p-5 mb-6 shadow-sm">
                     <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Tracking Number</p>
-                    <p className="text-xl font-mono font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <p className="text-xl font-mono font-bold text-pink-600">
                       {order.trackingNumber}
                     </p>
                   </div>
@@ -257,7 +257,7 @@ export default function OrderTrackingPage() {
                 {/* Status Timeline */}
                 <div className="border-t-2 border-purple-100/50 pt-6">
                   <h3 className="font-bold text-lg text-gray-900 mb-6 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full" />
+                    <div className="w-1 h-6 bg-pink-600 rounded-full" />
                     Order Status Timeline
                   </h3>
                   <div className="relative">
@@ -276,7 +276,7 @@ export default function OrderTrackingPage() {
                           )}
                           <div className={`relative flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-lg transition-all duration-300 ${
                             isCompleted
-                              ? "bg-gradient-to-br from-purple-600 to-pink-600 border-purple-600 text-white scale-110"
+                              ? "bg-pink-600 border-pink-600 text-white scale-110"
                               : "bg-white border-gray-300 text-gray-400"
                           }`}>
                             {isCompleted ? (
@@ -296,7 +296,7 @@ export default function OrderTrackingPage() {
                               {step.description}
                             </p>
                             {isCurrent && (
-                              <span className="inline-block mt-2 px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-semibold rounded-full border border-purple-200">
+                              <span className="inline-block mt-2 px-3 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full border border-pink-200">
                                 Current Status
                               </span>
                             )}
@@ -311,7 +311,7 @@ export default function OrderTrackingPage() {
 
               {/* Shipping Address */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-purple-100/20 rounded-3xl blur-3xl" />
+                <div className="absolute inset-0 bg-pink-100/20 rounded-3xl blur-3xl" />
                 <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-purple-100/50 border border-purple-100/50 p-6 md:p-8">
                 <div className="flex items-center gap-2 mb-4">
                   <MapPin className="h-5 w-5 text-purple-600" />
@@ -330,13 +330,13 @@ export default function OrderTrackingPage() {
 
               {/* Order Items */}
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-100/20 via-pink-100/20 to-purple-100/20 rounded-3xl blur-3xl" />
+                <div className="absolute inset-0 bg-pink-100/20 rounded-3xl blur-3xl" />
                 <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-purple-100/50 border border-purple-100/50 p-6 md:p-8">
                 <h3 className="font-semibold text-gray-900 mb-4">Order Items</h3>
                 <div className="space-y-3">
                   {order.items?.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-purple-100/50 hover:border-purple-200/50 transition-all hover:shadow-md">
-                      <div className="relative w-20 h-20 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl flex items-center justify-center border-2 border-purple-100/50 overflow-hidden">
+                      <div className="relative w-20 h-20 bg-pink-50 rounded-xl flex items-center justify-center border-2 border-pink-100/50 overflow-hidden">
                         {item.product?.images?.[0] ? (
                           <Image
                             src={item.product.images[0]}
@@ -371,7 +371,7 @@ export default function OrderTrackingPage() {
                         <p className="text-sm text-gray-600 font-medium">Quantity: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        <p className="font-bold text-lg text-pink-600">
                           {formatCurrency(Number(item.priceGhs) * item.quantity, "GHS")}
                         </p>
                       </div>
@@ -406,7 +406,7 @@ export default function OrderTrackingPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                 <Link
                   href={`/account/orders/${order.id}`}
-                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-xl hover:shadow-purple-300/50 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-pink-600 text-white rounded-xl font-semibold hover:bg-pink-700 transition-all duration-300 shadow-lg shadow-pink-200/50 hover:shadow-xl hover:shadow-pink-300/50 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   View Full Order Details
                 </Link>

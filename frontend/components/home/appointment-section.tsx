@@ -61,7 +61,7 @@ export function AppointmentSection() {
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <section id="appointment" className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 py-12 md:py-16 lg:py-20">
+    <section id="appointment" className="bg-pink-50 py-12 md:py-16 lg:py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">

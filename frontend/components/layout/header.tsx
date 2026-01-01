@@ -503,8 +503,8 @@ export function Header() {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all flex-1",
                           active
-                            ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg font-semibold"
-                            : "text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                            ? "bg-pink-600 text-white shadow-lg font-semibold"
+                            : "text-gray-700 hover:bg-pink-50"
                         )}
                         onClick={() => {
                           if (!item.hasDropdown) {

@@ -115,7 +115,7 @@ export function TestimonialsSection() {
 
   if (isLoading) {
     return (
-      <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50">
+      <section className="py-8 sm:py-12 md:py-16 bg-pink-50">
         <div className="container mx-auto px-3 sm:px-4 md:px-6">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -133,7 +133,7 @@ export function TestimonialsSection() {
   if (!reviews || reviews.length === 0) {
     if (isLoading) {
       return (
-        <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50">
+        <section className="py-8 sm:py-12 md:py-16 bg-pink-50">
           <div className="container mx-auto px-3 sm:px-4 md:px-6">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
