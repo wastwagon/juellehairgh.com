@@ -82,15 +82,15 @@ export function CurrencySelector() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors border border-gray-200">
-          <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-xs leading-none shadow-sm">
+        <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors border border-gray-200">
+          <span className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[10px] leading-none shadow-sm">
             {currentCurrency.flag}
           </span>
           <div className="flex items-center gap-1">
-            <span className="font-medium text-sm text-gray-700">
+            <span className="font-medium text-xs text-gray-700">
               {currentCurrency.code}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-[10px] text-gray-500">
               {currentCurrency.symbol}
             </span>
           </div>

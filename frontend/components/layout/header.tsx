@@ -279,26 +279,78 @@ export function Header() {
               </div>
             ) : null}
 
-            {/* Right Side - Order Tracking & Social Media */}
-            <div className="flex items-center gap-3 md:gap-4">
+            {/* Right Side - Icons, Order Tracking & Social Media */}
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Search Icon */}
+              <button
+                onClick={() => setSearchModalOpen(true)}
+                className="p-1.5 hover:bg-white/10 rounded transition-all duration-200"
+                title="Search"
+              >
+                <Search className="h-4 w-4 md:h-4.5 md:w-4.5 text-white hover:text-gray-300 transition-colors" />
+              </button>
+              
+              {/* Wishlist Icon */}
+              <Link 
+                href="/account/wishlist" 
+                className="p-1.5 hover:bg-white/10 rounded relative transition-all duration-200"
+                title="Wishlist"
+              >
+                <Heart className="h-4 w-4 md:h-4.5 md:w-4.5 text-white hover:text-pink-300 transition-colors" />
+              </Link>
+              
+              {/* Currency Selector */}
+              <div className="hidden md:block">
+                <CurrencySelector />
+              </div>
+              
+              {/* Shopping Cart Icon */}
+              <Link 
+                href="/cart" 
+                className="p-1.5 hover:bg-white/10 rounded relative transition-all duration-200"
+                title="Shopping Cart"
+              >
+                <ShoppingCart className="h-4 w-4 md:h-4.5 md:w-4.5 text-white hover:text-gray-300 transition-colors" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-semibold shadow-lg">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+              
+              {/* User Profile Icon */}
+              <Link
+                href="/account"
+                className="p-1.5 hover:bg-white/10 rounded transition-all duration-200"
+                title="My Account"
+              >
+                <User className="h-4 w-4 md:h-4.5 md:w-4.5 text-white hover:text-gray-300 transition-colors" />
+              </Link>
+              
+              {/* Separator */}
+              <span className="text-white/30 hidden md:inline mx-1">|</span>
+              
+              {/* Order Tracking */}
               <Link
                 href="/orders/track"
-                className="flex items-center gap-1.5 hover:text-gray-300 transition-colors"
+                className="hidden md:flex items-center gap-1.5 hover:text-gray-300 transition-colors"
               >
                 <Package className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Order Tracking</span>
+                <span className="hidden lg:inline">Order Tracking</span>
               </Link>
+              
+              {/* Social Media Icons */}
               {facebook && (
                 <>
-                  <span className="text-white/60 hidden md:inline">|</span>
+                  <span className="text-white/30 hidden md:inline mx-1">|</span>
                   <a
                     href={facebook}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
+                    className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
                     title="Facebook"
                   >
-                    <Facebook className="h-5 w-5" />
+                    <Facebook className="h-4 w-4" />
                   </a>
                 </>
               )}
@@ -307,10 +359,10 @@ export function Header() {
                   href={instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
+                  className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
                   title="Instagram"
                 >
-                  <Instagram className="h-5 w-5" />
+                  <Instagram className="h-4 w-4" />
                 </a>
               )}
               {twitter && (
@@ -318,10 +370,10 @@ export function Header() {
                   href={twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
+                  className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-110"
                   title="Twitter"
                 >
-                  <Twitter className="h-5 w-5" />
+                  <Twitter className="h-4 w-4" />
                 </a>
               )}
             </div>
@@ -395,34 +447,8 @@ export function Header() {
               })}
             </nav>
 
-            {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setSearchModalOpen(true)}
-                className="p-2 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg transition-all duration-200"
-                title="Search"
-              >
-                <Search className="h-5 w-5 text-gray-700 hover:text-purple-600 transition-colors" />
-              </button>
-              <Link href="/account/wishlist" className="p-2 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg relative transition-all duration-200">
-                <Heart className="h-5 w-5 text-gray-700 hover:text-pink-600 transition-colors" />
-              </Link>
-              <div className="hidden md:block">
-                <CurrencySelector />
-              </div>
-              <Link href="/cart" className="p-2 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg relative transition-all duration-200">
-                <ShoppingCart className="h-5 w-5 text-gray-700 hover:text-purple-600 transition-colors" />
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-lg" style={{ display: cartCount > 0 ? 'flex' : 'none' }}>
-                  {cartCount > 0 ? cartCount : ''}
-                </span>
-              </Link>
-              <Link
-                href="/account"
-                className="p-2 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg transition-all duration-200"
-                title="My Account"
-              >
-                <User className="h-5 w-5 text-gray-700 hover:text-purple-600 transition-colors" />
-              </Link>
+            {/* Right Side - Mobile Menu Button Only */}
+            <div className="flex items-center">
               <button
                 className="lg:hidden p-2 hover:bg-gray-100 rounded-md"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
