@@ -10,15 +10,3 @@ export class BannersController {
     return this.bannersService.findAll();
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -106,7 +106,9 @@ export class AnalyticsService {
         by: ["productId"],
         where: {
           eventType: { in: ["purchase", "add_to_cart", "view_product"] },
-          createdAt: { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+          createdAt: {
+            gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+          },
           productId: { not: null },
         },
         _count: { productId: true },
@@ -171,7 +173,7 @@ export class AnalyticsService {
 
   async getRevenueChart(days: number = 30) {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    
+
     const events = await this.prisma.analyticsEvent.findMany({
       where: {
         eventType: "purchase",
@@ -227,7 +229,9 @@ export class AnalyticsService {
     }
 
     // Get product details
-    const productIds = productStats.map((stat) => stat.productId!).filter(Boolean);
+    const productIds = productStats
+      .map((stat) => stat.productId!)
+      .filter(Boolean);
     if (productIds.length === 0) {
       return [];
     }
@@ -371,7 +375,10 @@ export class AnalyticsService {
       },
     });
 
-    const formStats: Record<string, { count: number; name: string; type?: string }> = {};
+    const formStats: Record<
+      string,
+      { count: number; name: string; type?: string }
+    > = {};
     formSubmits.forEach((event) => {
       const metadata = event.metadata as any;
       const formId = metadata?.formId || "unknown";
@@ -405,7 +412,10 @@ export class AnalyticsService {
       },
     });
 
-    const linkStats: Record<string, { count: number; text: string; url: string; type?: string }> = {};
+    const linkStats: Record<
+      string,
+      { count: number; text: string; url: string; type?: string }
+    > = {};
     linkClicks.forEach((event) => {
       const metadata = event.metadata as any;
       const linkUrl = metadata?.linkUrl || metadata?.buttonId || "unknown";
@@ -413,14 +423,19 @@ export class AnalyticsService {
       const linkType = metadata?.linkType || metadata?.buttonType || "link";
 
       if (!linkStats[linkUrl]) {
-        linkStats[linkUrl] = { count: 0, text: linkText, url: linkUrl, type: linkType };
+        linkStats[linkUrl] = {
+          count: 0,
+          text: linkText,
+          url: linkUrl,
+          type: linkType,
+        };
       }
       linkStats[linkUrl].count++;
     });
 
     return Object.entries(linkStats)
       .map(([url, stats]) => ({
-        url: stats.url,
+        url,
         text: stats.text,
         type: stats.type,
         clicks: stats.count,
@@ -540,7 +555,10 @@ export class AnalyticsService {
     });
 
     // Category performance
-    const categoryStats: Record<string, { name: string; views: number; products: Set<string> }> = {};
+    const categoryStats: Record<
+      string,
+      { name: string; views: number; products: Set<string> }
+    > = {};
     productViews.forEach((view) => {
       const product = products.find((p) => p.id === view.productId);
       if (product?.category) {
@@ -638,4 +656,3 @@ export class AnalyticsService {
     return event;
   }
 }
-

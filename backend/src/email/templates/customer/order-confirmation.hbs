@@ -1,0 +1,81 @@
+{{> header}}
+
+<h1>Thank you for your order!</h1>
+
+<p>Hi {{customerName}},</p>
+
+<p>We've received your order <strong>#{{orderNumber}}</strong> and are getting it ready for you. You'll receive another email as soon as it ships.</p>
+
+<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Order Summary</h2>
+  <table class="order-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th style="text-align: right;">Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each orderItems}}
+      <tr>
+        <td>
+          <strong>{{name}}</strong>
+          {{#if variant}}<br><small style="color: #666;">{{variant}}</small>{{/if}}
+        </td>
+        <td>{{quantity}}</td>
+        <td style="text-align: right;">{{../currency}} {{total}}</td>
+      </tr>
+      {{/each}}
+      <tr class="total-row">
+        <td colspan="2" style="text-align: right;">Subtotal</td>
+        <td style="text-align: right;">{{currency}} {{subtotal}}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align: right;">Shipping</td>
+        <td style="text-align: right;">{{currency}} {{shippingCost}}</td>
+      </tr>
+      <tr class="total-row" style="font-size: 18px; color: #db2777;">
+        <td colspan="2" style="text-align: right;">Total</td>
+        <td style="text-align: right;">{{currency}} {{total}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="address-grid">
+  {{#if shippingAddress}}
+  <div class="address-box">
+    <h3 style="margin-top: 0; color: #db2777;">Shipping Address</h3>
+    <p style="margin: 0;">
+      {{shippingAddress.firstName}} {{shippingAddress.lastName}}<br>
+      {{shippingAddress.address}}<br>
+      {{shippingAddress.city}}, {{shippingAddress.state}}<br>
+      {{shippingAddress.country}}
+    </p>
+  </div>
+  {{/if}}
+  
+  <div class="address-box">
+    <h3 style="margin-top: 0; color: #db2777;">Order Details</h3>
+    <p style="margin: 0;">
+      <strong>Order ID:</strong> #{{orderNumber}}<br>
+      <strong>Date:</strong> {{orderDate}}<br>
+      <strong>Payment Status:</strong> {{paymentStatus}}<br>
+      <strong>Shipping Method:</strong> {{shippingMethod}}
+    </p>
+  </div>
+</div>
+
+{{#if paymentUrl}}
+<div style="text-align: center; margin-top: 30px;">
+  <p>Your payment is pending. Click the button below to complete your payment.</p>
+  <a href="{{paymentUrl}}" class="button">Complete Payment</a>
+</div>
+{{else}}
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{orderUrl}}" class="button">View Order Status</a>
+</div>
+{{/if}}
+
+{{> footer}}

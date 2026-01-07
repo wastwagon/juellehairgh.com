@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Param,
   Query,
@@ -33,7 +32,10 @@ export class WalletController {
 
   @Post("top-up")
   @UseGuards(JwtAuthGuard)
-  async topUp(@Request() req, @Body() body: { amount: number; reference: string }) {
+  async topUp(
+    @Request() req,
+    @Body() body: { amount: number; reference: string },
+  ) {
     return this.walletService.topUp(req.user.id, body.amount, body.reference);
   }
 
@@ -64,7 +66,7 @@ export class WalletController {
   @Roles("ADMIN")
   async addFunds(
     @Param("walletId") walletId: string,
-    @Body() body: { amount: number; description?: string }
+    @Body() body: { amount: number; description?: string },
   ) {
     return this.walletService.addFunds(walletId, body.amount, body.description);
   }
@@ -74,8 +76,12 @@ export class WalletController {
   @Roles("ADMIN")
   async deductFunds(
     @Param("walletId") walletId: string,
-    @Body() body: { amount: number; description?: string }
+    @Body() body: { amount: number; description?: string },
   ) {
-    return this.walletService.deductFunds(walletId, body.amount, body.description);
+    return this.walletService.deductFunds(
+      walletId,
+      body.amount,
+      body.description,
+    );
   }
 }

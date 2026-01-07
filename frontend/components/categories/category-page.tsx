@@ -61,10 +61,24 @@ export function CategoryPage({ slug }: CategoryPageProps) {
         page: String(filters.page || 1),
       });
       const response = await api.get(`/products?${params}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log("📦 Products API Response:", JSON.stringify(response.data.pagination));
+        console.log("📦 Products count:", response.data.products?.length);
+      }
       return response.data;
     },
-    enabled: isShopAll || !!category, // Enable for shop-all or when category exists
+    enabled: isShopAll || !!category?.id, // Enable for shop-all or when category ID exists
   });
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log("🎨 Rendering CategoryPage:", JSON.stringify({
+      slug,
+      categoryId: category?.id,
+      productsCount: productsData?.products?.length || 0,
+      total: productsData?.pagination?.total || 0,
+      isLoading
+    }));
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 md:py-8">

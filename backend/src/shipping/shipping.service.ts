@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { Decimal } from "@prisma/client/runtime/library";
 
@@ -38,10 +42,7 @@ export class ShippingService {
     const zones = await this.prisma.shippingZone.findMany({
       where: {
         isActive: true,
-        OR: [
-          { regions: { has: region } },
-          { regions: { has: "Everywhere" } },
-        ],
+        OR: [{ regions: { has: region } }, { regions: { has: "Everywhere" } }],
       },
       include: {
         methods: {
@@ -59,7 +60,7 @@ export class ShippingService {
           ...method,
           zoneName: zone.name,
           calculatedCost: this.calculateShippingCost(method, orderTotal),
-        }))
+        })),
       )
       .filter((method) => {
         // If method has freeShippingThreshold but no base cost, only show if threshold is met
@@ -112,13 +113,16 @@ export class ShippingService {
   }
 
   // Admin: Update shipping zone
-  async updateZone(id: string, data: {
-    name?: string;
-    description?: string;
-    regions?: string[];
-    isActive?: boolean;
-    position?: number;
-  }) {
+  async updateZone(
+    id: string,
+    data: {
+      name?: string;
+      description?: string;
+      regions?: string[];
+      isActive?: boolean;
+      position?: number;
+    },
+  ) {
     const zone = await this.prisma.shippingZone.findUnique({
       where: { id },
     });
@@ -148,7 +152,9 @@ export class ShippingService {
     }
 
     if (zone.methods.length > 0) {
-      throw new BadRequestException("Cannot delete zone with shipping methods. Delete methods first.");
+      throw new BadRequestException(
+        "Cannot delete zone with shipping methods. Delete methods first.",
+      );
     }
 
     return this.prisma.shippingZone.delete({
@@ -157,14 +163,17 @@ export class ShippingService {
   }
 
   // Admin: Create shipping method
-  async createMethod(zoneId: string, data: {
-    name: string;
-    description?: string;
-    cost?: number;
-    freeShippingThreshold?: number;
-    estimatedDays?: string;
-    position?: number;
-  }) {
+  async createMethod(
+    zoneId: string,
+    data: {
+      name: string;
+      description?: string;
+      cost?: number;
+      freeShippingThreshold?: number;
+      estimatedDays?: string;
+      position?: number;
+    },
+  ) {
     const zone = await this.prisma.shippingZone.findUnique({
       where: { id: zoneId },
     });
@@ -189,15 +198,18 @@ export class ShippingService {
   }
 
   // Admin: Update shipping method
-  async updateMethod(id: string, data: {
-    name?: string;
-    description?: string;
-    cost?: number | null;
-    freeShippingThreshold?: number | null;
-    estimatedDays?: string;
-    isActive?: boolean;
-    position?: number;
-  }) {
+  async updateMethod(
+    id: string,
+    data: {
+      name?: string;
+      description?: string;
+      cost?: number | null;
+      freeShippingThreshold?: number | null;
+      estimatedDays?: string;
+      isActive?: boolean;
+      position?: number;
+    },
+  ) {
     const method = await this.prisma.shippingMethod.findUnique({
       where: { id },
     });
@@ -211,14 +223,17 @@ export class ShippingService {
       data: {
         name: data.name,
         description: data.description,
-        cost: data.cost !== undefined
-          ? (data.cost !== null ? new Decimal(data.cost) : null)
-          : undefined,
+        cost:
+          data.cost !== undefined
+            ? data.cost !== null
+              ? new Decimal(data.cost)
+              : null
+            : undefined,
         freeShippingThreshold:
           data.freeShippingThreshold !== undefined
-            ? (data.freeShippingThreshold !== null
-                ? new Decimal(data.freeShippingThreshold)
-                : null)
+            ? data.freeShippingThreshold !== null
+              ? new Decimal(data.freeShippingThreshold)
+              : null
             : undefined,
         estimatedDays: data.estimatedDays,
         isActive: data.isActive,
@@ -256,4 +271,3 @@ export class ShippingService {
     return method;
   }
 }
-

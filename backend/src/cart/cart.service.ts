@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -61,7 +61,13 @@ export class CartService {
     };
   }
 
-  async addItem(userId: string, productId: string, quantity: number, variantId?: string, variantIds?: string[]) {
+  async addItem(
+    userId: string,
+    productId: string,
+    quantity: number,
+    variantId?: string,
+    variantIds?: string[],
+  ) {
     let cart = await this.prisma.cart.findUnique({
       where: { userId },
     });
@@ -73,12 +79,18 @@ export class CartService {
     }
 
     // Use variantIds if provided, otherwise fall back to variantId
-    const finalVariantIds = variantIds && variantIds.length > 0 ? variantIds : (variantId ? [variantId] : []);
-    const finalVariantId = variantId || (finalVariantIds.length > 0 ? finalVariantIds[0] : null);
+    const finalVariantIds =
+      variantIds && variantIds.length > 0
+        ? variantIds
+        : variantId
+          ? [variantId]
+          : [];
+    const finalVariantId =
+      variantId || (finalVariantIds.length > 0 ? finalVariantIds[0] : null);
 
     // Create a unique key for comparison
-    const variantKey = finalVariantIds.sort().join(',');
-    
+    const variantKey = finalVariantIds.sort().join(",");
+
     // Check if item already exists with same variantIds
     const existingItems = await this.prisma.cartItem.findMany({
       where: {
@@ -88,17 +100,18 @@ export class CartService {
     });
 
     // Find item with matching variantIds
-    const existingItem = existingItems.find(item => {
-      const itemVariantIds = item.variantIds && item.variantIds.length > 0 
-        ? item.variantIds.sort().join(',')
-        : (item.variantId || '');
+    const existingItem = existingItems.find((item) => {
+      const itemVariantIds =
+        item.variantIds && item.variantIds.length > 0
+          ? item.variantIds.sort().join(",")
+          : item.variantId || "";
       return itemVariantIds === variantKey;
     });
 
     if (existingItem) {
       return this.prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { 
+        data: {
           quantity: existingItem.quantity + quantity,
           variantIds: finalVariantIds.length > 0 ? finalVariantIds : undefined,
         },
@@ -174,6 +187,3 @@ export class CartService {
     }, 0);
   }
 }
-
-
-

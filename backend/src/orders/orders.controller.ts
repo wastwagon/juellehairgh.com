@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Param,
   UseGuards,
@@ -52,5 +51,3 @@ export class OrdersController {
     return this.ordersService.cancelOrder(id, req.user.id);
   }
 }
-
-

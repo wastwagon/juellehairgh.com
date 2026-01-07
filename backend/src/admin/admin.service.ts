@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import * as fs from "fs";
+import * as path from "path";
 
 @Injectable()
 export class AdminService {
@@ -7,41 +13,48 @@ export class AdminService {
 
   async getDashboardStats() {
     try {
-      const [totalOrders, totalRevenue, todayOrders, todayRevenue] = await Promise.all([
-        this.prisma.order.count().catch(() => 0),
-        this.prisma.order.aggregate({
-          where: { paymentStatus: "PAID" },
-          _sum: { totalGhs: true },
-        }).catch(() => ({ _sum: { totalGhs: null } })),
-        this.prisma.order.count({
-          where: {
-            createdAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            },
-          },
-        }).catch(() => 0),
-        this.prisma.order.aggregate({
-          where: {
-            paymentStatus: "PAID",
-            createdAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            },
-          },
-          _sum: { totalGhs: true },
-        }).catch(() => ({ _sum: { totalGhs: null } })),
-      ]);
+      const [totalOrders, totalRevenue, todayOrders, todayRevenue] =
+        await Promise.all([
+          this.prisma.order.count().catch(() => 0),
+          this.prisma.order
+            .aggregate({
+              where: { paymentStatus: "PAID" },
+              _sum: { totalGhs: true },
+            })
+            .catch(() => ({ _sum: { totalGhs: null } })),
+          this.prisma.order
+            .count({
+              where: {
+                createdAt: {
+                  gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                },
+              },
+            })
+            .catch(() => 0),
+          this.prisma.order
+            .aggregate({
+              where: {
+                paymentStatus: "PAID",
+                createdAt: {
+                  gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                },
+              },
+              _sum: { totalGhs: true },
+            })
+            .catch(() => ({ _sum: { totalGhs: null } })),
+        ]);
 
       // Convert Decimal to number safely
-      const totalRevenueValue = totalRevenue._sum?.totalGhs 
-        ? (typeof totalRevenue._sum.totalGhs === 'number' 
-            ? totalRevenue._sum.totalGhs 
-            : parseFloat(totalRevenue._sum.totalGhs.toString()))
+      const totalRevenueValue = totalRevenue._sum?.totalGhs
+        ? typeof totalRevenue._sum.totalGhs === "number"
+          ? totalRevenue._sum.totalGhs
+          : parseFloat(totalRevenue._sum.totalGhs.toString())
         : 0;
-      
+
       const todayRevenueValue = todayRevenue._sum?.totalGhs
-        ? (typeof todayRevenue._sum.totalGhs === 'number'
-            ? todayRevenue._sum.totalGhs
-            : parseFloat(todayRevenue._sum.totalGhs.toString()))
+        ? typeof todayRevenue._sum.totalGhs === "number"
+          ? todayRevenue._sum.totalGhs
+          : parseFloat(todayRevenue._sum.totalGhs.toString())
         : 0;
 
       return {
@@ -51,7 +64,7 @@ export class AdminService {
         todayRevenue: todayRevenueValue,
       };
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
+      console.error("Error fetching dashboard stats:", error);
       // Return default values on error
       return {
         totalOrders: 0,
@@ -132,7 +145,10 @@ export class AdminService {
   }
 
   async createAttribute(data: { name: string; description?: string }) {
-    const slug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const slug = data.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
     return this.prisma.productAttribute.create({
       data: {
         name: data.name,
@@ -145,11 +161,17 @@ export class AdminService {
     });
   }
 
-  async updateAttribute(id: string, data: { name?: string; description?: string }) {
+  async updateAttribute(
+    id: string,
+    data: { name?: string; description?: string },
+  ) {
     const updateData: any = {};
     if (data.name) {
       updateData.name = data.name;
-      updateData.slug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      updateData.slug = data.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
     }
     if (data.description !== undefined) {
       updateData.description = data.description;
@@ -168,9 +190,15 @@ export class AdminService {
   }
 
   // Attribute Terms Management
-  async createAttributeTerm(attributeId: string, data: { name: string; image?: string }) {
-    const baseSlug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-    
+  async createAttributeTerm(
+    attributeId: string,
+    data: { name: string; image?: string },
+  ) {
+    const baseSlug = data.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
     // Check if a term with this name already exists for this attribute
     const existingTerm = await this.prisma.productAttributeTerm.findFirst({
       where: {
@@ -180,7 +208,9 @@ export class AdminService {
     });
 
     if (existingTerm) {
-      throw new BadRequestException(`A term with the name "${data.name}" already exists for this attribute.`);
+      throw new BadRequestException(
+        `A term with the name "${data.name}" already exists for this attribute.`,
+      );
     }
 
     // Generate unique slug by appending a number if needed
@@ -193,11 +223,11 @@ export class AdminService {
           slug,
         },
       });
-      
+
       if (!existing) {
         break; // Slug is unique, we can use it
       }
-      
+
       // Slug exists, try with a number suffix
       slug = `${baseSlug}-${counter}`;
       counter++;
@@ -213,11 +243,17 @@ export class AdminService {
     });
   }
 
-  async updateAttributeTerm(id: string, data: { name?: string; image?: string }) {
+  async updateAttributeTerm(
+    id: string,
+    data: { name?: string; image?: string },
+  ) {
     const updateData: any = {};
     if (data.name) {
       updateData.name = data.name;
-      updateData.slug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      updateData.slug = data.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
     }
     if (data.image !== undefined) {
       updateData.image = data.image;
@@ -277,10 +313,30 @@ export class AdminService {
 
     // 2. Check product images for color references in titles
     const colorKeywords = [
-      "black", "brown", "blonde", "red", "blue", "green", "purple",
-      "caramel", "honey", "mocha", "auburn", "hazelnut", "chocolate",
-      "sand", "gold", "copper", "burgundy", "off black", "natural black",
-      "light brown", "dark brown", "triple tone", "balayage", "flamboyage"
+      "black",
+      "brown",
+      "blonde",
+      "red",
+      "blue",
+      "green",
+      "purple",
+      "caramel",
+      "honey",
+      "mocha",
+      "auburn",
+      "hazelnut",
+      "chocolate",
+      "sand",
+      "gold",
+      "copper",
+      "burgundy",
+      "off black",
+      "natural black",
+      "light brown",
+      "dark brown",
+      "triple tone",
+      "balayage",
+      "flamboyage",
     ];
 
     const products = await this.prisma.product.findMany({
@@ -390,7 +446,10 @@ export class AdminService {
   }
 
   // Merge terms from source attribute to target attribute
-  async mergeAttributeTerms(sourceAttributeId: string, targetAttributeId: string) {
+  async mergeAttributeTerms(
+    sourceAttributeId: string,
+    targetAttributeId: string,
+  ) {
     // Get both attributes
     const sourceAttribute = await this.getAttributeById(sourceAttributeId);
     const targetAttribute = await this.getAttributeById(targetAttributeId);
@@ -406,7 +465,7 @@ export class AdminService {
     // Get existing target terms to check for duplicates (by slug)
     const targetTermSlugs = new Set(targetAttribute.terms.map((t) => t.slug));
     const targetTermNames = new Set(
-      targetAttribute.terms.map((t) => t.name.toLowerCase())
+      targetAttribute.terms.map((t) => t.name.toLowerCase()),
     );
 
     // Separate terms into those to move and those to skip
@@ -431,8 +490,8 @@ export class AdminService {
         this.prisma.productAttributeTerm.update({
           where: { id: term.id },
           data: { attributeId: targetAttributeId },
-        })
-      )
+        }),
+      ),
     );
 
     // Delete the source attribute (it should be empty now, but we'll delete it anyway)
@@ -448,19 +507,24 @@ export class AdminService {
 
   // Generate variations from attributes (WooCommerce-style)
   // Now only uses "Color" attribute (merged from PA Color and Option)
-  async generateVariationsFromAttributes(productId: string, attributes: Array<{ name: string; terms: string[] }>) {
+  async generateVariationsFromAttributes(
+    productId: string,
+    attributes: Array<{ name: string; terms: string[] }>,
+  ) {
     // Filter out attributes with no terms
-    const validAttributes = attributes.filter((attr) => attr.name && attr.terms.length > 0);
-    
+    const validAttributes = attributes.filter(
+      (attr) => attr.name && attr.terms.length > 0,
+    );
+
     if (validAttributes.length === 0) {
       return [];
     }
-    
+
     // Fetch all attributes from database to get term images
     // Use case-insensitive matching to handle name variations
     const dbAttributes = await this.prisma.productAttribute.findMany({
       where: {
-        OR: validAttributes.map(attr => ({
+        OR: validAttributes.map((attr) => ({
           name: { equals: attr.name, mode: "insensitive" },
         })),
       },
@@ -468,18 +532,18 @@ export class AdminService {
         terms: true,
       },
     });
-    
+
     // Create a mapping from input attribute names to database attribute names
     const attributeNameMap = new Map<string, string>();
-    validAttributes.forEach(inputAttr => {
-      const dbAttr = dbAttributes.find(db => 
-        db.name.toLowerCase() === inputAttr.name.toLowerCase()
+    validAttributes.forEach((inputAttr) => {
+      const dbAttr = dbAttributes.find(
+        (db) => db.name.toLowerCase() === inputAttr.name.toLowerCase(),
       );
       if (dbAttr) {
         attributeNameMap.set(inputAttr.name, dbAttr.name);
       }
     });
-    
+
     // Create a map of attribute name -> term name -> image
     const termImageMap = new Map<string, Map<string, string | null>>();
     dbAttributes.forEach((dbAttr) => {
@@ -489,10 +553,12 @@ export class AdminService {
       });
       termImageMap.set(dbAttr.name, attrMap);
     });
-    
+
     // Also migrate any existing "Option" or "PA Color" variants to "Color" for this product
-    const hasColorAttribute = validAttributes.some((attr) => 
-      attr.name.toLowerCase() === "color" || attr.name.toLowerCase() === "colour"
+    const hasColorAttribute = validAttributes.some(
+      (attr) =>
+        attr.name.toLowerCase() === "color" ||
+        attr.name.toLowerCase() === "colour",
     );
     if (hasColorAttribute) {
       await this.migrateVariantsToColor(productId);
@@ -507,23 +573,25 @@ export class AdminService {
     // For example: Color has 3 terms and Length has 2 terms
     // We create 3 Color variants + 2 Length variants (not 6 combined variants)
     const results = [];
-    
+
     for (const attr of validAttributes) {
       // Use the database attribute name (with correct casing) instead of input name
       const dbAttrName = attributeNameMap.get(attr.name) || attr.name;
       const attrName = dbAttrName; // Use database name for consistency
       const attrMap = termImageMap.get(attrName) || termImageMap.get(attr.name);
-      
+
       // Create a variant for each term in this attribute
       for (const term of attr.terms) {
         const variantValue = term;
         const variantImage = attrMap?.get(term) || null;
-        
+
         // Check if variant with this attribute name and value already exists
         const existing = existingVariants.find(
-          (v) => v.name.toLowerCase() === attrName.toLowerCase() && v.value === variantValue
+          (v) =>
+            v.name.toLowerCase() === attrName.toLowerCase() &&
+            v.value === variantValue,
         );
-        
+
         if (existing) {
           // Update existing variant
           await this.prisma.productVariant.update({
@@ -558,13 +626,16 @@ export class AdminService {
       if (!stillExists) {
         // Check if this variant matches any of the new attributes
         const matchesNewAttribute = validAttributes.some((attr) => {
-          const attrNameMatches = existing.name.toLowerCase() === attr.name.toLowerCase();
+          const attrNameMatches =
+            existing.name.toLowerCase() === attr.name.toLowerCase();
           const termMatches = attr.terms.includes(existing.value);
           return attrNameMatches && termMatches;
         });
-        
+
         if (!matchesNewAttribute) {
-          await this.prisma.productVariant.delete({ where: { id: existing.id } });
+          await this.prisma.productVariant.delete({
+            where: { id: existing.id },
+          });
         }
       }
     }
@@ -609,7 +680,7 @@ export class AdminService {
     let updated = 0;
     for (const variant of variants) {
       const termImage = termImageMap.get(variant.value);
-      
+
       // Update if term has an image and variant doesn't, or if term image is different
       if (termImage && termImage !== variant.image) {
         await this.prisma.productVariant.update({
@@ -637,11 +708,11 @@ export class AdminService {
         { name: { contains: "pa color", mode: "insensitive" } },
       ],
     };
-    
+
     if (productId) {
       whereClause.productId = productId;
     }
-    
+
     const oldVariants = await this.prisma.productVariant.findMany({
       where: whereClause,
     });
@@ -651,7 +722,7 @@ export class AdminService {
       // If value contains " / ", it might be a combined value like "NBLK / S1B/33"
       // Extract just the color part (first part or look for color codes)
       let colorValue = oldVariant.value;
-      
+
       // If it's a combined value, try to extract color
       if (colorValue.includes(" / ")) {
         const parts = colorValue.split(" / ");
@@ -659,14 +730,14 @@ export class AdminService {
         // Or they might be the first part
         colorValue = parts[0].trim();
       }
-      
+
       // Check if a Color variant with this value already exists
       const existingColorWhere: any = {
         productId: oldVariant.productId,
         name: "Color",
         value: colorValue,
       };
-      
+
       const existingColor = await this.prisma.productVariant.findFirst({
         where: existingColorWhere,
       });
@@ -680,7 +751,9 @@ export class AdminService {
           });
         }
         // Delete old variant
-        await this.prisma.productVariant.delete({ where: { id: oldVariant.id } });
+        await this.prisma.productVariant.delete({
+          where: { id: oldVariant.id },
+        });
       } else {
         // Convert old variant to Color
         await this.prisma.productVariant.update({
@@ -692,7 +765,7 @@ export class AdminService {
         });
       }
     }
-    
+
     return {
       success: true,
       migrated: oldVariants.length,
@@ -701,20 +774,25 @@ export class AdminService {
   }
 
   // Generate all combinations (Cartesian product) of attributes
-  private generateAllCombinations(attributes: Array<{ name: string; terms: string[] }>): Array<{
+  private generateAllCombinations(
+    attributes: Array<{ name: string; terms: string[] }>,
+  ): Array<{
     key: string;
     combinedValue: string;
     variants: Array<{ name: string; value: string }>;
   }> {
     if (attributes.length === 0) return [];
-    
+
     const combinations: Array<{
       key: string;
       combinedValue: string;
       variants: Array<{ name: string; value: string }>;
     }> = [];
 
-    function generateRecursive(current: Array<{ name: string; value: string }>, index: number) {
+    function generateRecursive(
+      current: Array<{ name: string; value: string }>,
+      index: number,
+    ) {
       if (index === attributes.length) {
         const key = current.map((v) => `${v.name}:${v.value}`).join("|");
         const combinedValue = current.map((v) => v.value).join(" / ");
@@ -725,7 +803,7 @@ export class AdminService {
       for (const term of attributes[index].terms) {
         generateRecursive(
           [...current, { name: attributes[index].name, value: term }],
-          index + 1
+          index + 1,
         );
       }
     }
@@ -738,7 +816,7 @@ export class AdminService {
   async createCategory(data: any) {
     const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
     const { seo, ...categoryData } = data;
-    
+
     const category = await this.prisma.category.create({
       data: {
         ...categoryData,
@@ -787,7 +865,7 @@ export class AdminService {
       data.slug = data.name.toLowerCase().replace(/\s+/g, "-");
     }
     const { seo, ...categoryData } = data;
-    
+
     await this.prisma.category.update({
       where: { id },
       data: categoryData,
@@ -839,7 +917,9 @@ export class AdminService {
       throw new BadRequestException("Cannot delete category with products");
     }
     if (category.children.length > 0) {
-      throw new BadRequestException("Cannot delete category with subcategories");
+      throw new BadRequestException(
+        "Cannot delete category with subcategories",
+      );
     }
     return this.prisma.category.delete({ where: { id } });
   }
@@ -1003,7 +1083,10 @@ export class AdminService {
     });
   }
 
-  async removeProductFromCollection(collectionId: string, collectionProductId: string) {
+  async removeProductFromCollection(
+    collectionId: string,
+    collectionProductId: string,
+  ) {
     return this.prisma.collectionProduct.delete({
       where: { id: collectionProductId },
     });
@@ -1011,7 +1094,7 @@ export class AdminService {
 
   async updateCollectionProductPositions(
     collectionId: string,
-    updates: { id: string; position: number }[]
+    updates: { id: string; position: number }[],
   ) {
     // Update all positions in a transaction
     await this.prisma.$transaction(
@@ -1019,8 +1102,8 @@ export class AdminService {
         this.prisma.collectionProduct.update({
           where: { id: update.id },
           data: { position: update.position },
-        })
-      )
+        }),
+      ),
     );
 
     return { success: true, message: "Product positions updated" };
@@ -1133,7 +1216,13 @@ export class AdminService {
 
   // Customers/Users Management
   async getAllCustomers(query: any) {
-    const { page = 1, limit = 20, role, search, includeDeleted = false } = query;
+    const {
+      page = 1,
+      limit = 20,
+      role,
+      search,
+      includeDeleted = false,
+    } = query;
     const skip = (page - 1) * limit;
     const where: any = {};
     if (role) where.role = role;
@@ -1189,8 +1278,12 @@ export class AdminService {
 
     // Create maps for quick lookup
     const ordersMap = new Map(ordersCounts.map((c) => [c.userId, c._count]));
-    const addressesMap = new Map(addressesCounts.map((c) => [c.userId, c._count]));
-    const wishlistMap = new Map(wishlistCounts.map((c) => [c.userId, c._count]));
+    const addressesMap = new Map(
+      addressesCounts.map((c) => [c.userId, c._count]),
+    );
+    const wishlistMap = new Map(
+      wishlistCounts.map((c) => [c.userId, c._count]),
+    );
 
     const usersWithCounts = users.map((user) => ({
       ...user,
@@ -1215,7 +1308,9 @@ export class AdminService {
   async updateUserRole(id: string, role: string) {
     const validRoles = ["CUSTOMER", "STAFF", "MANAGER", "ADMIN"];
     if (!validRoles.includes(role)) {
-      throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(", ")}`);
+      throw new BadRequestException(
+        `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+      );
     }
     return this.prisma.user.update({
       where: { id },
@@ -1232,7 +1327,7 @@ export class AdminService {
   }
 
   async updateCustomer(id: string, data: any) {
-    const { password, ...updateData } = data;
+    const updateData = { ...data };
     return this.prisma.user.update({
       where: { id },
       data: updateData,
@@ -1291,7 +1386,9 @@ export class AdminService {
         ...data,
         image: data.image || null,
         priceGhs: data.priceGhs ? parseFloat(data.priceGhs.toString()) : null,
-        compareAtPriceGhs: data.compareAtPriceGhs ? parseFloat(data.compareAtPriceGhs.toString()) : null,
+        compareAtPriceGhs: data.compareAtPriceGhs
+          ? parseFloat(data.compareAtPriceGhs.toString())
+          : null,
         stock: parseInt(data.stock?.toString() || "0"),
       },
       include: {
@@ -1311,10 +1408,23 @@ export class AdminService {
       where: { id },
       data: {
         ...data,
-        image: data.image !== undefined ? (data.image || null) : undefined,
-        priceGhs: data.priceGhs !== undefined ? (data.priceGhs ? parseFloat(data.priceGhs.toString()) : null) : undefined,
-        compareAtPriceGhs: data.compareAtPriceGhs !== undefined ? (data.compareAtPriceGhs ? parseFloat(data.compareAtPriceGhs.toString()) : null) : undefined,
-        stock: data.stock !== undefined ? parseInt(data.stock.toString()) : undefined,
+        image: data.image !== undefined ? data.image || null : undefined,
+        priceGhs:
+          data.priceGhs !== undefined
+            ? data.priceGhs
+              ? parseFloat(data.priceGhs.toString())
+              : null
+            : undefined,
+        compareAtPriceGhs:
+          data.compareAtPriceGhs !== undefined
+            ? data.compareAtPriceGhs
+              ? parseFloat(data.compareAtPriceGhs.toString())
+              : null
+            : undefined,
+        stock:
+          data.stock !== undefined
+            ? parseInt(data.stock.toString())
+            : undefined,
       },
       include: {
         product: {
@@ -1334,9 +1444,6 @@ export class AdminService {
 
   // Migrate product images to media library
   async migrateProductImagesToMediaLibrary() {
-    const fs = require("fs");
-    const path = require("path");
-    
     console.log("🔄 Starting product image migration to media library...\n");
 
     try {
@@ -1357,13 +1464,40 @@ export class AdminService {
 
       const PROJECT_ROOT = getProjectRoot();
       // Try Docker path first, then fallback to relative path
-      let OLD_PRODUCTS_DIR = path.join(PROJECT_ROOT, "frontend", "public", "products");
-      let NEW_MEDIA_DIR = path.join(PROJECT_ROOT, "frontend", "public", "media", "products");
-      
+      let OLD_PRODUCTS_DIR = path.join(
+        PROJECT_ROOT,
+        "frontend",
+        "public",
+        "products",
+      );
+      let NEW_MEDIA_DIR = path.join(
+        PROJECT_ROOT,
+        "frontend",
+        "public",
+        "media",
+        "products",
+      );
+
       // If Docker path doesn't exist, try relative path
-      if (!fs.existsSync(OLD_PRODUCTS_DIR) && path.basename(PROJECT_ROOT) !== "app") {
-        OLD_PRODUCTS_DIR = path.join(PROJECT_ROOT, "..", "frontend", "public", "products");
-        NEW_MEDIA_DIR = path.join(PROJECT_ROOT, "..", "frontend", "public", "media", "products");
+      if (
+        !fs.existsSync(OLD_PRODUCTS_DIR) &&
+        path.basename(PROJECT_ROOT) !== "app"
+      ) {
+        OLD_PRODUCTS_DIR = path.join(
+          PROJECT_ROOT,
+          "..",
+          "frontend",
+          "public",
+          "products",
+        );
+        NEW_MEDIA_DIR = path.join(
+          PROJECT_ROOT,
+          "..",
+          "frontend",
+          "public",
+          "media",
+          "products",
+        );
       }
 
       // Ensure the new media directory exists
@@ -1408,9 +1542,12 @@ export class AdminService {
 
             // Extract filename from various path formats
             let filename = oldImagePath;
-            
+
             // Handle different path formats
-            if (oldImagePath.startsWith("http://") || oldImagePath.startsWith("https://")) {
+            if (
+              oldImagePath.startsWith("http://") ||
+              oldImagePath.startsWith("https://")
+            ) {
               console.log(`   ⚠️  Skipping external URL: ${oldImagePath}`);
               newImages.push(oldImagePath); // Keep external URLs as-is
               continue;
@@ -1432,7 +1569,9 @@ export class AdminService {
                 fs.copyFileSync(oldFilePath, newFilePath);
                 console.log(`   ✅ Copied: ${filename} → ${newImagePath}`);
               } else {
-                console.log(`   ℹ️  Already exists in media library: ${filename}`);
+                console.log(
+                  `   ℹ️  Already exists in media library: ${filename}`,
+                );
               }
               newImages.push(newImagePath);
               hasChanges = true;
@@ -1451,25 +1590,31 @@ export class AdminService {
                 const tryFilename = `${baseName}${ext}`;
                 const tryOldPath = path.join(OLD_PRODUCTS_DIR, tryFilename);
                 const tryNewPath = path.join(NEW_MEDIA_DIR, tryFilename);
-                
+
                 if (fs.existsSync(tryOldPath)) {
                   if (!fs.existsSync(tryNewPath)) {
                     fs.copyFileSync(tryOldPath, tryNewPath);
                   }
                   newImages.push(`/media/products/${tryFilename}`);
-                  console.log(`   ✅ Found and copied with extension ${ext}: ${tryFilename}`);
+                  console.log(
+                    `   ✅ Found and copied with extension ${ext}: ${tryFilename}`,
+                  );
                   found = true;
                   hasChanges = true;
                   break;
                 } else if (fs.existsSync(tryNewPath)) {
                   newImages.push(`/media/products/${tryFilename}`);
-                  console.log(`   ℹ️  Found in media library with extension ${ext}: ${tryFilename}`);
+                  console.log(
+                    `   ℹ️  Found in media library with extension ${ext}: ${tryFilename}`,
+                  );
                   found = true;
-                  hasChanges = hasChanges || oldImagePath !== `/media/products/${tryFilename}`;
+                  hasChanges =
+                    hasChanges ||
+                    oldImagePath !== `/media/products/${tryFilename}`;
                   break;
                 }
               }
-              
+
               if (!found) {
                 // Keep original path if we can't find the file
                 console.log(`   ⚠️  Keeping original path: ${oldImagePath}`);
@@ -1486,7 +1631,9 @@ export class AdminService {
                 images: newImages,
               },
             });
-            console.log(`   ✅ Updated product with ${newImages.length} images`);
+            console.log(
+              `   ✅ Updated product with ${newImages.length} images`,
+            );
             migratedCount++;
           } else {
             console.log(`   ℹ️  No changes needed`);
@@ -1529,7 +1676,7 @@ export class AdminService {
     if (category) where.category = category;
 
     const settings = await this.prisma.setting.findMany({ where });
-    
+
     // Convert array to object for easier access
     const settingsObj: Record<string, any> = {};
     settings.forEach((setting) => {
@@ -1546,7 +1693,11 @@ export class AdminService {
     return setting?.value || null;
   }
 
-  async updateSetting(key: string, value: string, category: string = "general") {
+  async updateSetting(
+    key: string,
+    value: string,
+    category: string = "general",
+  ) {
     return this.prisma.setting.upsert({
       where: { key },
       update: { value, category, updatedAt: new Date() },
@@ -1554,13 +1705,15 @@ export class AdminService {
     });
   }
 
-  async updateSettings(settings: Array<{ key: string; value: string; category?: string }>) {
+  async updateSettings(
+    settings: Array<{ key: string; value: string; category?: string }>,
+  ) {
     const updates = settings.map(({ key, value, category = "general" }) =>
       this.prisma.setting.upsert({
         where: { key },
         update: { value, category, updatedAt: new Date() },
         create: { key, value, category },
-      })
+      }),
     );
 
     await Promise.all(updates);
@@ -1596,7 +1749,10 @@ export class AdminService {
     return template;
   }
 
-  async updateEmailTemplate(templateId: string, data: { subject?: string; body?: string; variables?: string[] }) {
+  async updateEmailTemplate(
+    templateId: string,
+    data: { subject?: string; body?: string; variables?: string[] },
+  ) {
     const existing = await this.prisma.emailTemplate.findUnique({
       where: { templateId },
     });
@@ -1615,9 +1771,12 @@ export class AdminService {
     });
   }
 
-  async previewEmailTemplate(templateId: string, variables: Record<string, any>) {
+  async previewEmailTemplate(
+    templateId: string,
+    variables: Record<string, any>,
+  ) {
     const template = await this.getEmailTemplate(templateId);
-    
+
     // Replace variables in subject and body
     let previewSubject = template.subject;
     let previewBody = template.body;
@@ -1679,7 +1838,13 @@ export class AdminService {
 <p>Best regards,<br>{{siteName}} Team</p>`,
         type: "customer",
         description: "Sent when an order is created",
-        variables: ["siteName", "customerName", "orderNumber", "orderTotal", "orderDate"],
+        variables: [
+          "siteName",
+          "customerName",
+          "orderNumber",
+          "orderTotal",
+          "orderDate",
+        ],
       },
       {
         templateId: "payment-confirmation",
@@ -1707,7 +1872,12 @@ export class AdminService {
 <p>Best regards,<br>{{siteName}} Team</p>`,
         type: "customer",
         description: "Sent when order status changes to SHIPPED",
-        variables: ["siteName", "customerName", "orderNumber", "trackingNumber"],
+        variables: [
+          "siteName",
+          "customerName",
+          "orderNumber",
+          "trackingNumber",
+        ],
       },
       {
         templateId: "order-delivered",
@@ -1747,7 +1917,13 @@ export class AdminService {
 <p><strong>Date:</strong> {{orderDate}}</p>`,
         type: "admin",
         description: "Sent to admin when a new order is created",
-        variables: ["orderNumber", "customerName", "customerEmail", "orderTotal", "orderDate"],
+        variables: [
+          "orderNumber",
+          "customerName",
+          "customerEmail",
+          "orderTotal",
+          "orderDate",
+        ],
       },
       {
         templateId: "payment-received",
@@ -1781,7 +1957,6 @@ export class AdminService {
       skipDuplicates: true,
     });
   }
-
 
   // Trust Badges Management
   async getAllTrustBadges() {
@@ -1824,15 +1999,18 @@ export class AdminService {
     });
   }
 
-  async updateTrustBadge(id: string, data: {
-    title?: string;
-    description?: string;
-    icon?: string;
-    image?: string;
-    link?: string;
-    isActive?: boolean;
-    position?: number;
-  }) {
+  async updateTrustBadge(
+    id: string,
+    data: {
+      title?: string;
+      description?: string;
+      icon?: string;
+      image?: string;
+      link?: string;
+      isActive?: boolean;
+      position?: number;
+    },
+  ) {
     const existing = await this.prisma.trustBadge.findUnique({
       where: { id },
     });
@@ -1867,8 +2045,8 @@ export class AdminService {
         this.prisma.trustBadge.update({
           where: { id: update.id },
           data: { position: update.position },
-        })
-      )
+        }),
+      ),
     );
 
     return { success: true, message: "Trust badge positions updated" };
@@ -1966,15 +2144,18 @@ export class AdminService {
     });
   }
 
-  async updateFlashSale(id: string, data: {
-    title?: string;
-    description?: string;
-    startDate?: Date;
-    endDate?: Date;
-    discountPercent?: number;
-    productIds?: string[];
-    isActive?: boolean;
-  }) {
+  async updateFlashSale(
+    id: string,
+    data: {
+      title?: string;
+      description?: string;
+      startDate?: Date;
+      endDate?: Date;
+      discountPercent?: number;
+      productIds?: string[];
+      isActive?: boolean;
+    },
+  ) {
     const existing = await this.prisma.flashSale.findUnique({
       where: { id },
     });
@@ -2051,7 +2232,12 @@ export class AdminService {
   }
 
   // Blog Posts Management
-  async getAllBlogPosts(query?: { category?: string; published?: boolean; limit?: number; page?: number }) {
+  async getAllBlogPosts(query?: {
+    category?: string;
+    published?: boolean;
+    limit?: number;
+    page?: number;
+  }) {
     const where: any = {};
     if (query?.category) where.category = query.category;
     if (query?.published !== undefined) {
@@ -2113,7 +2299,12 @@ export class AdminService {
     seoTitle?: string;
     seoDescription?: string;
   }) {
-    const slug = data.slug || data.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const slug =
+      data.slug ||
+      data.title
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
 
     // Check if slug exists
     const existing = await this.prisma.blogPost.findUnique({
@@ -2143,21 +2334,24 @@ export class AdminService {
     });
   }
 
-  async updateBlogPost(id: string, data: {
-    title?: string;
-    slug?: string;
-    excerpt?: string;
-    content?: string;
-    featuredImage?: string;
-    authorId?: string;
-    authorName?: string;
-    category?: string;
-    tags?: string[];
-    isPublished?: boolean;
-    publishedAt?: Date;
-    seoTitle?: string;
-    seoDescription?: string;
-  }) {
+  async updateBlogPost(
+    id: string,
+    data: {
+      title?: string;
+      slug?: string;
+      excerpt?: string;
+      content?: string;
+      featuredImage?: string;
+      authorId?: string;
+      authorName?: string;
+      category?: string;
+      tags?: string[];
+      isPublished?: boolean;
+      publishedAt?: Date;
+      seoTitle?: string;
+      seoDescription?: string;
+    },
+  ) {
     const existing = await this.prisma.blogPost.findUnique({
       where: { id },
     });
@@ -2181,7 +2375,10 @@ export class AdminService {
       where: { id },
       data: {
         ...data,
-        publishedAt: data.isPublished && !existing.publishedAt ? new Date() : data.publishedAt,
+        publishedAt:
+          data.isPublished && !existing.publishedAt
+            ? new Date()
+            : data.publishedAt,
       },
     });
   }

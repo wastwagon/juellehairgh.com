@@ -17,14 +17,28 @@ export class PaymentsController {
 
   @Post("initialize")
   @UseGuards(JwtAuthGuard)
-  async initialize(@Request() req, @Body() body: { orderId?: string; amount?: number; email: string; metadata?: any }) {
+  async initialize(
+    @Request() req,
+    @Body()
+    body: { orderId?: string; amount?: number; email: string; metadata?: any },
+  ) {
     // Support both order payment and wallet top-up
     if (body.orderId) {
-      return this.paymentsService.initializePayment(body.orderId, body.email, body.metadata);
+      return this.paymentsService.initializePayment(
+        body.orderId,
+        body.email,
+        body.metadata,
+      );
     } else if (body.amount) {
-      return this.paymentsService.initializePayment(body.amount, body.email, body.metadata);
+      return this.paymentsService.initializePayment(
+        body.amount,
+        body.email,
+        body.metadata,
+      );
     } else {
-      throw new BadRequestException("Either orderId or amount must be provided");
+      throw new BadRequestException(
+        "Either orderId or amount must be provided",
+      );
     }
   }
 
@@ -44,10 +58,3 @@ export class PaymentsController {
     return { received: true };
   }
 }
-
-
-
-
-
-
-

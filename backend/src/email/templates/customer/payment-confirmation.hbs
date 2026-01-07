@@ -1,0 +1,17 @@
+{{> header}}
+
+<h1>Payment Received!</h1>
+
+<p>Hi {{customerName}},</p>
+
+<p>We've successfully received your payment of <strong>{{currency}} {{total}}</strong> for order <strong>#{{orderNumber}}</strong>.</p>
+
+<p>Our team is now processing your order. You will receive another notification as soon as your items are shipped.</p>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{orderUrl}}" class="button">Track Order Status</a>
+</div>
+
+<p>Thank you for your business!</p>
+
+{{> footer}}

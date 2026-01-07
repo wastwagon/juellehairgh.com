@@ -1,0 +1,25 @@
+{{> header}}
+
+<h1 style="color: #059669;">Payment Received for Order #{{orderNumber}}</h1>
+
+<p>Great news! A payment has been successfully processed for order <strong>#{{orderNumber}}</strong>.</p>
+
+<div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; margin: 25px 0; border: 1px solid #dcfce7;">
+  <h2 style="margin-top: 0; font-size: 18px; color: #059669;">Payment Details</h2>
+  <p><strong>Amount:</strong> {{currency}} {{total}}</p>
+  <p><strong>Method:</strong> {{paymentMethod}}</p>
+  <p><strong>Transaction Reference:</strong> {{transactionReference}}</p>
+  <p><strong>Date:</strong> {{orderDate}}</p>
+</div>
+
+<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+  <p><strong>Customer:</strong> {{customerName}} ({{customerEmail}})</p>
+  <p><strong>Items:</strong> {{itemCount}} item(s)</p>
+  <p><strong>Shipping:</strong> {{shippingMethod}}</p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{adminOrderUrl}}" class="button" style="background-color: #059669;">Manage Order</a>
+</div>
+
+{{> footer}}

@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../prisma/prisma.service";
 import axios from "axios";
-import { ALL_CURRENCIES, getCurrencyByCode } from "./currencies.data";
+import { ALL_CURRENCIES } from "./currencies.data";
 
 @Injectable()
 export class CurrencyService {
@@ -10,7 +10,7 @@ export class CurrencyService {
 
   constructor(
     private prisma: PrismaService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   async getRates() {
@@ -20,10 +20,13 @@ export class CurrencyService {
       },
     });
 
-    return rates.reduce((acc, rate) => {
-      acc[rate.targetCurrency] = Number(rate.rate);
-      return acc;
-    }, {} as Record<string, number>);
+    return rates.reduce(
+      (acc, rate) => {
+        acc[rate.targetCurrency] = Number(rate.rate);
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
   }
 
   async getAllCurrencies() {
@@ -52,29 +55,21 @@ export class CurrencyService {
     // This is a reliable public API that provides currency exchange rates
     // Updates daily, perfect for 12-hour refresh cycle
     const apiKey = this.configService.get<string>("CURRENCY_API_KEY");
-    
-    // Primary: Use exchangerate-api.com Open Access (completely free, no API key needed)
-    // Fallback: If API key is provided, use exchangerate-api.com authenticated endpoint
-    let apiUrl: string;
-    let useOpenAccess = false;
-    
-    if (apiKey) {
-      // Use exchangerate-api.com authenticated endpoint if API key is provided
-      apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${this.baseCurrency}`;
-    } else {
-      // Use exchangerate-api.com Open Access - completely free, no registration needed
-      apiUrl = `https://open.er-api.com/v6/latest/${this.baseCurrency}`;
-      useOpenAccess = true;
-    }
-    
-    return this.fetchAndStoreRates(apiUrl, useOpenAccess);
+
+    const apiUrl = !apiKey
+      ? `https://open.er-api.com/v6/latest/${this.baseCurrency}`
+      : `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${this.baseCurrency}`;
+
+    return this.fetchAndStoreRates(apiUrl);
   }
 
-  private async fetchAndStoreRates(apiUrl: string, useOpenAccess: boolean = false) {
+  private async fetchAndStoreRates(apiUrl: string) {
     try {
-      const maskedUrl = apiUrl.replace(/\/v6\/[^/]+\//, '/v6/***/').replace(/api_key=[^&]+/, 'api_key=***');
+      const maskedUrl = apiUrl
+        .replace(/\/v6\/[^/]+\//, "/v6/***/")
+        .replace(/api_key=[^&]+/, "api_key=***");
       console.log(`Fetching currency rates from: ${maskedUrl}`);
-      
+
       const response = await axios.get(apiUrl, {
         timeout: 30000,
         headers: {
@@ -83,33 +78,35 @@ export class CurrencyService {
       });
 
       // Handle API response format
-      let rates: Record<string, number>;
-      let conversionDate: string;
-      
+      const rates: Record<string, number> = response.data.rates;
+      const conversionDate =
+        response.data.date || new Date().toISOString().split("T")[0];
       // exchangerate-api.com format (both authenticated and open access): { rates: {...}, date: "2024-01-01" }
       if (!response.data || !response.data.rates) {
         // Check for error response
         if (response.data?.error || response.data?.result === "error") {
-          throw new Error(`API Error: ${response.data.error?.info || response.data["error-type"] || "Unknown error"}`);
+          throw new Error(
+            `API Error: ${response.data.error?.info || response.data["error-type"] || "Unknown error"}`,
+          );
         }
         throw new Error("Invalid API response: rates not found");
       }
-      
-      rates = response.data.rates;
-      conversionDate = response.data.date || new Date().toISOString().split("T")[0];
-      
+
       console.log(`Received rates for ${Object.keys(rates).length} currencies`);
 
       // Get all currency codes we want to support
       const supportedCurrencyCodes = ALL_CURRENCIES.map((c) => c.code);
-      
+
       let updatedCount = 0;
       let createdCount = 0;
 
       // Store all available rates
       for (const [currencyCode, rate] of Object.entries(rates)) {
         // Only store rates for currencies we support
-        if (supportedCurrencyCodes.includes(currencyCode) && typeof rate === "number") {
+        if (
+          supportedCurrencyCodes.includes(currencyCode) &&
+          typeof rate === "number"
+        ) {
           // Check if record exists before upsert to track create vs update
           const existedBefore = await this.prisma.currencyRate.findUnique({
             where: {
@@ -146,7 +143,9 @@ export class CurrencyService {
         }
       }
 
-      console.log(`Currency rates updated: ${createdCount} created, ${updatedCount} updated`);
+      console.log(
+        `Currency rates updated: ${createdCount} created, ${updatedCount} updated`,
+      );
       return {
         success: true,
         message: `Currency rates updated successfully. ${createdCount} created, ${updatedCount} updated.`,
@@ -156,7 +155,11 @@ export class CurrencyService {
     } catch (error: any) {
       console.error("Failed to update currency rates:", error.message);
       if (error.response) {
-        console.error("API Response:", error.response.status, error.response.data);
+        console.error(
+          "API Response:",
+          error.response.status,
+          error.response.data,
+        );
       }
       return {
         success: false,
@@ -172,4 +175,3 @@ export class CurrencyService {
     return Number((amountGhs * rate).toFixed(2));
   }
 }
-

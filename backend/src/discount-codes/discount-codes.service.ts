@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -29,8 +33,13 @@ export class DiscountCodesService {
     }
 
     // Check if code has reached usage limit
-    if (discountCode.usageLimit && discountCode.usedCount >= discountCode.usageLimit) {
-      throw new BadRequestException("Discount code has reached its usage limit");
+    if (
+      discountCode.usageLimit &&
+      discountCode.usedCount >= discountCode.usageLimit
+    ) {
+      throw new BadRequestException(
+        "Discount code has reached its usage limit",
+      );
     }
 
     // Calculate discount amount
@@ -38,7 +47,10 @@ export class DiscountCodesService {
     if (discountCode.discountType === "PERCENTAGE") {
       discountAmount = (subtotal * Number(discountCode.discountValue)) / 100;
       // Apply max discount if set
-      if (discountCode.maxDiscount && discountAmount > Number(discountCode.maxDiscount)) {
+      if (
+        discountCode.maxDiscount &&
+        discountAmount > Number(discountCode.maxDiscount)
+      ) {
         discountAmount = Number(discountCode.maxDiscount);
       }
     } else {
@@ -46,9 +58,12 @@ export class DiscountCodesService {
     }
 
     // Check minimum order amount
-    if (discountCode.minPurchase && subtotal < Number(discountCode.minPurchase)) {
+    if (
+      discountCode.minPurchase &&
+      subtotal < Number(discountCode.minPurchase)
+    ) {
       throw new BadRequestException(
-        `Minimum order amount of GH₵ ${discountCode.minPurchase} required`
+        `Minimum order amount of GH₵ ${discountCode.minPurchase} required`,
       );
     }
 
@@ -57,7 +72,9 @@ export class DiscountCodesService {
       code: discountCode.code,
       type: discountCode.discountType,
       value: Number(discountCode.discountValue),
-      maxDiscount: discountCode.maxDiscount ? Number(discountCode.maxDiscount) : null,
+      maxDiscount: discountCode.maxDiscount
+        ? Number(discountCode.maxDiscount)
+        : null,
       discountAmount,
     };
   }

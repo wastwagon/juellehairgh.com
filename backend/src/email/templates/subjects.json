@@ -1,14 +1,11 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{
+  "welcome": "Welcome to Juelle Hair Ghana!",
+  "order-confirmation": "Thank you for your order!",
+  "order-shipped": "Your order has been shipped!",
+  "order-delivered": "Your order has been delivered!",
+  "order-cancelled": "Important: Your order has been cancelled",
+  "payment-confirmation": "Payment received for your order",
+  "new-customer": "Admin: New customer registration",
+  "new-order": "Admin: New order received",
+  "payment-received": "Admin: Payment received for order"
+}

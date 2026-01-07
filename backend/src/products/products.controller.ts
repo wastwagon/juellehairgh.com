@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+} from "@nestjs/common";
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -16,13 +26,25 @@ export class ProductsController {
   }
 
   @Get("recommendations/:id")
-  async getRecommendations(@Param("id") id: string, @Query("limit") limit?: string) {
-    return this.productsService.getRecommendations(id, limit ? parseInt(limit) : 8);
+  async getRecommendations(
+    @Param("id") id: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.productsService.getRecommendations(
+      id,
+      limit ? parseInt(limit) : 8,
+    );
   }
 
   @Get("frequently-bought-together/:id")
-  async getFrequentlyBoughtTogether(@Param("id") id: string, @Query("limit") limit?: string) {
-    return this.productsService.getFrequentlyBoughtTogether(id, limit ? parseInt(limit) : 4);
+  async getFrequentlyBoughtTogether(
+    @Param("id") id: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.productsService.getFrequentlyBoughtTogether(
+      id,
+      limit ? parseInt(limit) : 4,
+    );
   }
 
   @Get(":slug")
@@ -40,7 +62,10 @@ export class ProductsController {
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER")
-  async update(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
+  async update(
+    @Param("id") id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
     return this.productsService.update(id, updateProductDto);
   }
 
@@ -51,4 +76,3 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 }
-

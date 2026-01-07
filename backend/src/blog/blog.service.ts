@@ -1,11 +1,20 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class BlogService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllPosts(query?: { category?: string; published?: boolean; limit?: number; page?: number }) {
+  async getAllPosts(query?: {
+    category?: string;
+    published?: boolean;
+    limit?: number;
+    page?: number;
+  }) {
     const where: any = {};
     if (query?.category) where.category = query.category;
     if (query?.published !== undefined) {
@@ -73,7 +82,12 @@ export class BlogService {
     seoTitle?: string;
     seoDescription?: string;
   }) {
-    const slug = data.slug || data.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const slug =
+      data.slug ||
+      data.title
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
 
     // Check if slug exists
     const existing = await this.prisma.blogPost.findUnique({
@@ -103,21 +117,24 @@ export class BlogService {
     });
   }
 
-  async updatePost(id: string, data: {
-    title?: string;
-    slug?: string;
-    excerpt?: string;
-    content?: string;
-    featuredImage?: string;
-    authorId?: string;
-    authorName?: string;
-    category?: string;
-    tags?: string[];
-    isPublished?: boolean;
-    publishedAt?: Date;
-    seoTitle?: string;
-    seoDescription?: string;
-  }) {
+  async updatePost(
+    id: string,
+    data: {
+      title?: string;
+      slug?: string;
+      excerpt?: string;
+      content?: string;
+      featuredImage?: string;
+      authorId?: string;
+      authorName?: string;
+      category?: string;
+      tags?: string[];
+      isPublished?: boolean;
+      publishedAt?: Date;
+      seoTitle?: string;
+      seoDescription?: string;
+    },
+  ) {
     const existing = await this.prisma.blogPost.findUnique({
       where: { id },
     });
@@ -141,7 +158,10 @@ export class BlogService {
       where: { id },
       data: {
         ...data,
-        publishedAt: data.isPublished && !existing.publishedAt ? new Date() : data.publishedAt,
+        publishedAt:
+          data.isPublished && !existing.publishedAt
+            ? new Date()
+            : data.publishedAt,
       },
     });
   }

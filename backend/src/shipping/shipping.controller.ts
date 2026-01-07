@@ -20,7 +20,10 @@ export class ShippingController {
 
   // Public: Get available shipping methods for a region
   @Get("methods")
-  async getMethods(@Query("region") region: string, @Query("orderTotal") orderTotal?: string) {
+  async getMethods(
+    @Query("region") region: string,
+    @Query("orderTotal") orderTotal?: string,
+  ) {
     const total = orderTotal ? parseFloat(orderTotal) : undefined;
     return this.shippingService.getMethodsForRegion(region || "Ghana", total);
   }
@@ -87,14 +90,3 @@ export class ShippingController {
     return this.shippingService.deleteMethod(id);
   }
 }
-
-
-
-
-
-
-
-
-
-
-

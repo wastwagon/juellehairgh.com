@@ -1,0 +1,43 @@
+{{> header}}
+
+<h1>New Order Received!</h1>
+
+<p>A new order <strong>#{{orderNumber}}</strong> has been placed on <strong>{{siteName}}</strong>.</p>
+
+<div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin: 25px 0;">
+  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Order Summary</h2>
+  <table class="order-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th style="text-align: right;">Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each orderItems}}
+      <tr>
+        <td>
+          <strong>{{name}}</strong>
+          {{#if variant}}<br><small style="color: #666;">{{variant}}</small>{{/if}}
+        </td>
+        <td>{{quantity}}</td>
+        <td style="text-align: right;">{{../currency}} {{total}}</td>
+      </tr>
+      {{/each}}
+      <tr class="total-row" style="font-size: 18px; color: #db2777;">
+        <td colspan="2" style="text-align: right;">Total</td>
+        <td style="text-align: right;">{{currency}} {{total}}</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <p><strong>Payment Status:</strong> {{paymentStatus}}</p>
+  <p><strong>Customer:</strong> {{customerName}} ({{customerEmail}})</p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{adminOrderUrl}}" class="button">Manage Order in Admin</a>
+</div>
+
+{{> footer}}

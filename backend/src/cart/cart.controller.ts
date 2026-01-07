@@ -30,7 +30,7 @@ export class CartController {
       body.productId,
       body.quantity,
       body.variantId,
-      body.variantIds
+      body.variantIds,
     );
   }
 
@@ -52,6 +52,3 @@ export class CartController {
     return this.cartService.clearCart(req.user.id);
   }
 }
-
-
-

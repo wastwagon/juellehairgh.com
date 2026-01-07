@@ -1,11 +1,19 @@
-import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, productId: string, data: { rating: number; title?: string; comment?: string }) {
+  async create(
+    userId: string,
+    productId: string,
+    data: { rating: number; title?: string; comment?: string },
+  ) {
     // Check if product exists
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -123,10 +131,7 @@ export class ReviewsService {
             ],
           },
         },
-        OR: [
-          { comment: { not: null } },
-          { title: { not: null } },
-        ],
+        OR: [{ comment: { not: null } }, { title: { not: null } }],
       },
       select: {
         id: true,
@@ -184,4 +189,3 @@ export class ReviewsService {
     });
   }
 }
-

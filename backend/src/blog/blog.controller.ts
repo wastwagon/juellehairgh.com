@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+} from "@nestjs/common";
 import { BlogService } from "./blog.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -12,7 +22,8 @@ export class BlogController {
   async getPosts(@Query() query: any) {
     return this.blogService.getAllPosts({
       category: query.category,
-      published: query.published !== undefined ? query.published === "true" : true,
+      published:
+        query.published !== undefined ? query.published === "true" : true,
       limit: query.limit ? parseInt(query.limit) : 10,
       page: query.page ? parseInt(query.page) : 1,
     });

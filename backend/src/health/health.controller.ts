@@ -22,13 +22,13 @@ export class HealthController {
     try {
       // Test basic connection
       await this.prisma.$queryRaw`SELECT 1`;
-      
+
       // Check if Product table exists
       const productCount = await this.prisma.product.count();
-      
+
       // Check if Category table exists
       const categoryCount = await this.prisma.category.count();
-      
+
       // Check if Brand table exists
       const brandCount = await this.prisma.brand.count();
 
@@ -53,7 +53,3 @@ export class HealthController {
     }
   }
 }
-
-
-
-

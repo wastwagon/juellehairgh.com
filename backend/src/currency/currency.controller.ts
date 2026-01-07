@@ -25,4 +25,3 @@ export class CurrencyController {
     return this.currencyService.updateRates();
   }
 }
-

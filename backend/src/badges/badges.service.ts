@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -44,7 +48,9 @@ export class BadgesService {
     });
 
     if (existing) {
-      throw new BadRequestException("Badge template with this name already exists");
+      throw new BadRequestException(
+        "Badge template with this name already exists",
+      );
     }
 
     return this.prisma.badgeTemplate.create({
@@ -59,14 +65,17 @@ export class BadgesService {
     });
   }
 
-  async updateTemplate(id: string, data: {
-    label?: string;
-    color?: string;
-    textColor?: string;
-    style?: string;
-    isActive?: boolean;
-  }) {
-    const template = await this.getTemplate(id);
+  async updateTemplate(
+    id: string,
+    data: {
+      label?: string;
+      color?: string;
+      textColor?: string;
+      style?: string;
+      isActive?: boolean;
+    },
+  ) {
+    await this.getTemplate(id);
 
     // Prevent editing predefined templates' name
     return this.prisma.badgeTemplate.update({

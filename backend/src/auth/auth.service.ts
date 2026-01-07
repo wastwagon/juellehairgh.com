@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
@@ -12,7 +16,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private emailService: EmailService
+    private emailService: EmailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -22,7 +26,9 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException("An account with this email already exists. Please sign in instead.");
+      throw new ConflictException(
+        "An account with this email already exists. Please sign in instead.",
+      );
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
@@ -76,7 +82,9 @@ export class AuthService {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === "P2002") {
           // Unique constraint violation
-          throw new ConflictException("An account with this email already exists. Please sign in instead.");
+          throw new ConflictException(
+            "An account with this email already exists. Please sign in instead.",
+          );
         }
       }
       throw error;
@@ -98,7 +106,10 @@ export class AuthService {
         throw new UnauthorizedException("Invalid credentials");
       }
 
-      const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+      const isPasswordValid = await bcrypt.compare(
+        loginDto.password,
+        user.password,
+      );
 
       if (!isPasswordValid) {
         throw new UnauthorizedException("Invalid credentials");
@@ -152,4 +163,3 @@ export class AuthService {
     };
   }
 }
-

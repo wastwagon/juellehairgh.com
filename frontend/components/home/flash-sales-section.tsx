@@ -29,7 +29,7 @@ export function FlashSalesSection() {
       const response = await api.get("/flash-sales/active");
       return response.data;
     },
-    refetchInterval: 1000, // Refetch every second to update countdown
+    staleTime: 60000, // Consider flash sale data stale after 1 minute
   });
 
   useEffect(() => {

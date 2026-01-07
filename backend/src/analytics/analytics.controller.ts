@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, Param, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  UseGuards,
+} from "@nestjs/common";
 import { AnalyticsService } from "./analytics.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -71,10 +79,13 @@ export class AnalyticsController {
   @Get("top-links")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER")
-  async getTopLinks(@Query("days") days?: string, @Query("limit") limit?: string) {
+  async getTopLinks(
+    @Query("days") days?: string,
+    @Query("limit") limit?: string,
+  ) {
     return this.analyticsService.getTopLinks(
       days ? parseInt(days) : 30,
-      limit ? parseInt(limit) : 10
+      limit ? parseInt(limit) : 10,
     );
   }
 
@@ -91,16 +102,22 @@ export class AnalyticsController {
   async getUserJourney(
     @Query("userId") userId?: string,
     @Query("sessionId") sessionId?: string,
-    @Query("days") days?: string
+    @Query("days") days?: string,
   ) {
-    return this.analyticsService.getUserJourney(userId, sessionId, days ? parseInt(days) : 30);
+    return this.analyticsService.getUserJourney(
+      userId,
+      sessionId,
+      days ? parseInt(days) : 30,
+    );
   }
 
   @Get("custom-dimensions")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN", "MANAGER")
   async getCustomDimensions(@Query("days") days?: string) {
-    return this.analyticsService.getCustomDimensions(days ? parseInt(days) : 30);
+    return this.analyticsService.getCustomDimensions(
+      days ? parseInt(days) : 30,
+    );
   }
 
   @Get("events")
@@ -114,7 +131,7 @@ export class AnalyticsController {
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
     @Query("page") page?: string,
-    @Query("limit") limit?: string
+    @Query("limit") limit?: string,
   ) {
     return this.analyticsService.getEvents({
       eventType,
@@ -135,4 +152,3 @@ export class AnalyticsController {
     return this.analyticsService.getEvent(id);
   }
 }
-

@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Delete, Body, Param, Query, UseGuards, Request } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from "@nestjs/common";
 import { ReviewsService } from "./reviews.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
@@ -8,7 +18,16 @@ export class ReviewsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@Request() req, @Body() body: { productId: string; rating: number; title?: string; comment?: string }) {
+  async create(
+    @Request() req,
+    @Body()
+    body: {
+      productId: string;
+      rating: number;
+      title?: string;
+      comment?: string;
+    },
+  ) {
     return this.reviewsService.create(req.user.id, body.productId, {
       rating: body.rating,
       title: body.title,
@@ -18,7 +37,9 @@ export class ReviewsController {
 
   @Get("public")
   async getPublicReviews(@Query("limit") limit?: string) {
-    const reviews = await this.reviewsService.getPublicReviews(limit ? parseInt(limit) : 12);
+    const reviews = await this.reviewsService.getPublicReviews(
+      limit ? parseInt(limit) : 12,
+    );
     const totalCount = await this.reviewsService.getPublicReviewsCount();
     return {
       reviews,
@@ -43,9 +64,3 @@ export class ReviewsController {
     return this.reviewsService.deleteReview(id, req.user.id);
   }
 }
-
-
-
-
-
-

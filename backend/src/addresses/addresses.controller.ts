@@ -33,7 +33,11 @@ export class AddressesController {
   }
 
   @Put(":id")
-  async update(@Request() req, @Param("id") id: string, @Body() addressData: any) {
+  async update(
+    @Request() req,
+    @Param("id") id: string,
+    @Body() addressData: any,
+  ) {
     return this.addressesService.update(id, req.user.id, addressData);
   }
 
@@ -47,15 +51,3 @@ export class AddressesController {
     return this.addressesService.setDefault(id, req.user.id);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

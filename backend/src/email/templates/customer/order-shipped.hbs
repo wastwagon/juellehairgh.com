@@ -1,0 +1,47 @@
+{{> header}}
+
+<h1>Your order is on the way!</h1>
+
+<p>Hi {{customerName}},</p>
+
+<p>Great news! Your order <strong>#{{orderNumber}}</strong> has been shipped and is heading your way.</p>
+
+<div style="background-color: #fdf2f8; padding: 25px; border-radius: 8px; margin: 25px 0; text-align: center; border: 1px dashed #db2777;">
+  <h2 style="margin-top: 0; font-size: 20px; color: #db2777;">Tracking Information</h2>
+  <p style="font-size: 16px; margin-bottom: 20px;">
+    <strong>Tracking Number:</strong> {{trackingNumber}}<br>
+    <strong>Carrier:</strong> {{shippingMethod}}
+  </p>
+  {{#if trackingUrl}}
+  <a href="{{trackingUrl}}" class="button" style="margin-top: 0;">Track My Package</a>
+  {{/if}}
+</div>
+
+<h3 style="color: #db2777;">Items in this shipment:</h3>
+<table class="order-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th style="text-align: right;">Quantity</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each orderItems}}
+    <tr>
+      <td>
+        <strong>{{name}}</strong>
+        {{#if variant}}<br><small style="color: #666;">{{variant}}</small>{{/if}}
+      </td>
+      <td style="text-align: right;">{{quantity}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<p>If you have any questions about your shipment, please don't hesitate to reach out.</p>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{orderUrl}}" class="button">View Order Details</a>
+</div>
+
+{{> footer}}

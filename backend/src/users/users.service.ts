@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, UnauthorizedException } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import * as bcrypt from "bcrypt";
 
@@ -44,7 +48,11 @@ export class UsersService {
     });
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -57,13 +65,18 @@ export class UsersService {
       throw new UnauthorizedException("User not found");
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new BadRequestException("Current password is incorrect");
     }
 
     if (newPassword.length < 6) {
-      throw new BadRequestException("New password must be at least 6 characters");
+      throw new BadRequestException(
+        "New password must be at least 6 characters",
+      );
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -132,8 +145,9 @@ export class UsersService {
     const totalSpent = orders
       .filter((o) => o.totalGhs)
       .reduce((sum, o) => sum + Number(o.totalGhs), 0);
-    
-    const averageOrderValue = orders.length > 0 ? totalSpent / orders.length : 0;
+
+    const averageOrderValue =
+      orders.length > 0 ? totalSpent / orders.length : 0;
 
     // Get favorite categories and brands
     const categoryCounts: Record<string, number> = {};
@@ -142,20 +156,29 @@ export class UsersService {
     orders.forEach((order) => {
       order.items.forEach((item) => {
         if (item.product?.category?.name) {
-          categoryCounts[item.product.category.name] = (categoryCounts[item.product.category.name] || 0) + 1;
+          categoryCounts[item.product.category.name] =
+            (categoryCounts[item.product.category.name] || 0) + 1;
         }
         if (item.product?.brand?.name) {
-          brandCounts[item.product.brand.name] = (brandCounts[item.product.brand.name] || 0) + 1;
+          brandCounts[item.product.brand.name] =
+            (brandCounts[item.product.brand.name] || 0) + 1;
         }
       });
     });
 
-    const favoriteCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-    const favoriteBrand = Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const favoriteCategory =
+      Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      null;
+    const favoriteBrand =
+      Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 
-    const lastOrder = orders.length > 0 
-      ? orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-      : null;
+    const lastOrder =
+      orders.length > 0
+        ? orders.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )[0]
+        : null;
 
     return {
       totalSpent,
@@ -243,7 +266,8 @@ export class UsersService {
     }
 
     // Remove sensitive data
-    const { password, ...userData } = user;
+    const userData = { ...user } as any;
+    delete userData.password;
 
     return {
       exportedAt: new Date().toISOString(),
@@ -290,10 +314,3 @@ export class UsersService {
     });
   }
 }
-
-
-
-
-
-
-

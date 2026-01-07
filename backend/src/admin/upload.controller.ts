@@ -27,11 +27,19 @@ import type { Express } from "express";
 // In Docker, we need to use the mounted volume path
 const getMediaDir = () => {
   const backendDir = process.cwd(); // /app in Docker = ./backend on host
-  
+
   // Try relative path from backend to frontend (most common case)
-  const relativeFrontendPath = path.join(backendDir, "..", "frontend", "public", "media");
-  const frontendExists = fs.existsSync(path.join(backendDir, "..", "frontend", "public"));
-  
+  const relativeFrontendPath = path.join(
+    backendDir,
+    "..",
+    "frontend",
+    "public",
+    "media",
+  );
+  const frontendExists = fs.existsSync(
+    path.join(backendDir, "..", "frontend", "public"),
+  );
+
   if (frontendExists) {
     // Ensure the directory structure exists
     const swatchesDir = path.join(relativeFrontendPath, "swatches");
@@ -43,11 +51,13 @@ const getMediaDir = () => {
     console.log(`[Upload] Swatches directory: ${path.resolve(swatchesDir)}`);
     return absPath;
   }
-  
+
   // Fallback: try from project root (for non-Docker environments)
   const rootPath = path.join(backendDir, "..", "frontend", "public", "media");
-  const rootFrontendExists = fs.existsSync(path.join(backendDir, "..", "frontend", "public"));
-  
+  const rootFrontendExists = fs.existsSync(
+    path.join(backendDir, "..", "frontend", "public"),
+  );
+
   if (rootFrontendExists) {
     const swatchesDir = path.join(rootPath, "swatches");
     if (!fs.existsSync(swatchesDir)) {
@@ -57,7 +67,7 @@ const getMediaDir = () => {
     console.log(`[Upload] Media directory (fallback): ${absPath}`);
     return absPath;
   }
-  
+
   // Last resort: create in backend/uploads
   const uploadsPath = path.join(backendDir, "uploads", "media");
   const swatchesDir = path.join(uploadsPath, "swatches");
@@ -71,7 +81,7 @@ const getMediaDir = () => {
 
 const MEDIA_DIR = getMediaDir();
 
-  // Ensure media directories exist
+// Ensure media directories exist
 const ensureMediaDirs = () => {
   const dirs = [
     path.join(MEDIA_DIR, "swatches"),
@@ -109,9 +119,13 @@ export class UploadController {
         },
         filename: (req, file, cb) => {
           // Generate unique filename: timestamp-color-name.extension
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const name = file.originalname.replace(ext, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
           cb(null, `${uniqueSuffix}-${name}${ext}`);
         },
       }),
@@ -120,11 +134,14 @@ export class UploadController {
       },
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException("Only image files are allowed!"), false);
+          return cb(
+            new BadRequestException("Only image files are allowed!"),
+            false,
+          );
         }
         cb(null, true);
       },
-    })
+    }),
   )
   async uploadSwatch(@UploadedFile() file: Express.Multer.File | undefined) {
     if (!file) {
@@ -133,49 +150,78 @@ export class UploadController {
 
     const filePath = path.join(MEDIA_DIR, "swatches", file.filename);
     const fileUrl = `/media/swatches/${file.filename}`;
-    
+
     // Wait a bit for file system sync (especially important for Docker volumes)
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify file was saved correctly
     if (!fs.existsSync(filePath)) {
       console.error(`[Upload] File not found at: ${filePath}`);
       console.error(`[Upload] MEDIA_DIR: ${MEDIA_DIR}`);
       console.error(`[Upload] Filename: ${file.filename}`);
-      throw new BadRequestException(`File was not saved correctly. Expected at: ${filePath}`);
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
     }
 
     // Always copy to frontend/public/media/swatches so Next.js can serve it
-    const frontendMediaPath = path.join(process.cwd(), "..", "frontend", "public", "media", "swatches");
-    const frontendPublicPath = path.join(process.cwd(), "..", "frontend", "public");
-    
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "swatches",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
     if (fs.existsSync(frontendPublicPath)) {
       try {
         if (!fs.existsSync(frontendMediaPath)) {
           fs.mkdirSync(frontendMediaPath, { recursive: true });
-          console.log(`[Upload] Created frontend swatches directory: ${path.resolve(frontendMediaPath)}`);
+          console.log(
+            `[Upload] Created frontend swatches directory: ${path.resolve(frontendMediaPath)}`,
+          );
         }
         const frontendFilePath = path.join(frontendMediaPath, file.filename);
         // Copy file to frontend directory so Next.js can serve it
         fs.copyFileSync(filePath, frontendFilePath);
-        console.log(`[Upload] Copied file to frontend directory: ${path.resolve(frontendFilePath)}`);
+        console.log(
+          `[Upload] Copied file to frontend directory: ${path.resolve(frontendFilePath)}`,
+        );
         console.log(`[Upload] File also exists at: ${path.resolve(filePath)}`);
       } catch (error) {
-        console.error(`[Upload] Could not copy file to frontend directory: ${error}`);
-        console.error(`[Upload] Frontend path: ${path.resolve(frontendMediaPath)}`);
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
+        console.error(
+          `[Upload] Frontend path: ${path.resolve(frontendMediaPath)}`,
+        );
         console.error(`[Upload] Source path: ${path.resolve(filePath)}`);
       }
     } else {
-      console.warn(`[Upload] Frontend public directory not found at: ${path.resolve(frontendPublicPath)}`);
+      console.warn(
+        `[Upload] Frontend public directory not found at: ${path.resolve(frontendPublicPath)}`,
+      );
     }
 
     // Verify file is readable
     try {
       fs.accessSync(filePath, fs.constants.R_OK);
       const stats = fs.statSync(filePath);
-      console.log(`[Upload] File saved successfully: ${filePath} (${stats.size} bytes)`);
+      console.log(
+        `[Upload] File saved successfully: ${filePath} (${stats.size} bytes)`,
+      );
     } catch (error) {
-      console.warn(`[Upload] File exists but may not be readable yet: ${filePath}`, error);
+      console.warn(
+        `[Upload] File exists but may not be readable yet: ${filePath}`,
+        error,
+      );
       // Still return success, file might be syncing
     }
 
@@ -204,9 +250,13 @@ export class UploadController {
         },
         filename: (req, file, cb) => {
           // Generate unique filename: timestamp-product-name.extension
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const name = file.originalname.replace(ext, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
           cb(null, `${uniqueSuffix}-${name}${ext}`);
         },
       }),
@@ -215,45 +265,70 @@ export class UploadController {
       },
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException("Only image files are allowed!"), false);
+          return cb(
+            new BadRequestException("Only image files are allowed!"),
+            false,
+          );
         }
         cb(null, true);
       },
-    })
+    }),
   )
-  async uploadProductImage(@UploadedFile() file: Express.Multer.File | undefined) {
+  async uploadProductImage(
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
     if (!file) {
       throw new BadRequestException("No file uploaded");
     }
 
     const filePath = path.join(MEDIA_DIR, "products", file.filename);
     const fileUrl = `/media/products/${file.filename}`;
-    
+
     // Wait a bit for file system sync (especially important for Docker volumes)
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify file was saved correctly
     if (!fs.existsSync(filePath)) {
       console.error(`[Upload] File not found at: ${filePath}`);
-      throw new BadRequestException(`File was not saved correctly. Expected at: ${filePath}`);
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
     }
 
     // Always copy to frontend/public/media/products so Next.js can serve it
-    const frontendMediaPath = path.join(process.cwd(), "..", "frontend", "public", "media", "products");
-    const frontendPublicPath = path.join(process.cwd(), "..", "frontend", "public");
-    
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "products",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
     if (fs.existsSync(frontendPublicPath)) {
       try {
         if (!fs.existsSync(frontendMediaPath)) {
           fs.mkdirSync(frontendMediaPath, { recursive: true });
-          console.log(`[Upload] Created frontend products directory: ${path.resolve(frontendMediaPath)}`);
+          console.log(
+            `[Upload] Created frontend products directory: ${path.resolve(frontendMediaPath)}`,
+          );
         }
         const frontendFilePath = path.join(frontendMediaPath, file.filename);
         // Copy file to frontend directory so Next.js can serve it
         fs.copyFileSync(filePath, frontendFilePath);
-        console.log(`[Upload] Copied product image to frontend directory: ${path.resolve(frontendFilePath)}`);
+        console.log(
+          `[Upload] Copied product image to frontend directory: ${path.resolve(frontendFilePath)}`,
+        );
       } catch (error) {
-        console.error(`[Upload] Could not copy file to frontend directory: ${error}`);
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
       }
     }
 
@@ -268,22 +343,37 @@ export class UploadController {
 
   // Serve uploaded product images (fallback if Next.js doesn't serve them)
   @Get("media/products/:filename")
-  async getProductImage(@Param("filename") filename: string, @Res() res: Response) {
+  async getProductImage(
+    @Param("filename") filename: string,
+    @Res() res: Response,
+  ) {
     const filePath = path.join(MEDIA_DIR, "products", filename);
-    
+
     // Security: prevent directory traversal
-    if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      filename.includes("\\")
+    ) {
       throw new BadRequestException("Invalid filename");
     }
 
     // Try multiple possible locations
     let actualFilePath = filePath;
     const altPaths = [
-      path.join(process.cwd(), "..", "frontend", "public", "media", "products", filename),
+      path.join(
+        process.cwd(),
+        "..",
+        "frontend",
+        "public",
+        "media",
+        "products",
+        filename,
+      ),
       path.join(process.cwd(), "uploads", "media", "products", filename),
       filePath,
     ];
-    
+
     for (const altPath of altPaths) {
       const resolvedPath = path.resolve(altPath);
       if (fs.existsSync(resolvedPath)) {
@@ -291,7 +381,7 @@ export class UploadController {
         break;
       }
     }
-    
+
     if (!fs.existsSync(actualFilePath)) {
       throw new NotFoundException(`Image not found: ${filename}`);
     }
@@ -315,22 +405,37 @@ export class UploadController {
   // Serve uploaded images (fallback if Next.js doesn't serve them)
   // This endpoint is public (no auth required) for images to be accessible
   @Get("media/swatches/:filename")
-  async getSwatchImage(@Param("filename") filename: string, @Res() res: Response) {
+  async getSwatchImage(
+    @Param("filename") filename: string,
+    @Res() res: Response,
+  ) {
     const filePath = path.join(MEDIA_DIR, "swatches", filename);
-    
+
     // Security: prevent directory traversal
-    if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      filename.includes("\\")
+    ) {
       throw new BadRequestException("Invalid filename");
     }
 
     // Try multiple possible locations - check frontend first (preferred), then backend uploads
     let actualFilePath = filePath;
     const altPaths = [
-      path.join(process.cwd(), "..", "frontend", "public", "media", "swatches", filename), // Preferred: frontend public
+      path.join(
+        process.cwd(),
+        "..",
+        "frontend",
+        "public",
+        "media",
+        "swatches",
+        filename,
+      ), // Preferred: frontend public
       path.join(process.cwd(), "uploads", "media", "swatches", filename), // Fallback: backend uploads
       filePath, // Original MEDIA_DIR location
     ];
-    
+
     // Check all paths and use the first one that exists
     for (const altPath of altPaths) {
       const resolvedPath = path.resolve(altPath);
@@ -340,11 +445,14 @@ export class UploadController {
         break;
       }
     }
-    
+
     if (!fs.existsSync(actualFilePath)) {
       console.error(`[Get Image] File not found in any location: ${filename}`);
       console.error(`[Get Image] MEDIA_DIR: ${MEDIA_DIR}`);
-      console.error(`[Get Image] Checked paths:`, altPaths.map(p => `${path.resolve(p)} (exists: ${fs.existsSync(p)})`));
+      console.error(
+        `[Get Image] Checked paths:`,
+        altPaths.map((p) => `${path.resolve(p)} (exists: ${fs.existsSync(p)})`),
+      );
       throw new NotFoundException(`Image not found: ${filename}`);
     }
 
@@ -365,7 +473,7 @@ export class UploadController {
   }
 
   // Media Library Endpoints (WordPress-style)
-  
+
   // List all media files
   @Get("media")
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -426,7 +534,9 @@ export class UploadController {
         }
 
         const ext = path.extname(file).toLowerCase();
-        const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
+        const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(
+          ext,
+        );
         const url = `/media/${dir.category}/${file}`;
 
         mediaFiles.push({
@@ -481,16 +591,20 @@ export class UploadController {
         },
         filename: (req, file, cb) => {
           // Generate unique filename: timestamp-original-name.extension
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const name = file.originalname.replace(ext, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
           cb(null, `${uniqueSuffix}-${name}${ext}`);
         },
       }),
       limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
       },
-    })
+    }),
   )
   async uploadMedia(@UploadedFile() file: Express.Multer.File | undefined) {
     if (!file) {
@@ -499,19 +613,33 @@ export class UploadController {
 
     const filePath = path.join(MEDIA_DIR, "library", file.filename);
     const fileUrl = `/media/library/${file.filename}`;
-    
+
     // Wait for file system sync
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify file was saved
     if (!fs.existsSync(filePath)) {
-      throw new BadRequestException(`File was not saved correctly. Expected at: ${filePath}`);
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
     }
 
     // Copy to frontend/public/media/library
-    const frontendMediaPath = path.join(process.cwd(), "..", "frontend", "public", "media", "library");
-    const frontendPublicPath = path.join(process.cwd(), "..", "frontend", "public");
-    
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "library",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
     if (fs.existsSync(frontendPublicPath)) {
       try {
         if (!fs.existsSync(frontendMediaPath)) {
@@ -520,7 +648,9 @@ export class UploadController {
         const frontendFilePath = path.join(frontendMediaPath, file.filename);
         fs.copyFileSync(filePath, frontendFilePath);
       } catch (error) {
-        console.error(`[Upload] Could not copy file to frontend directory: ${error}`);
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
       }
     }
 
@@ -556,9 +686,13 @@ export class UploadController {
           cb(null, collectionDir);
         },
         filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const name = file.originalname.replace(ext, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
           cb(null, `${uniqueSuffix}-${name}${ext}`);
         },
       }),
@@ -567,32 +701,51 @@ export class UploadController {
       },
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException("Only image files are allowed!"), false);
+          return cb(
+            new BadRequestException("Only image files are allowed!"),
+            false,
+          );
         }
         cb(null, true);
       },
-    })
+    }),
   )
-  async uploadCollectionImage(@UploadedFile() file: Express.Multer.File | undefined) {
+  async uploadCollectionImage(
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
     if (!file) {
       throw new BadRequestException("No file uploaded");
     }
 
     const filePath = path.join(MEDIA_DIR, "collections", file.filename);
     const fileUrl = `/media/collections/${file.filename}`;
-    
+
     // Wait for file system sync
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify file was saved
     if (!fs.existsSync(filePath)) {
-      throw new BadRequestException(`File was not saved correctly. Expected at: ${filePath}`);
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
     }
 
     // Copy to frontend/public/media/collections
-    const frontendMediaPath = path.join(process.cwd(), "..", "frontend", "public", "media", "collections");
-    const frontendPublicPath = path.join(process.cwd(), "..", "frontend", "public");
-    
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "collections",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
     if (fs.existsSync(frontendPublicPath)) {
       try {
         if (!fs.existsSync(frontendMediaPath)) {
@@ -601,7 +754,9 @@ export class UploadController {
         const frontendFilePath = path.join(frontendMediaPath, file.filename);
         fs.copyFileSync(filePath, frontendFilePath);
       } catch (error) {
-        console.error(`[Upload] Could not copy file to frontend directory: ${error}`);
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
       }
     }
 
@@ -629,9 +784,13 @@ export class UploadController {
           cb(null, bannerDir);
         },
         filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const name = file.originalname.replace(ext, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
           cb(null, `${uniqueSuffix}-${name}${ext}`);
         },
       }),
@@ -640,32 +799,51 @@ export class UploadController {
       },
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException("Only image files are allowed!"), false);
+          return cb(
+            new BadRequestException("Only image files are allowed!"),
+            false,
+          );
         }
         cb(null, true);
       },
-    })
+    }),
   )
-  async uploadBannerImage(@UploadedFile() file: Express.Multer.File | undefined) {
+  async uploadBannerImage(
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
     if (!file) {
       throw new BadRequestException("No file uploaded");
     }
 
     const filePath = path.join(MEDIA_DIR, "banners", file.filename);
     const fileUrl = `/media/banners/${file.filename}`;
-    
+
     // Wait for file system sync
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify file was saved
     if (!fs.existsSync(filePath)) {
-      throw new BadRequestException(`File was not saved correctly. Expected at: ${filePath}`);
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
     }
 
     // Copy to frontend/public/media/banners
-    const frontendMediaPath = path.join(process.cwd(), "..", "frontend", "public", "media", "banners");
-    const frontendPublicPath = path.join(process.cwd(), "..", "frontend", "public");
-    
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "banners",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
     if (fs.existsSync(frontendPublicPath)) {
       try {
         if (!fs.existsSync(frontendMediaPath)) {
@@ -674,7 +852,9 @@ export class UploadController {
         const frontendFilePath = path.join(frontendMediaPath, file.filename);
         fs.copyFileSync(filePath, frontendFilePath);
       } catch (error) {
-        console.error(`[Upload] Could not copy file to frontend directory: ${error}`);
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
       }
     }
 
@@ -701,9 +881,13 @@ export class UploadController {
           cb(null, profileDir);
         },
         filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
-          const name = file.originalname.replace(ext, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
           cb(null, `${uniqueSuffix}-${name}${ext}`);
         },
       }),
@@ -712,32 +896,51 @@ export class UploadController {
       },
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new BadRequestException("Only image files are allowed!"), false);
+          return cb(
+            new BadRequestException("Only image files are allowed!"),
+            false,
+          );
         }
         cb(null, true);
       },
-    })
+    }),
   )
-  async uploadProfilePicture(@UploadedFile() file: Express.Multer.File | undefined) {
+  async uploadProfilePicture(
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
     if (!file) {
       throw new BadRequestException("No file uploaded");
     }
 
     const filePath = path.join(MEDIA_DIR, "profiles", file.filename);
     const fileUrl = `/media/profiles/${file.filename}`;
-    
+
     // Wait for file system sync
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify file was saved
     if (!fs.existsSync(filePath)) {
-      throw new BadRequestException(`File was not saved correctly. Expected at: ${filePath}`);
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
     }
 
     // Copy to frontend/public/media/profiles
-    const frontendMediaPath = path.join(process.cwd(), "..", "frontend", "public", "media", "profiles");
-    const frontendPublicPath = path.join(process.cwd(), "..", "frontend", "public");
-    
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "profiles",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
     if (fs.existsSync(frontendPublicPath)) {
       try {
         if (!fs.existsSync(frontendMediaPath)) {
@@ -746,7 +949,9 @@ export class UploadController {
         const frontendFilePath = path.join(frontendMediaPath, file.filename);
         fs.copyFileSync(filePath, frontendFilePath);
       } catch (error) {
-        console.error(`[Upload] Could not copy file to frontend directory: ${error}`);
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
       }
     }
 
@@ -778,16 +983,31 @@ export class UploadController {
     }
 
     // Validate category
-    const validCategories = ["library", "products", "swatches", "categories", "brands", "collections"];
+    const validCategories = [
+      "library",
+      "products",
+      "swatches",
+      "categories",
+      "brands",
+      "collections",
+    ];
     if (!validCategories.includes(category)) {
       throw new BadRequestException("Invalid category");
     }
 
     const filePath = path.join(MEDIA_DIR, category, filename);
-    
+
     // Try multiple possible locations
     const altPaths = [
-      path.join(process.cwd(), "..", "frontend", "public", "media", category, filename),
+      path.join(
+        process.cwd(),
+        "..",
+        "frontend",
+        "public",
+        "media",
+        category,
+        filename,
+      ),
       path.join(process.cwd(), "uploads", "media", category, filename),
       filePath,
     ];
@@ -800,13 +1020,18 @@ export class UploadController {
           fs.unlinkSync(resolvedPath);
           deleted = true;
         } catch (error) {
-          console.error(`[Delete] Could not delete file at ${resolvedPath}:`, error);
+          console.error(
+            `[Delete] Could not delete file at ${resolvedPath}:`,
+            error,
+          );
         }
       }
     }
 
     if (!deleted) {
-      throw new NotFoundException(`Media file not found: ${category}/${filename}`);
+      throw new NotFoundException(
+        `Media file not found: ${category}/${filename}`,
+      );
     }
 
     return {
@@ -817,22 +1042,37 @@ export class UploadController {
 
   // Serve media library files
   @Get("media/library/:filename")
-  async getLibraryMedia(@Param("filename") filename: string, @Res() res: Response) {
+  async getLibraryMedia(
+    @Param("filename") filename: string,
+    @Res() res: Response,
+  ) {
     const filePath = path.join(MEDIA_DIR, "library", filename);
-    
+
     // Security: prevent directory traversal
-    if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      filename.includes("\\")
+    ) {
       throw new BadRequestException("Invalid filename");
     }
 
     // Try multiple possible locations
     let actualFilePath = filePath;
     const altPaths = [
-      path.join(process.cwd(), "..", "frontend", "public", "media", "library", filename),
+      path.join(
+        process.cwd(),
+        "..",
+        "frontend",
+        "public",
+        "media",
+        "library",
+        filename,
+      ),
       path.join(process.cwd(), "uploads", "media", "library", filename),
       filePath,
     ];
-    
+
     for (const altPath of altPaths) {
       const resolvedPath = path.resolve(altPath);
       if (fs.existsSync(resolvedPath)) {
@@ -840,7 +1080,7 @@ export class UploadController {
         break;
       }
     }
-    
+
     if (!fs.existsSync(actualFilePath)) {
       throw new NotFoundException(`Media file not found: ${filename}`);
     }
@@ -855,7 +1095,8 @@ export class UploadController {
       ".webp": "image/webp",
       ".pdf": "application/pdf",
       ".doc": "application/msword",
-      ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ".docx":
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     };
     const contentType = contentTypeMap[ext] || "application/octet-stream";
 
@@ -884,7 +1125,14 @@ export class UploadController {
     }
 
     // Validate category
-    const validCategories = ["library", "products", "swatches", "categories", "brands", "collections"];
+    const validCategories = [
+      "library",
+      "products",
+      "swatches",
+      "categories",
+      "brands",
+      "collections",
+    ];
     if (!validCategories.includes(category)) {
       throw new BadRequestException("Invalid category");
     }
@@ -894,7 +1142,15 @@ export class UploadController {
     // Try multiple possible locations
     let actualFilePath = filePath;
     const altPaths = [
-      path.join(process.cwd(), "..", "frontend", "public", "media", category, filename),
+      path.join(
+        process.cwd(),
+        "..",
+        "frontend",
+        "public",
+        "media",
+        category,
+        filename,
+      ),
       path.join(process.cwd(), "uploads", "media", category, filename),
       filePath,
     ];
@@ -908,7 +1164,9 @@ export class UploadController {
     }
 
     if (!fs.existsSync(actualFilePath)) {
-      throw new NotFoundException(`Media file not found: ${category}/${filename}`);
+      throw new NotFoundException(
+        `Media file not found: ${category}/${filename}`,
+      );
     }
 
     // Determine content type
@@ -921,7 +1179,8 @@ export class UploadController {
       ".webp": "image/webp",
       ".pdf": "application/pdf",
       ".doc": "application/msword",
-      ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ".docx":
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     };
     const contentType = contentTypeMap[ext] || "application/octet-stream";
 
@@ -930,4 +1189,3 @@ export class UploadController {
     return res.sendFile(actualFilePath);
   }
 }
-

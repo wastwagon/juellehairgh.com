@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 
@@ -90,7 +94,12 @@ export class WalletService {
     };
   }
 
-  async addFunds(walletId: string, amount: number, description?: string, reference?: string) {
+  async addFunds(
+    walletId: string,
+    amount: number,
+    description?: string,
+    reference?: string,
+  ) {
     const wallet = await this.prisma.wallet.findUnique({
       where: { id: walletId },
     });
@@ -238,7 +247,10 @@ export class WalletService {
       if (wallet) {
         where.walletId = wallet.id;
       } else {
-        return { transactions: [], pagination: { page: 1, limit, total: 0, totalPages: 0 } };
+        return {
+          transactions: [],
+          pagination: { page: 1, limit, total: 0, totalPages: 0 },
+        };
       }
     }
 
@@ -328,7 +340,11 @@ export class WalletService {
     return updatedWallet;
   }
 
-  async useWalletForPayment(userId: string, amount: number, orderId: string | null = null) {
+  async useWalletForPayment(
+    userId: string,
+    amount: number,
+    orderId: string | null = null,
+  ) {
     const wallet = await this.getOrCreateWallet(userId);
     const currentBalance = Number(wallet.balance);
 
@@ -349,7 +365,9 @@ export class WalletService {
           type: "PAYMENT",
           amount: -amount,
           balanceAfter: newBalance,
-          description: orderId ? `Payment for order ${orderId}` : "Payment for order",
+          description: orderId
+            ? `Payment for order ${orderId}`
+            : "Payment for order",
           orderId: orderId || null,
         },
       }),
@@ -398,28 +416,29 @@ export class WalletService {
   }
 
   async getWalletStats() {
-    const [totalWallets, totalBalance, totalTransactions, topUsers] = await Promise.all([
-      this.prisma.wallet.count(),
-      this.prisma.wallet.aggregate({
-        _sum: {
-          balance: true,
-        },
-      }),
-      this.prisma.walletTransaction.count(),
-      this.prisma.wallet.findMany({
-        take: 10,
-        orderBy: { balance: "desc" },
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              name: true,
+    const [totalWallets, totalBalance, totalTransactions, topUsers] =
+      await Promise.all([
+        this.prisma.wallet.count(),
+        this.prisma.wallet.aggregate({
+          _sum: {
+            balance: true,
+          },
+        }),
+        this.prisma.walletTransaction.count(),
+        this.prisma.wallet.findMany({
+          take: 10,
+          orderBy: { balance: "desc" },
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
             },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
     return {
       totalWallets,

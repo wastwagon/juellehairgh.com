@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{subject}}</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .header {
+      background-color: #fdf2f8;
+      padding: 30px;
+      text-align: center;
+      border-bottom: 2px solid #fbcfe8;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #db2777;
+      text-decoration: none;
+    }
+    .content {
+      padding: 30px;
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #eee;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #db2777;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .order-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .order-table th {
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      padding: 10px;
+      font-size: 14px;
+    }
+    .order-table td {
+      padding: 10px;
+      border-bottom: 1px solid #f9f9f9;
+      font-size: 14px;
+    }
+    .total-row td {
+      font-weight: bold;
+      border-top: 2px solid #eee;
+    }
+    .address-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .address-box {
+      background: #fdf2f8;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="{{siteUrl}}" class="logo">{{siteName}}</a>
+    </div>
+    <div class="content">

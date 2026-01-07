@@ -9,13 +9,8 @@ export class BannersService {
     return this.prisma.banner.findMany({
       where: {
         isActive: true,
-        OR: [
-          { startDate: null },
-          { startDate: { lte: new Date() } },
-        ],
-        AND: [
-          { OR: [{ endDate: null }, { endDate: { gte: new Date() } }] },
-        ],
+        OR: [{ startDate: null }, { startDate: { lte: new Date() } }],
+        AND: [{ OR: [{ endDate: null }, { endDate: { gte: new Date() } }] }],
       },
       orderBy: {
         position: "asc",
@@ -23,14 +18,3 @@ export class BannersService {
     });
   }
 }
-
-
-
-
-
-
-
-
-
-
-

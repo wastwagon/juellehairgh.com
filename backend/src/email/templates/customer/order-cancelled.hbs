@@ -1,0 +1,25 @@
+{{> header}}
+
+<h1 style="color: #991b1b;">Order Cancelled</h1>
+
+<p>Hi {{customerName}},</p>
+
+<p>Your order <strong>#{{orderNumber}}</strong> has been cancelled.</p>
+
+<div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fee2e2;">
+  <p style="margin: 0;"><strong>Reason for cancellation:</strong><br>{{reason}}</p>
+</div>
+
+{{#if refundInfo}}
+<div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #dcfce7;">
+  <p style="margin: 0;"><strong>Refund Information:</strong><br>{{refundInfo}}</p>
+</div>
+{{/if}}
+
+<p>We're sorry for any inconvenience this may have caused. If you have any questions or if you didn't request this cancellation, please contact our support team immediately.</p>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{siteUrl}}" class="button">Return to Shop</a>
+</div>
+
+{{> footer}}

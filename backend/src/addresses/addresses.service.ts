@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -25,10 +25,7 @@ export class AddressesService {
   async findAll(userId: string) {
     return this.prisma.address.findMany({
       where: { userId },
-      orderBy: [
-        { isDefault: "desc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
     });
   }
 
@@ -62,14 +59,14 @@ export class AddressesService {
   }
 
   async delete(id: string, userId: string) {
-    const address = await this.findOne(id, userId);
+    await this.findOne(id, userId);
     return this.prisma.address.delete({
       where: { id },
     });
   }
 
   async setDefault(id: string, userId: string) {
-    const address = await this.findOne(id, userId);
+    await this.findOne(id, userId);
 
     // Unset all other default addresses
     await this.prisma.address.updateMany({
@@ -84,15 +81,3 @@ export class AddressesService {
     });
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -15,15 +15,3 @@ export class CollectionsController {
     return this.collectionsService.findOne(slug);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

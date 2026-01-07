@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Query, Body, Param } from "@nestjs/common";
+import { Controller, Post, Get, Query, Body } from "@nestjs/common";
 import { NewsletterService } from "./newsletter.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -11,7 +11,7 @@ export class NewsletterController {
 
   @Post("subscribe")
   async subscribe(
-    @Body() body: { email: string; name?: string; source?: string }
+    @Body() body: { email: string; name?: string; source?: string },
   ) {
     return this.newsletterService.subscribe(body.email, body.name, body.source);
   }

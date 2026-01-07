@@ -8,7 +8,6 @@ import {
   Param,
   Query,
   UseGuards,
-  Request,
   NotFoundException,
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
@@ -19,8 +18,6 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { PrismaService } from "../prisma/prisma.service";
-import * as fs from "fs";
-import * as path from "path";
 
 @Controller("admin")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,11 +28,11 @@ export class AdminController {
     private productsService: ProductsService,
     private ordersService: OrdersService,
     private emailService: EmailService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
   ) {}
 
   @Get("dashboard")
-  async getDashboard(@Request() req) {
+  async getDashboard() {
     return this.adminService.getDashboardStats();
   }
 
@@ -82,9 +79,12 @@ export class AdminController {
   @Post("products/:id/generate-variations")
   async generateVariations(
     @Param("id") id: string,
-    @Body() data: { attributes: Array<{ name: string; terms: string[] }> }
+    @Body() data: { attributes: Array<{ name: string; terms: string[] }> },
   ) {
-    return this.adminService.generateVariationsFromAttributes(id, data.attributes);
+    return this.adminService.generateVariationsFromAttributes(
+      id,
+      data.attributes,
+    );
   }
 
   // Product Variants Management
@@ -145,15 +145,19 @@ export class AdminController {
   @Put("orders/:id/status")
   async updateOrderStatus(
     @Param("id") id: string,
-    @Body() data: { status: string; trackingNumber?: string }
+    @Body() data: { status: string; trackingNumber?: string },
   ) {
-    return this.ordersService.updateStatus(id, data.status, data.trackingNumber);
+    return this.ordersService.updateStatus(
+      id,
+      data.status,
+      data.trackingNumber,
+    );
   }
 
   @Put("orders/:id/notes")
   async updateOrderNotes(
     @Param("id") id: string,
-    @Body() data: { notes: string }
+    @Body() data: { notes: string },
   ) {
     return this.prisma.order.update({
       where: { id },
@@ -237,7 +241,7 @@ export class AdminController {
   @Post("collections/:id/products")
   async addProductToCollection(
     @Param("id") id: string,
-    @Body() body: { productId: string }
+    @Body() body: { productId: string },
   ) {
     return this.adminService.addProductToCollection(id, body.productId);
   }
@@ -245,15 +249,18 @@ export class AdminController {
   @Delete("collections/:id/products/:collectionProductId")
   async removeProductFromCollection(
     @Param("id") id: string,
-    @Param("collectionProductId") collectionProductId: string
+    @Param("collectionProductId") collectionProductId: string,
   ) {
-    return this.adminService.removeProductFromCollection(id, collectionProductId);
+    return this.adminService.removeProductFromCollection(
+      id,
+      collectionProductId,
+    );
   }
 
   @Put("collections/:id/products/positions")
   async updateProductPositions(
     @Param("id") id: string,
-    @Body() body: { updates: { id: string; position: number }[] }
+    @Body() body: { updates: { id: string; position: number }[] },
   ) {
     return this.adminService.updateCollectionProductPositions(id, body.updates);
   }
@@ -288,7 +295,10 @@ export class AdminController {
   }
 
   @Put("customers/:id/role")
-  async updateCustomerRole(@Param("id") id: string, @Body() body: { role: string }) {
+  async updateCustomerRole(
+    @Param("id") id: string,
+    @Body() body: { role: string },
+  ) {
     return this.adminService.updateUserRole(id, body.role);
   }
 
@@ -321,7 +331,10 @@ export class AdminController {
   }
 
   @Put("attributes/:id")
-  async updateAttribute(@Param("id") id: string, @Body() data: { name?: string; description?: string }) {
+  async updateAttribute(
+    @Param("id") id: string,
+    @Body() data: { name?: string; description?: string },
+  ) {
     return this.adminService.updateAttribute(id, data);
   }
 
@@ -334,13 +347,16 @@ export class AdminController {
   @Post("attributes/:attributeId/terms")
   async createAttributeTerm(
     @Param("attributeId") attributeId: string,
-    @Body() data: { name: string; image?: string }
+    @Body() data: { name: string; image?: string },
   ) {
     return this.adminService.createAttributeTerm(attributeId, data);
   }
 
   @Put("attribute-terms/:id")
-  async updateAttributeTerm(@Param("id") id: string, @Body() data: { name?: string; image?: string }) {
+  async updateAttributeTerm(
+    @Param("id") id: string,
+    @Body() data: { name?: string; image?: string },
+  ) {
     return this.adminService.updateAttributeTerm(id, data);
   }
 
@@ -386,7 +402,7 @@ export class AdminController {
   @Put("email-templates/:id")
   async updateEmailTemplate(
     @Param("id") id: string,
-    @Body() data: { subject?: string; body: string; variables?: string[] }
+    @Body() data: { subject?: string; body: string; variables?: string[] },
   ) {
     return this.adminService.updateEmailTemplate(id, data);
   }
@@ -394,11 +410,10 @@ export class AdminController {
   @Post("email-templates/:id/preview")
   async previewEmailTemplate(
     @Param("id") id: string,
-    @Body() data: { variables?: Record<string, any> }
+    @Body() data: { variables?: Record<string, any> },
   ) {
     return this.adminService.previewEmailTemplate(id, data.variables || {});
   }
-
 
   // Trust Badges Management
   @Get("trust-badges")
@@ -427,7 +442,9 @@ export class AdminController {
   }
 
   @Put("trust-badges/positions")
-  async updateTrustBadgePositions(@Body() body: { updates: { id: string; position: number }[] }) {
+  async updateTrustBadgePositions(
+    @Body() body: { updates: { id: string; position: number }[] },
+  ) {
     return this.adminService.updateTrustBadgePositions(body.updates);
   }
 
@@ -512,16 +529,25 @@ export class AdminController {
   }
 
   @Put("settings")
-  async updateSettings(@Body() body: { settings: Array<{ key: string; value: string; category?: string }> }) {
+  async updateSettings(
+    @Body()
+    body: {
+      settings: Array<{ key: string; value: string; category?: string }>;
+    },
+  ) {
     return this.adminService.updateSettings(body.settings);
   }
 
   @Put("settings/:key")
   async updateSetting(
     @Param("key") key: string,
-    @Body() body: { value: string; category?: string }
+    @Body() body: { value: string; category?: string },
   ) {
-    return this.adminService.updateSetting(key, body.value, body.category || "general");
+    return this.adminService.updateSetting(
+      key,
+      body.value,
+      body.category || "general",
+    );
   }
 
   // Test Email

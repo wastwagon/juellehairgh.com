@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { MailerService } from "@nestjs-modules/mailer";
 import * as crypto from "crypto";
@@ -7,7 +11,7 @@ import * as crypto from "crypto";
 export class NewsletterService {
   constructor(
     private prisma: PrismaService,
-    private mailerService: MailerService
+    private mailerService: MailerService,
   ) {}
 
   async subscribe(email: string, name?: string, source?: string) {
@@ -18,7 +22,9 @@ export class NewsletterService {
 
     if (existing) {
       if (existing.isActive) {
-        throw new BadRequestException("Email is already subscribed to the newsletter");
+        throw new BadRequestException(
+          "Email is already subscribed to the newsletter",
+        );
       } else {
         // Re-subscribe
         const token = crypto.randomBytes(32).toString("hex");

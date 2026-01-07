@@ -7,6 +7,9 @@ export class DiscountCodesController {
 
   @Post("validate")
   async validateCode(@Body() body: { code: string; subtotal?: number }) {
-    return this.discountCodesService.validateCode(body.code, body.subtotal || 0);
+    return this.discountCodesService.validateCode(
+      body.code,
+      body.subtotal || 0,
+    );
   }
 }

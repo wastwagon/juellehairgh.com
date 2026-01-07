@@ -26,8 +26,8 @@ services:
     container_name: juelle-hair-backend
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-juellehair}?schema=public
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
-      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:-sk_live_80c6d6b5e9c2a38a8e6e1427e641e89e160e6c4d}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:?PAYSTACK_SECRET_KEY is required}
       CURRENCY_API_KEY: ${CURRENCY_API_KEY:-}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8002}
       PORT: 3001
@@ -54,8 +54,8 @@ services:
     environment:
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8001/api}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-secret-key-change-in-production}
-      NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:-pk_live_ddadd10dc94b2c2910d10f0fe0d786768a099a06}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:?NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY is required}
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Juelle Hair Ghana}
       NEXT_PUBLIC_BASE_CURRENCY: ${NEXT_PUBLIC_BASE_CURRENCY:-GHS}
       WATCHPACK_POLLING: "true"

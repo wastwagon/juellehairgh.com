@@ -1,0 +1,18 @@
+{{> header}}
+
+<h1>New Customer Registered</h1>
+
+<p>A new customer has just registered on <strong>{{siteName}}</strong>.</p>
+
+<div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin: 25px 0;">
+  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Customer Details</h2>
+  <p style="margin: 10px 0;"><strong>Name:</strong> {{customerName}}</p>
+  <p style="margin: 10px 0;"><strong>Email:</strong> {{customerEmail}}</p>
+  <p style="margin: 10px 0;"><strong>Registration Date:</strong> {{registrationDate}}</p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{adminUsersUrl}}" class="button">View All Customers</a>
+</div>
+
+{{> footer}}

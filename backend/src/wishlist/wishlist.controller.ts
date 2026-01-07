@@ -30,15 +30,3 @@ export class WishlistController {
     return this.wishlistService.removeItem(req.user.id, productId);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

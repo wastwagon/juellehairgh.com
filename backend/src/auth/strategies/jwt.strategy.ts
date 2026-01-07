@@ -8,12 +8,18 @@ import { AuthService } from "../auth.service";
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private configService: ConfigService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>("JWT_SECRET") || "your-secret-key",
+      secretOrKey: (() => {
+        const key = configService.get<string>("JWT_SECRET");
+        if (!key) {
+          throw new Error("JWT_SECRET is not set");
+        }
+        return key;
+      })(),
     });
   }
 
@@ -25,15 +31,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return user;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

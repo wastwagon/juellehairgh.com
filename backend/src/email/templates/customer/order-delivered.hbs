@@ -1,0 +1,44 @@
+{{> header}}
+
+<h1>Your order has been delivered!</h1>
+
+<p>Hi {{customerName}},</p>
+
+<p>Your order <strong>#{{orderNumber}}</strong> was delivered on {{deliveryDate}}. We hope you love your new hair!</p>
+
+<div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin: 25px 0; text-align: center;">
+  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Enjoyed your shopping experience?</h2>
+  <p>We'd love to hear your thoughts. Share a review and help other customers find their perfect look!</p>
+  {{#if reviewUrl}}
+  <a href="{{reviewUrl}}" class="button" style="margin-top: 10px; background-color: #059669;">Write a Review</a>
+  {{/if}}
+</div>
+
+<h3 style="color: #db2777;">Delivered Items:</h3>
+<table class="order-table">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th style="text-align: right;">Quantity</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each orderItems}}
+    <tr>
+      <td>
+        <strong>{{name}}</strong>
+        {{#if variant}}<br><small style="color: #666;">{{variant}}</small>{{/if}}
+      </td>
+      <td style="text-align: right;">{{quantity}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<p>Thank you for choosing {{siteName}}!</p>
+
+<div style="text-align: center; margin-top: 30px;">
+  <a href="{{siteUrl}}/categories/shop-all" class="button">Shop More</a>
+</div>
+
+{{> footer}}

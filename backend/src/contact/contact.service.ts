@@ -6,10 +6,15 @@ import { PrismaService } from "../prisma/prisma.service";
 export class ContactService {
   constructor(
     private mailerService: MailerService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
   ) {}
 
-  async handleContactSubmission(data: { name: string; email: string; subject?: string; message: string }) {
+  async handleContactSubmission(data: {
+    name: string;
+    email: string;
+    subject?: string;
+    message: string;
+  }) {
     // Get admin email from settings
     const adminEmailSetting = await this.prisma.setting.findUnique({
       where: { key: "ADMIN_EMAIL" },

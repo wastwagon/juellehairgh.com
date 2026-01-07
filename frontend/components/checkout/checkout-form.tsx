@@ -18,6 +18,7 @@ export function CheckoutForm() {
   const queryClient = useQueryClient();
   const { items, clearCart } = useCartStore();
   const { displayCurrency, convert } = useCurrencyStore();
+  const [redirectingToCart, setRedirectingToCart] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
@@ -333,8 +334,17 @@ export function CheckoutForm() {
     }
   };
 
-  if (items.length === 0) {
-    router.push("/cart");
+  // Redirect to cart outside render to avoid React setState-in-render warnings
+  useEffect(() => {
+    if (items.length === 0) {
+      setRedirectingToCart(true);
+      router.replace("/cart");
+    } else {
+      setRedirectingToCart(false);
+    }
+  }, [items.length, router]);
+
+  if (redirectingToCart) {
     return null;
   }
 

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ConfigService } from "@nestjs/config";
-import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class EmailService {
@@ -13,11 +12,15 @@ export class EmailService {
 
   constructor(
     private mailerService: MailerService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {
-    this.siteUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:8002";
-    this.siteEmail = this.configService.get<string>("EMAIL_FROM") || "noreply@juellehairgh.com";
-    this.adminEmail = this.configService.get<string>("ADMIN_EMAIL") || "admin@juellehairgh.com";
+    this.siteUrl =
+      this.configService.get<string>("FRONTEND_URL") || "http://localhost:8002";
+    this.siteEmail =
+      this.configService.get<string>("EMAIL_FROM") ||
+      "noreply@juellehairgh.com";
+    this.adminEmail =
+      this.configService.get<string>("ADMIN_EMAIL") || "admin@juellehairgh.com";
   }
 
   /**
@@ -38,7 +41,10 @@ export class EmailService {
       });
       this.logger.log(`Welcome email sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send welcome email to ${user.email}:`, error);
+      this.logger.error(
+        `Failed to send welcome email to ${user.email}:`,
+        error,
+      );
     }
   }
 
@@ -47,35 +53,47 @@ export class EmailService {
    */
   async sendOrderConfirmation(order: any) {
     try {
-      const orderItems = order.items?.map((item: any) => {
-        // Handle multiple variants (variantIds) or single variant (variantId)
-        let variantText = null;
-        if (item.variantIds && item.variantIds.length > 0 && item.product?.variants) {
-          // Resolve variantIds to variant names and values
-          const variantDetails = item.variantIds
-            .map((vid: string) => {
-              const variant = item.product.variants.find((v: any) => v.id === vid);
-              return variant ? `${variant.name}: ${variant.value}` : null;
-            })
-            .filter(Boolean);
-          variantText = variantDetails.length > 0 ? variantDetails.join(', ') : null;
-        } else if (item.variant) {
-          variantText = `${item.variant.name}: ${item.variant.value}`;
-        }
-        
-        return {
-          name: item.product?.title || "Product",
-          variant: variantText,
-          quantity: item.quantity,
-          price: Number(item.priceGhs).toFixed(2),
-          total: (Number(item.priceGhs) * item.quantity).toFixed(2),
-        };
-      }) || [];
+      const orderItems =
+        order.items?.map((item: any) => {
+          // Handle multiple variants (variantIds) or single variant (variantId)
+          let variantText = null;
+          if (
+            item.variantIds &&
+            item.variantIds.length > 0 &&
+            item.product?.variants
+          ) {
+            // Resolve variantIds to variant names and values
+            const variantDetails = item.variantIds
+              .map((vid: string) => {
+                const variant = item.product.variants.find(
+                  (v: any) => v.id === vid,
+                );
+                return variant ? `${variant.name}: ${variant.value}` : null;
+              })
+              .filter(Boolean);
+            variantText =
+              variantDetails.length > 0 ? variantDetails.join(", ") : null;
+          } else if (item.variant) {
+            variantText = `${item.variant.name}: ${item.variant.value}`;
+          }
+
+          return {
+            name: item.product?.title || "Product",
+            variant: variantText,
+            quantity: item.quantity,
+            price: Number(item.priceGhs).toFixed(2),
+            total: (Number(item.priceGhs) * item.quantity).toFixed(2),
+          };
+        }) || [];
 
       const total = Number(order.totalGhs).toFixed(2);
       const currency = order.displayCurrency || "GHS";
-      const subtotal = orderItems.reduce((sum: number, item: any) => sum + parseFloat(item.total), 0).toFixed(2);
-      const shippingCost = (parseFloat(total) - parseFloat(subtotal)).toFixed(2);
+      const subtotal = orderItems
+        .reduce((sum: number, item: any) => sum + parseFloat(item.total), 0)
+        .toFixed(2);
+      const shippingCost = (parseFloat(total) - parseFloat(subtotal)).toFixed(
+        2,
+      );
 
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
@@ -90,7 +108,8 @@ export class EmailService {
             month: "long",
             day: "numeric",
           }),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
           orderItems,
           subtotal,
           shippingCost,
@@ -101,7 +120,10 @@ export class EmailService {
           paymentStatus: order.paymentStatus,
           shippingMethod: order.shippingMethod || "Standard Shipping",
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
-          paymentUrl: order.paymentStatus === "PENDING" ? `${this.siteUrl}/checkout/payment/${order.id}` : null,
+          paymentUrl:
+            order.paymentStatus === "PENDING"
+              ? `${this.siteUrl}/checkout/payment/${order.id}`
+              : null,
         },
       });
       this.logger.log(`Order confirmation email sent for order ${order.id}`);
@@ -123,7 +145,8 @@ export class EmailService {
           siteName: this.siteName,
           siteUrl: this.siteUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
           total: Number(order.totalGhs).toFixed(2),
           currency: order.displayCurrency || "GHS",
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
@@ -140,14 +163,18 @@ export class EmailService {
    */
   async sendOrderShipped(order: any, trackingNumber?: string) {
     try {
-      const orderItems = order.items?.map((item: any) => ({
-        name: item.product?.title || "Product",
-        variant: item.variant ? `${item.variant.name}: ${item.variant.value}` : null,
-        quantity: item.quantity,
-      })) || [];
+      const orderItems =
+        order.items?.map((item: any) => ({
+          name: item.product?.title || "Product",
+          variant: item.variant
+            ? `${item.variant.name}: ${item.variant.value}`
+            : null,
+          quantity: item.quantity,
+        })) || [];
 
-      const finalTrackingNumber = trackingNumber || order.trackingNumber || "N/A";
-      
+      const finalTrackingNumber =
+        trackingNumber || order.trackingNumber || "N/A";
+
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
         subject: `Your Order Has Been Shipped - Order #${order.id.slice(0, 8).toUpperCase()}`,
@@ -156,12 +183,16 @@ export class EmailService {
           siteName: this.siteName,
           siteUrl: this.siteUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
           trackingNumber: finalTrackingNumber,
           shippingMethod: order.shippingMethod || "Standard Shipping",
           orderItems,
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
-          trackingUrl: finalTrackingNumber !== "N/A" ? `${this.siteUrl}/orders/track?orderId=${order.id}` : null,
+          trackingUrl:
+            finalTrackingNumber !== "N/A"
+              ? `${this.siteUrl}/orders/track?orderId=${order.id}`
+              : null,
         },
       });
       this.logger.log(`Order shipped email sent for order ${order.id}`);
@@ -175,11 +206,14 @@ export class EmailService {
    */
   async sendOrderDelivered(order: any) {
     try {
-      const orderItems = order.items?.map((item: any) => ({
-        name: item.product?.title || "Product",
-        variant: item.variant ? `${item.variant.name}: ${item.variant.value}` : null,
-        quantity: item.quantity,
-      })) || [];
+      const orderItems =
+        order.items?.map((item: any) => ({
+          name: item.product?.title || "Product",
+          variant: item.variant
+            ? `${item.variant.name}: ${item.variant.value}`
+            : null,
+          quantity: item.quantity,
+        })) || [];
 
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
@@ -189,7 +223,8 @@ export class EmailService {
           siteName: this.siteName,
           siteUrl: this.siteUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
           orderItems,
           deliveryDate: new Date().toLocaleDateString("en-US", {
             year: "numeric",
@@ -220,9 +255,13 @@ export class EmailService {
           siteName: this.siteName,
           siteUrl: this.siteUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
           reason: reason || "Order was cancelled",
-          refundInfo: order.paymentStatus === "PAID" ? "A refund will be processed within 5-7 business days." : null,
+          refundInfo:
+            order.paymentStatus === "PAID"
+              ? "A refund will be processed within 5-7 business days."
+              : null,
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
         },
       });
@@ -237,30 +276,38 @@ export class EmailService {
    */
   async sendAdminNewOrder(order: any) {
     try {
-      const orderItems = order.items?.map((item: any) => {
-        // Handle multiple variants (variantIds) or single variant (variantId)
-        let variantText = null;
-        if (item.variantIds && item.variantIds.length > 0 && item.product?.variants) {
-          // Resolve variantIds to variant names and values
-          const variantDetails = item.variantIds
-            .map((vid: string) => {
-              const variant = item.product.variants.find((v: any) => v.id === vid);
-              return variant ? `${variant.name}: ${variant.value}` : null;
-            })
-            .filter(Boolean);
-          variantText = variantDetails.length > 0 ? variantDetails.join(', ') : null;
-        } else if (item.variant) {
-          variantText = `${item.variant.name}: ${item.variant.value}`;
-        }
-        
-        return {
-          name: item.product?.title || "Product",
-          variant: variantText,
-          quantity: item.quantity,
-          price: Number(item.priceGhs).toFixed(2),
-          total: (Number(item.priceGhs) * item.quantity).toFixed(2),
-        };
-      }) || [];
+      const orderItems =
+        order.items?.map((item: any) => {
+          // Handle multiple variants (variantIds) or single variant (variantId)
+          let variantText = null;
+          if (
+            item.variantIds &&
+            item.variantIds.length > 0 &&
+            item.product?.variants
+          ) {
+            // Resolve variantIds to variant names and values
+            const variantDetails = item.variantIds
+              .map((vid: string) => {
+                const variant = item.product.variants.find(
+                  (v: any) => v.id === vid,
+                );
+                return variant ? `${variant.name}: ${variant.value}` : null;
+              })
+              .filter(Boolean);
+            variantText =
+              variantDetails.length > 0 ? variantDetails.join(", ") : null;
+          } else if (item.variant) {
+            variantText = `${item.variant.name}: ${item.variant.value}`;
+          }
+
+          return {
+            name: item.product?.title || "Product",
+            variant: variantText,
+            quantity: item.quantity,
+            price: Number(item.priceGhs).toFixed(2),
+            total: (Number(item.priceGhs) * item.quantity).toFixed(2),
+          };
+        }) || [];
 
       await this.mailerService.sendMail({
         to: this.adminEmail,
@@ -277,8 +324,10 @@ export class EmailService {
             hour: "2-digit",
             minute: "2-digit",
           }),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
-          customerEmail: order.user?.email || order.shippingAddress?.email || "N/A",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerEmail:
+            order.user?.email || order.shippingAddress?.email || "N/A",
           orderItems,
           total: Number(order.totalGhs).toFixed(2),
           currency: order.displayCurrency || "GHS",
@@ -288,7 +337,9 @@ export class EmailService {
           adminOrderUrl: `${this.siteUrl}/admin/orders/${order.id}`,
         },
       });
-      this.logger.log(`New order notification sent to admin for order ${order.id}`);
+      this.logger.log(
+        `New order notification sent to admin for order ${order.id}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to send admin new order notification:`, error);
     }
@@ -300,7 +351,7 @@ export class EmailService {
   async sendAdminPaymentReceived(order: any) {
     try {
       const transaction = order.paymentReference || "N/A";
-      
+
       await this.mailerService.sendMail({
         to: this.adminEmail,
         subject: `Payment Received - Order #${order.id.slice(0, 8).toUpperCase()}`,
@@ -314,8 +365,10 @@ export class EmailService {
             month: "long",
             day: "numeric",
           }),
-          customerName: order.user?.name || order.shippingAddress?.firstName || "Customer",
-          customerEmail: order.user?.email || order.shippingAddress?.email || "N/A",
+          customerName:
+            order.user?.name || order.shippingAddress?.firstName || "Customer",
+          customerEmail:
+            order.user?.email || order.shippingAddress?.email || "N/A",
           total: Number(order.totalGhs).toFixed(2),
           currency: order.displayCurrency || "GHS",
           paymentMethod: "Paystack",
@@ -325,7 +378,9 @@ export class EmailService {
           adminOrderUrl: `${this.siteUrl}/admin/orders/${order.id}`,
         },
       });
-      this.logger.log(`Payment received notification sent to admin for order ${order.id}`);
+      this.logger.log(
+        `Payment received notification sent to admin for order ${order.id}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to send admin payment notification:`, error);
     }
@@ -334,7 +389,11 @@ export class EmailService {
   /**
    * Send new customer registration notification to admin
    */
-  async sendAdminNewCustomer(user: { email: string; name?: string | null; createdAt: Date }) {
+  async sendAdminNewCustomer(user: {
+    email: string;
+    name?: string | null;
+    createdAt: Date;
+  }) {
     try {
       await this.mailerService.sendMail({
         to: this.adminEmail,
@@ -345,19 +404,27 @@ export class EmailService {
           siteUrl: this.siteUrl,
           customerName: user.name || "N/A",
           customerEmail: user.email,
-          registrationDate: new Date(user.createdAt).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          registrationDate: new Date(user.createdAt).toLocaleDateString(
+            "en-US",
+            {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            },
+          ),
           adminUsersUrl: `${this.siteUrl}/admin/users`,
         },
       });
-      this.logger.log(`New customer notification sent to admin for ${user.email}`);
+      this.logger.log(
+        `New customer notification sent to admin for ${user.email}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send admin new customer notification:`, error);
+      this.logger.error(
+        `Failed to send admin new customer notification:`,
+        error,
+      );
     }
   }
 
@@ -378,12 +445,17 @@ export class EmailService {
         },
       });
       this.logger.log(`Test email sent successfully to ${to}`);
-      return { success: true, message: `Test email sent successfully to ${to}` };
+      return {
+        success: true,
+        message: `Test email sent successfully to ${to}`,
+      };
     } catch (error: any) {
       this.logger.error(`Failed to send test email to ${to}:`, error);
-      const errorMessage = error?.response?.body?.errors?.[0]?.message || error?.message || "Unknown error";
+      const errorMessage =
+        error?.response?.body?.errors?.[0]?.message ||
+        error?.message ||
+        "Unknown error";
       throw new Error(`Failed to send test email: ${errorMessage}`);
     }
   }
 }
-

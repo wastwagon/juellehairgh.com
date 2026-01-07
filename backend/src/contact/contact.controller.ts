@@ -6,7 +6,15 @@ export class ContactController {
   constructor(private contactService: ContactService) {}
 
   @Post()
-  async submitContactForm(@Body() body: { name: string; email: string; subject?: string; message: string }) {
+  async submitContactForm(
+    @Body()
+    body: {
+      name: string;
+      email: string;
+      subject?: string;
+      message: string;
+    },
+  ) {
     return this.contactService.handleContactSubmission(body);
   }
 }

@@ -58,7 +58,8 @@ export function Header() {
         return null;
       }
     },
-    refetchInterval: 1000, // Refetch every second to update countdown
+    enabled: true,
+    staleTime: 60000,
   });
 
   // Update countdown timer
@@ -147,20 +148,6 @@ export function Header() {
   const laceWigsCategory = getCategoryBySlug("lace-wigs");
   const clipInsCategory = getCategoryBySlug("clip-ins");
   const hairGrowthOilsCategory = getCategoryBySlug("hair-growth-oils");
-
-  // Debug: Log category children counts (development only)
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && categories && typeof window !== "undefined") {
-      console.log("📋 Navigation Debug:", {
-        braidsChildren: braidsCategory?.children?.length || 0,
-        ponytailsChildren: ponytailsCategory?.children?.length || 0,
-        laceWigsChildren: laceWigsCategory?.children?.length || 0,
-        clipInsChildren: clipInsCategory?.children?.length || 0,
-        categoriesError: categoriesError?.message,
-        categoriesLoading,
-      });
-    }
-  }, [categories, braidsCategory, ponytailsCategory, laceWigsCategory, clipInsCategory, categoriesError, categoriesLoading]);
 
   const navItems = [
     { name: "Home", href: "/", icon: Home, hasDropdown: false },

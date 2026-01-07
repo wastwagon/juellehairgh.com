@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
 import { PrismaService } from "../prisma/prisma.service";
@@ -15,7 +19,7 @@ export class PaymentsService {
     private prisma: PrismaService,
     private ordersService: OrdersService,
     private emailService: EmailService,
-    private walletService: WalletService
+    private walletService: WalletService,
   ) {}
 
   // Get Paystack secret key from database settings, fallback to environment variable
@@ -31,20 +35,26 @@ export class PaymentsService {
 
     // Fallback to environment variable
     const envKey = this.configService.get<string>("PAYSTACK_SECRET_KEY") || "";
-    
+
     if (!envKey) {
-      console.warn("⚠️  PAYSTACK_SECRET_KEY is not set in database or environment variables.");
+      console.warn(
+        "⚠️  PAYSTACK_SECRET_KEY is not set in database or environment variables.",
+      );
     }
 
     return envKey;
   }
 
-  async initializePayment(orderIdOrAmount: string | number, email: string, metadata?: any) {
+  async initializePayment(
+    orderIdOrAmount: string | number,
+    email: string,
+    metadata?: any,
+  ) {
     const paystackSecretKey = await this.getPaystackSecretKey();
-    
+
     if (!paystackSecretKey) {
       throw new BadRequestException(
-        "Payment service is not configured. Please set PAYSTACK_SECRET_KEY in admin settings or environment variables."
+        "Payment service is not configured. Please set PAYSTACK_SECRET_KEY in admin settings or environment variables.",
       );
     }
 
@@ -103,7 +113,7 @@ export class PaymentsService {
             Authorization: `Bearer ${paystackSecretKey}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // Update order with payment reference if it's an order
@@ -122,31 +132,32 @@ export class PaymentsService {
         reference: response.data.data.reference,
       };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Failed to initialize payment";
+      const errorMessage =
+        error.response?.data?.message || "Failed to initialize payment";
       console.error("Paystack API Error:", {
         message: errorMessage,
         status: error.response?.status,
         data: error.response?.data,
       });
-      
+
       // Provide more helpful error messages
       if (errorMessage.includes("Invalid") || errorMessage.includes("key")) {
         throw new BadRequestException(
           "Invalid Paystack API key. Please check your PAYSTACK_SECRET_KEY environment variable. " +
-          "Get your keys from https://paystack.com/dashboard/settings/developer"
+            "Get your keys from https://paystack.com/dashboard/settings/developer",
         );
       }
-      
+
       throw new BadRequestException(errorMessage);
     }
   }
 
   async verifyPayment(reference: string) {
     const paystackSecretKey = await this.getPaystackSecretKey();
-    
+
     if (!paystackSecretKey) {
       throw new BadRequestException(
-        "Payment service is not configured. Please set PAYSTACK_SECRET_KEY in admin settings or environment variables."
+        "Payment service is not configured. Please set PAYSTACK_SECRET_KEY in admin settings or environment variables.",
       );
     }
 
@@ -157,7 +168,7 @@ export class PaymentsService {
           headers: {
             Authorization: `Bearer ${paystackSecretKey}`,
           },
-        }
+        },
       );
 
       const transaction = response.data.data;
@@ -244,10 +255,8 @@ export class PaymentsService {
       };
     } catch (error: any) {
       throw new BadRequestException(
-        error.response?.data?.message || "Failed to verify payment"
+        error.response?.data?.message || "Failed to verify payment",
       );
     }
   }
 }
-
-

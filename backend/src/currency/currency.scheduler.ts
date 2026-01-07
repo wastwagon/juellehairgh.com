@@ -9,13 +9,19 @@ export class CurrencyScheduler {
   // Update currency rates every 12 hours at midnight and noon UTC
   @Cron("0 */12 * * *")
   async updateRates() {
-    console.log("🔄 [Currency Scheduler] Updating currency rates (scheduled every 12 hours)...");
+    console.log(
+      "🔄 [Currency Scheduler] Updating currency rates (scheduled every 12 hours)...",
+    );
     const result = await this.currencyService.updateRates();
     if (result.success) {
-      console.log("✅ [Currency Scheduler] Currency rates updated successfully");
+      console.log(
+        "✅ [Currency Scheduler] Currency rates updated successfully",
+      );
     } else {
-      console.error("❌ [Currency Scheduler] Failed to update currency rates:", result.message);
+      console.error(
+        "❌ [Currency Scheduler] Failed to update currency rates:",
+        result.message,
+      );
     }
   }
 }
-

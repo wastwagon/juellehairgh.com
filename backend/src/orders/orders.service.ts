@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CartService } from "../cart/cart.service";
 import { EmailService } from "../email/email.service";
@@ -11,7 +15,7 @@ export class OrdersService {
     private prisma: PrismaService,
     private cartService: CartService,
     private emailService: EmailService,
-    private walletService: WalletService
+    private walletService: WalletService,
   ) {}
 
   async create(userId: string, orderData: any) {
@@ -23,7 +27,7 @@ export class OrdersService {
 
     // Calculate subtotal in GHS
     const subtotalGhs = await this.cartService.calculateTotal(cart.id);
-    
+
     // Apply discount if discount code provided
     let discountAmount = 0;
     if (orderData.discountCodeId) {
@@ -32,8 +36,12 @@ export class OrdersService {
       });
       if (discountCode && discountCode.isActive) {
         if (discountCode.discountType === "PERCENTAGE") {
-          discountAmount = (subtotalGhs * Number(discountCode.discountValue)) / 100;
-          if (discountCode.maxDiscount && discountAmount > Number(discountCode.maxDiscount)) {
+          discountAmount =
+            (subtotalGhs * Number(discountCode.discountValue)) / 100;
+          if (
+            discountCode.maxDiscount &&
+            discountAmount > Number(discountCode.maxDiscount)
+          ) {
             discountAmount = Number(discountCode.maxDiscount);
           }
         } else {
@@ -46,10 +54,12 @@ export class OrdersService {
         });
       }
     }
-    
+
     // Get shipping cost (default to 0 if not provided)
-    const shippingCost = orderData.shippingCost ? Number(orderData.shippingCost) : 0;
-    
+    const shippingCost = orderData.shippingCost
+      ? Number(orderData.shippingCost)
+      : 0;
+
     // Calculate total including shipping and discount
     const totalGhs = subtotalGhs - discountAmount + shippingCost;
 
@@ -63,7 +73,9 @@ export class OrdersService {
         paymentStatus = PaymentStatus.PAID;
         orderStatus = OrderStatus.PAID; // OrderStatus.PAID means order is confirmed and paid
       } catch (error: any) {
-        throw new BadRequestException(error.message || "Insufficient wallet balance");
+        throw new BadRequestException(
+          error.message || "Insufficient wallet balance",
+        );
       }
     }
 
@@ -98,15 +110,22 @@ export class OrdersService {
           create: cart.items.map((item) => ({
             productId: item.productId,
             variantId: item.variantId,
-            variantIds: item.variantIds && item.variantIds.length > 0 ? item.variantIds : undefined,
+            variantIds:
+              item.variantIds && item.variantIds.length > 0
+                ? item.variantIds
+                : undefined,
             quantity: item.quantity,
             priceGhs: (() => {
               // Use variant price if available, considering sale price
               if (item.variant?.priceGhs) {
                 const regularPrice = Number(item.variant.priceGhs);
-                const salePrice = item.variant.compareAtPriceGhs ? Number(item.variant.compareAtPriceGhs) : null;
+                const salePrice = item.variant.compareAtPriceGhs
+                  ? Number(item.variant.compareAtPriceGhs)
+                  : null;
                 // Use sale price if available and lower than regular price
-                return salePrice && salePrice < regularPrice ? salePrice : regularPrice;
+                return salePrice && salePrice < regularPrice
+                  ? salePrice
+                  : regularPrice;
               }
               // Fall back to product price
               return Number(item.product.priceGhs);
@@ -153,7 +172,10 @@ export class OrdersService {
           },
         });
       } catch (error) {
-        console.error("Failed to update wallet transaction with order ID:", error);
+        console.error(
+          "Failed to update wallet transaction with order ID:",
+          error,
+        );
       }
     }
 
@@ -335,11 +357,17 @@ export class OrdersService {
           await this.emailService.sendOrderDelivered(order);
           break;
         case "CANCELLED":
-          await this.emailService.sendOrderCancelled(order, "Order cancelled by admin");
+          await this.emailService.sendOrderCancelled(
+            order,
+            "Order cancelled by admin",
+          );
           break;
       }
     } catch (error) {
-      console.error(`Failed to send email notification for status ${status}:`, error);
+      console.error(
+        `Failed to send email notification for status ${status}:`,
+        error,
+      );
     }
 
     return order;
@@ -360,7 +388,9 @@ export class OrdersService {
 
     // Only allow cancellation if order is not already shipped/delivered
     if (order.status === "SHIPPED" || order.status === "DELIVERED") {
-      throw new BadRequestException("Cannot cancel order that has already been shipped or delivered");
+      throw new BadRequestException(
+        "Cannot cancel order that has already been shipped or delivered",
+      );
     }
 
     if (order.status === "CANCELLED") {
@@ -399,7 +429,10 @@ export class OrdersService {
 
     // Send cancellation email
     try {
-      await this.emailService.sendOrderCancelled(updatedOrder, "Order cancelled by customer");
+      await this.emailService.sendOrderCancelled(
+        updatedOrder,
+        "Order cancelled by customer",
+      );
     } catch (error) {
       console.error("Failed to send cancellation email:", error);
     }
@@ -407,4 +440,3 @@ export class OrdersService {
     return updatedOrder;
   }
 }
-
