@@ -6,7 +6,8 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Upload } from "lucide-react";
+import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { MediaPicker } from "./media-picker";
 
 interface Banner {
   id: string;
@@ -171,40 +172,14 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
 
             <div>
               <label className="block text-sm font-medium mb-2">Banner Image *</label>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="/media/banners/banner.jpg or URL"
-                    className="flex-1"
-                  />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      "Uploading..."
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload
-                      </>
-                    )}
-                  </Button>
-                </div>
+              <div className="flex flex-col gap-4">
+                <MediaPicker 
+                  onSelect={(url) => setFormData({ ...formData, image: url })}
+                  title="Select Banner Image"
+                />
+                
                 {formData.image && (
-                  <div className="mt-2 relative w-full h-32 border rounded-lg overflow-hidden bg-gray-100">
+                  <div className="mt-2 relative w-full h-48 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-gray-50 group">
                     <img
                       src={
                         formData.image.startsWith("/")
@@ -214,11 +189,24 @@ export function BannerForm({ banner, onClose, onSuccess }: BannerFormProps) {
                           : `/api/media/banners/${formData.image}`
                       }
                       alt="Banner preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
+                        const img = e.target as HTMLImageElement;
+                        if (!img.src.includes("http") && !img.src.startsWith("/media/")) {
+                          const filename = formData.image.split("/").pop();
+                          if (filename) {
+                            img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/banners/${filename}`;
+                          }
+                        }
                       }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: "" })}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 )}
               </div>

@@ -10,21 +10,16 @@ async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
     // Enable CORS - allow all origins in development, specific origins in production
-    // Build allowed origins list - include both explicit and from env
     const allowedOriginsList = [
-      "https://juelle-hair-web.onrender.com",
       "https://juellehairgh.com",
       "https://www.juellehairgh.com",
       "http://localhost:8002",
       "http://localhost:3000",
       process.env.FRONTEND_URL,
-    ].filter(Boolean); // Remove undefined values
+    ].filter(Boolean);
 
-    // Determine if we're in production (check multiple indicators)
     const isProduction =
-      process.env.NODE_ENV === "production" ||
-      process.env.RENDER === "true" ||
-      process.env.PORT !== undefined;
+      process.env.NODE_ENV === "production" || process.env.PORT !== undefined;
 
     console.log(`🌐 CORS Configuration:`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
@@ -32,23 +27,19 @@ async function bootstrap() {
     console.log(`   Allowed Origins: ${allowedOriginsList.join(", ")}`);
     console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || "not set"}`);
 
-    // Strict CORS configuration: allow only known origins (plus localhost in dev)
+    // Strict CORS configuration
     app.enableCors({
       origin: (origin, callback) => {
-        // Always allow requests with no origin (mobile apps, curl, Postman, etc.)
         if (!origin) {
           return callback(null, true);
         }
 
-        // In development, allow localhost
         if (!isProduction) {
           if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
             return callback(null, true);
           }
         }
 
-        // In production, allow only known origins
-        const isRenderDomain = origin.includes(".onrender.com");
         const isCustomDomain = origin.includes("juellehairgh.com");
         const isInAllowedList = allowedOriginsList.some((allowedOrigin) => {
           if (!allowedOrigin) return false;
@@ -58,13 +49,11 @@ async function bootstrap() {
           return origin === allowedOrigin || origin.includes(domain);
         });
 
-        if (isRenderDomain || isCustomDomain || isInAllowedList) {
+        if (isCustomDomain || isInAllowedList) {
           return callback(null, true);
         }
 
-        // Block unknown origins
         console.warn(`⚠️  CORS: Blocked origin: ${origin}`);
-        console.warn(`   Allowed origins: ${allowedOriginsList.join(", ")}`);
         return callback(new Error("Not allowed by CORS"));
       },
       credentials: true,
@@ -85,9 +74,7 @@ async function bootstrap() {
       optionsSuccessStatus: 204,
     });
 
-    // Register health endpoint BEFORE global prefix (for Render health checks)
-    // This endpoint must be outside the /api prefix
-    // Register directly on Express instance to bypass NestJS routing
+    // Register health endpoint BEFORE global prefix
     const httpAdapter = app.getHttpAdapter();
     const instance = httpAdapter.getInstance();
 
@@ -111,10 +98,8 @@ async function bootstrap() {
       console.warn("⚠️ Could not read version file:", error);
     }
 
-    // Register health endpoint - must be before setGlobalPrefix
-    // This endpoint MUST respond immediately without any database or external calls
+    // Register health endpoint
     instance.get("/health", (req: any, res: any) => {
-      // Respond immediately - no logging, no database calls, no delays
       res.status(200).json({
         status: "ok",
         timestamp: new Date().toISOString(),
@@ -123,9 +108,8 @@ async function bootstrap() {
       });
     });
 
-    // Register root endpoint for Render health checks (some Render configs check /)
+    // Register root endpoint
     instance.get("/", (req: any, res: any) => {
-      // Respond immediately
       res.status(200).json({
         status: "ok",
         timestamp: new Date().toISOString(),
@@ -147,7 +131,7 @@ async function bootstrap() {
     });
 
     console.log(
-      "✅ Health endpoint registered at /health and / (Express instance, before global prefix)",
+      "✅ Health endpoint registered at /health and / (before global prefix)",
     );
 
     // Global validation pipe
@@ -189,8 +173,6 @@ async function bootstrap() {
     // Global prefix (applied after health endpoint registration)
     app.setGlobalPrefix("api");
 
-    // Also register /api/health for Render health checks that use the prefix
-    // This ensures health checks work regardless of Render's configuration
     instance.get("/api/health", (req: any, res: any) => {
       res.status(200).json({
         status: "ok",
@@ -202,7 +184,6 @@ async function bootstrap() {
 
     const port = process.env.PORT || 3001;
 
-    // Validate PORT is set (Render should set this automatically)
     if (!process.env.PORT) {
       console.warn(
         `⚠️ PORT environment variable not set, using default: ${port}`,
@@ -212,12 +193,9 @@ async function bootstrap() {
     }
 
     try {
-      // Listen on 0.0.0.0 to accept connections from Render's health check proxy
-      // CRITICAL: Must bind to 0.0.0.0, not localhost, for Render health checks
       await app.listen(port, "0.0.0.0");
 
       // Log startup info immediately after server starts listening
-      // These logs help verify the correct image is deployed
       console.log(`✅ Application is running on: http://0.0.0.0:${port}`);
       console.log(`✅ Build Version: ${buildVersion}`);
       console.log(`✅ Build Date: ${buildDate}`);
@@ -233,21 +211,6 @@ async function bootstrap() {
       console.log(`✅ API endpoints available at: http://0.0.0.0:${port}/api`);
       console.log(`✅ Root endpoint available at: http://0.0.0.0:${port}/`);
       console.log("🚀 Server is ready to accept connections");
-
-      // Test database connection asynchronously (non-blocking)
-      // This won't block the health check from responding
-      setImmediate(async () => {
-        try {
-          const { PrismaClient } = await import("@prisma/client");
-          const prisma = new PrismaClient();
-          await prisma.$connect();
-          console.log("✅ Database connection successful");
-          await prisma.$disconnect();
-        } catch (dbError) {
-          console.error("❌ Database connection failed:", dbError);
-          // Don't exit - let the app continue running
-        }
-      });
 
       // Verify health endpoint registration (non-blocking)
       setImmediate(() => {

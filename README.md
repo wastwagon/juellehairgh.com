@@ -6,12 +6,20 @@ E-commerce platform for Juelle Hair Ghana.
 
 - `backend/` - NestJS backend API
 - `frontend/` - Next.js frontend application
-- `render.yaml` - Render Blueprint configuration
-
-## Quick Start
-
-See `START_HERE.md` for deployment instructions.
 
 ## Deployment
 
-This repository is configured for Render Blueprint deployment. See `BLUEPRINT_SETUP.md` for details.
+This repository is optimized for deployment on a VPS using **Coolify** or Docker Compose.
+
+### Quick Start (Production)
+
+1. Set up your VPS with Coolify.
+2. Connect this repository to a new project in Coolify.
+3. Configure environment variables as described in `ENV_SETUP.md`.
+4. Deploy the services.
+
+### Local Development
+
+1. Ensure Docker and Docker Compose are installed.
+2. Run `docker-compose up -d`.
+3. Backend will be at `http://localhost:8001`, Frontend at `http://localhost:8002`.

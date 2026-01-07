@@ -3,19 +3,7 @@
  * Tracks purchases and customer actions in real-time
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
-
-// Generate or retrieve session ID
-const getSessionId = (): string => {
-  if (typeof window === "undefined") return "";
-  
-  let sessionId = sessionStorage.getItem("analytics_session_id");
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem("analytics_session_id", sessionId);
-  }
-  return sessionId;
-};
+import { api } from "./api";
 
 // Get user ID from localStorage
 const getUserId = (): string | null => {
@@ -28,6 +16,18 @@ const getUserId = (): string | null => {
   } catch {
     return null;
   }
+};
+
+// Generate or retrieve session ID
+const getSessionId = (): string => {
+  if (typeof window === "undefined") return "";
+  
+  let sessionId = sessionStorage.getItem("analytics_session_id");
+  if (!sessionId) {
+    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem("analytics_session_id", sessionId);
+  }
+  return sessionId;
 };
 
 // Get device type
@@ -94,17 +94,15 @@ export const trackEvent = async (
     };
 
     // Send to backend (fire and forget)
-    fetch(`${API_BASE_URL}/analytics/track`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    }).catch((err) => {
-      console.error("Analytics tracking error:", err);
+    api.post("/analytics/track", payload).catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Analytics tracking error:", err);
+      }
     });
   } catch (error) {
-    console.error("Analytics tracking error:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Analytics tracking error:", error);
+    }
   }
 };
 
@@ -221,19 +219,5 @@ if (typeof window !== "undefined") {
   
   // Track initial page view
   analytics.pageView();
-  
-  // Track page views on navigation (for Next.js)
-  let lastPath = window.location.pathname;
-  const observer = new MutationObserver(() => {
-    if (window.location.pathname !== lastPath) {
-      lastPath = window.location.pathname;
-      analytics.pageView();
-    }
-  });
-  
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
 }
 

@@ -16,6 +16,10 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
+  shortDescription?: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
 
   @IsOptional()

@@ -137,69 +137,43 @@ export function Header() {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
-  // Build navigation structure matching the website menu
-  // Order: Home, Shop All, Braids, Ponytails, Lace Wigs, Clip-Ins, Hair Growth Oils, Brands
-  const getCategoryBySlug = (slug: string) => {
-    return categories?.find((cat) => cat.slug === slug);
-  };
+  // Build navigation structure dynamically from categories
+  const rootCategories = categories?.filter(cat => !cat.parentId) || [];
+  
+  // Custom sort order to match the user request/image
+  const menuOrder = [
+    "shop-all",
+    "braids",
+    "ponytails",
+    "lace-wigs",
+    "clip-ins",
+    "hair-growth-oils",
+    "wig-care"
+  ];
 
-  const braidsCategory = getCategoryBySlug("braids");
-  const ponytailsCategory = getCategoryBySlug("ponytails");
-  const laceWigsCategory = getCategoryBySlug("lace-wigs");
-  const clipInsCategory = getCategoryBySlug("clip-ins");
-  const hairGrowthOilsCategory = getCategoryBySlug("hair-growth-oils");
+  const sortedRootCategories = [...rootCategories].sort((a, b) => {
+    const indexA = menuOrder.indexOf(a.slug);
+    const indexB = menuOrder.indexOf(b.slug);
+    
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return a.name.localeCompare(b.name);
+  });
 
   const navItems = [
     { name: "Home", href: "/", icon: Home, hasDropdown: false },
-    { name: "Shop All", href: "/categories/shop-all", hasDropdown: false },
-    {
-      name: "Braids",
-      href: "/categories/braids",
-      hasDropdown: true,
-      subItems: braidsCategory?.children?.map((child) => ({
+    // Add sorted root categories with their children as sub-items
+    ...sortedRootCategories.map(cat => ({
+      name: cat.name,
+      href: `/categories/${cat.slug}`,
+      hasDropdown: cat.children && cat.children.length > 0,
+      subItems: cat.children?.map(child => ({
         name: child.name,
-        href: `/categories/${child.slug}`,
-      })) || [],
-    },
-    {
-      name: "Ponytails",
-      href: "/categories/ponytails",
-      hasDropdown: true,
-      subItems: ponytailsCategory?.children?.map((child) => ({
-        name: child.name,
-        href: `/categories/${child.slug}`,
-      })) || [],
-    },
-    {
-      name: "Lace Wigs",
-      href: "/categories/lace-wigs",
-      hasDropdown: true,
-      subItems: [
-        ...(laceWigsCategory?.children?.map((child) => ({
-          name: child.name,
-          href: `/categories/${child.slug}`,
-        })) || []),
-        // Add Wig Care to Lace Wigs dropdown (it's standalone but appears here too)
-        ...(getCategoryBySlug("wig-care") ? [{
-          name: "Wig Care",
-          href: "/categories/wig-care",
-        }] : []),
-      ],
-    },
-    {
-      name: "Clip-Ins",
-      href: "/categories/clip-ins",
-      hasDropdown: true,
-      subItems: clipInsCategory?.children?.map((child) => ({
-        name: child.name,
-        href: `/categories/${child.slug}`,
-      })) || [],
-    },
-    {
-      name: "Hair Growth Oils",
-      href: "/categories/hair-growth-oils",
-      hasDropdown: false,
-    },
+        href: `/categories/${child.slug}`
+      })) || []
+    })),
+    // Add Brands
     {
       name: "Brands",
       href: "/brands",
@@ -209,11 +183,7 @@ export function Header() {
         href: `/brands/${brand.slug}`,
       })) || [],
     },
-    {
-      name: "Wig Care",
-      href: "/categories/wig-care",
-      hasDropdown: false,
-    },
+    // Add Contact Us last
     {
       name: "Contact Us",
       href: "/contact",

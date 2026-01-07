@@ -48,49 +48,14 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
     : 0;
 
   const handleAddToCart = () => {
-    // Check if product has variants and if all required variants are selected
+    // Check if product has variants and if at least one variant is selected
     if (product.variants && product.variants.length > 0) {
-      // Group variants by name to determine required attributes
-      // Use same normalization logic as ProductVariantSelector
-      const variantGroups = new Set<string>();
-      product.variants.forEach(v => {
-        let normalizedName = v.name;
-        const nameLower = v.name.toLowerCase();
-        
-        // Handle combined names (e.g., "Color / Length")
-        if (nameLower.includes(" / ") || nameLower.includes("/")) {
-          const parts = v.name.split(/[\/\s]+/).filter(p => p.trim().length > 0);
-          parts.forEach(part => {
-            let partName = part.trim();
-            // Normalize old "Option" or "PA Color" variants to "Color"
-            if (partName.toLowerCase() === "option" || 
-                partName.toLowerCase().includes("pa color") || 
-                partName.toLowerCase().includes("pa_color") || 
-                partName.toLowerCase().includes("pa-color")) {
-              partName = "Color";
-            }
-            variantGroups.add(partName.toLowerCase());
-          });
-        } else {
-          // Normalize old "Option" or "PA Color" variants to "Color"
-          if (nameLower === "option" || 
-              nameLower.includes("pa color") || 
-              nameLower.includes("pa_color") || 
-              nameLower.includes("pa-color")) {
-            normalizedName = "Color";
-          }
-          variantGroups.add(normalizedName.toLowerCase());
-        }
-      });
+      // Check if at least one variant is selected
+      const hasSelectedVariant = Object.keys(selectedVariants).length > 0;
       
-      // Check if all variant groups have a selection
-      const selectedGroups = new Set(Object.keys(selectedVariants).map(k => k.toLowerCase()));
-      const missingGroups = Array.from(variantGroups).filter(g => !selectedGroups.has(g));
-      
-      if (missingGroups.length > 0) {
-        const missingNames = missingGroups.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(", ");
-        toast.error(`Please select ${missingNames}`, {
-          description: "All options must be selected before adding to cart",
+      if (!hasSelectedVariant) {
+        toast.error("Please select an option", {
+          description: "Please choose from the available options before adding to cart",
           duration: 3000,
         });
         return;
@@ -311,10 +276,10 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                 </div>
               )}
 
-              {/* Description */}
-              {product.description && (
+              {/* Short Description */}
+              {product.shortDescription && (
                 <div className="mb-6">
-                  <p className="text-sm text-gray-600 line-clamp-3" dangerouslySetInnerHTML={{ __html: product.description }} />
+                  <p className="text-sm text-gray-600 line-clamp-3" dangerouslySetInnerHTML={{ __html: product.shortDescription }} />
                 </div>
               )}
 

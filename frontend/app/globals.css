@@ -114,54 +114,95 @@ body.mobile-menu-open {
   overflow: hidden;
 }
 
-/* Product Description Styling */
-.product-description {
+/* Product Description Styling (WordPress-style) */
+.product-description,
+.product-description-editor {
+  line-height: 1.7;
+  color: #374151; /* gray-700 */
+}
+
+.product-description p,
+.product-description-editor p {
+  margin-bottom: 1.25rem;
   line-height: 1.7;
 }
 
-.product-description p {
-  margin-bottom: 1rem;
-  line-height: 1.7;
-}
-
-.product-description p:last-child {
+.product-description p:last-child,
+.product-description-editor p:last-child {
   margin-bottom: 0;
 }
 
-.product-description br {
-  display: block;
-  content: "";
-  margin-top: 0.5rem;
-}
-
-/* YouTube Embed Styling */
-.youtube-embed-wrapper {
-  margin: 1.5rem 0;
-}
-
-.youtube-embed-wrapper iframe {
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Ensure images in descriptions don't overflow */
-.product-description img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
+.product-description b, 
+.product-description strong,
+.product-description-editor b,
+.product-description-editor strong {
+  font-weight: 700;
+  color: #111827; /* gray-900 */
 }
 
 /* List styling in descriptions */
 .product-description ul,
-.product-description ol {
-  margin: 1rem 0;
+.product-description-editor ul {
+  margin: 1.25rem 0;
   padding-left: 1.5rem;
+  list-style-type: disc;
 }
 
-.product-description li {
+.product-description ol,
+.product-description-editor ol {
+  margin: 1.25rem 0;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.product-description li,
+.product-description-editor li {
   margin-bottom: 0.5rem;
   line-height: 1.7;
+}
+
+.product-description h2,
+.product-description-editor h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.product-description h3,
+.product-description-editor h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #111827;
+}
+
+.product-description a,
+.product-description-editor a {
+  color: #db2777; /* primary color */
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+/* YouTube Embed Styling */
+.youtube-embed-wrapper {
+  margin: 2rem 0;
+}
+
+.youtube-embed-wrapper iframe {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure images in descriptions don't overflow */
+.product-description img,
+.product-description-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
 }
 
 /* Hero Banner - Ensure consistent sizing across all environments */

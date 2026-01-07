@@ -24,29 +24,9 @@ function getApiBaseUrl(): string {
     return url;
   }
   
-  // Priority 4: Production fallback - try to infer from common Render patterns
-  const renderUrl = process.env.RENDER_EXTERNAL_URL || '';
-  if (renderUrl) {
-    // In production on Render, try to infer backend URL
-    // Common pattern: if frontend is juelle-hair-web, backend might be juelle-hair-api
-    let backendUrl = renderUrl.replace('-web', '-api');
-    if (backendUrl === renderUrl) {
-      backendUrl = renderUrl.replace('juelle-hair-web', 'juelle-hair-api');
-      if (backendUrl === renderUrl) {
-        backendUrl = renderUrl.replace('juelle-hair-web', 'juelle-hair-backend');
-      }
-    }
-    if (backendUrl !== renderUrl) {
-      url = `${backendUrl}/api`;
-      console.warn('⚠️ Media proxy: Inferred backend URL from Render:', url);
-      return url;
-    }
-  }
-  
   // Final fallback
   url = 'http://localhost:3001/api';
   console.warn('⚠️ Media proxy: API Base URL not configured, using fallback:', url);
-  console.warn('⚠️ Please set NEXT_PUBLIC_API_BASE_URL in Render environment variables!');
   
   return url;
 }

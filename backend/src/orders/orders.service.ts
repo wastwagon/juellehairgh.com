@@ -7,6 +7,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CartService } from "../cart/cart.service";
 import { EmailService } from "../email/email.service";
 import { WalletService } from "../wallet/wallet.service";
+import { ProductsService } from "../products/products.service";
 import { PaymentStatus, OrderStatus } from "@prisma/client";
 
 @Injectable()
@@ -16,6 +17,7 @@ export class OrdersService {
     private cartService: CartService,
     private emailService: EmailService,
     private walletService: WalletService,
+    private productsService: ProductsService,
   ) {}
 
   async create(userId: string, orderData: any) {
@@ -177,6 +179,11 @@ export class OrdersService {
           error,
         );
       }
+    }
+
+    // Reduce stock if order is already paid (e.g., via wallet)
+    if (order.paymentStatus === PaymentStatus.PAID) {
+      await this.productsService.reduceStock(order.items);
     }
 
     // Clear cart

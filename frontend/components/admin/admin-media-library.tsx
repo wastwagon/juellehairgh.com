@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Search, Trash2, Image as ImageIcon, File, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Upload, Search, Trash2, Image as ImageIcon, File, X, CheckCircle2, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 interface MediaFile {
@@ -23,7 +24,12 @@ interface MediaFile {
   modifiedAt: string;
 }
 
-export function AdminMediaLibrary() {
+interface MediaLibraryProps {
+  onSelect?: (url: string) => void;
+  standalone?: boolean;
+}
+
+export function AdminMediaLibrary({ onSelect, standalone = true }: MediaLibraryProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
@@ -32,13 +38,15 @@ export function AdminMediaLibrary() {
   const [page, setPage] = useState(1);
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("library");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !standalone) return;
     
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
@@ -60,7 +68,7 @@ export function AdminMediaLibrary() {
         return;
       }
     }
-  }, [router, mounted]);
+  }, [router, mounted, standalone]);
 
   const { data: mediaData, isLoading } = useQuery<{
     files: MediaFile[];
@@ -124,7 +132,6 @@ export function AdminMediaLibrary() {
       if (!token) {
         toast.error("Please log in to upload files");
         setUploading(false);
-        e.target.value = "";
         return;
       }
 
@@ -136,19 +143,35 @@ export function AdminMediaLibrary() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
-        transformRequest: (data) => data,
       });
 
       if (response.data.success) {
-        toast.success("File uploaded successfully");
+        toast.success("File uploaded successfully!");
         queryClient.invalidateQueries({ queryKey: ["admin", "media"] });
+        
+        // Find the new file or construct it
+        const newFile = {
+          id: response.data.id || `library-${response.data.filename}`,
+          filename: response.data.filename,
+          originalName: response.data.originalName || file.name,
+          url: response.data.url,
+          category: 'library',
+          size: response.data.size || file.size,
+          type: (response.data.type || 'image') as "image" | "file",
+          mimeType: response.data.mimeType || file.type || 'image/jpeg',
+          uploadedAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString(),
+        };
+        
+        setSelectedFile(newFile);
+        setActiveTab("library");
       }
     } catch (error: any) {
       console.error("Error uploading file:", error);
       toast.error(error.response?.data?.message || error.message || "Failed to upload file.");
     } finally {
       setUploading(false);
-      e.target.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -171,20 +194,13 @@ export function AdminMediaLibrary() {
     });
   };
 
-  if (!mounted) {
-    return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
-  }
+  if (!mounted) return null;
 
   if (isLoading) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading media library...</p>
+        <p className="text-gray-500">Loading media library...</p>
       </div>
     );
   }
@@ -194,308 +210,200 @@ export function AdminMediaLibrary() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Media Library</h1>
-          <p className="text-gray-600 mt-1">Manage all your media files</p>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b pb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
+            <p className="text-sm text-gray-500">Manage and select your assets</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <TabsList className="bg-gray-100 p-1 rounded-lg">
+              <TabsTrigger value="upload" className="px-4 py-2 rounded-md">Upload Files</TabsTrigger>
+              <TabsTrigger value="library" className="px-4 py-2 rounded-md">Media Library</TabsTrigger>
+            </TabsList>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <label className="cursor-pointer">
+
+        <TabsContent value="upload" className="mt-0">
+          <div 
+            className="border-4 border-dashed border-gray-200 rounded-2xl bg-gray-50/50 flex flex-col items-center justify-center py-24 px-6 hover:bg-gray-50 hover:border-primary/30 transition-all cursor-pointer group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="bg-white p-6 rounded-full shadow-md mb-6 group-hover:scale-110 transition-transform">
+              <Upload className="h-12 w-12 text-primary" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Select Files to Upload</h3>
+            <p className="text-gray-500 mb-8 text-center max-w-xs">Click here to browse your computer for images.</p>
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleUpload}
               disabled={uploading}
               className="hidden"
             />
-            <Button disabled={uploading} className="cursor-pointer">
-              <Upload className="h-4 w-4 mr-2" />
-              {uploading ? "Uploading..." : "Upload Media"}
+            <Button 
+              size="lg"
+              disabled={uploading} 
+              className="px-12 font-bold shadow-lg"
+            >
+              {uploading ? (
+                <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Uploading...</>
+              ) : (
+                "Select Files"
+              )}
             </Button>
-          </label>
-        </div>
-      </div>
+            <p className="mt-8 text-xs text-gray-400">Maximum upload file size: 10 MB.</p>
+          </div>
+        </TabsContent>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <TabsContent value="library" className="mt-0 space-y-6">
+          <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search media files..."
+                placeholder="Search items..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-10"
+                onChange={(e) => {setSearchTerm(e.target.value); setPage(1);}}
+                className="pl-10 h-11"
               />
             </div>
             <select
               value={fileType}
-              onChange={(e) => {
-                setFileType(e.target.value);
-                setPage(1);
-              }}
-              className="px-3 py-2 border rounded-md"
+              onChange={(e) => {setFileType(e.target.value); setPage(1);}}
+              className="px-4 py-2 border rounded-md bg-white h-11 min-w-[160px]"
             >
-              <option value="all">All Types</option>
-              <option value="image">Images Only</option>
+              <option value="all">All media items</option>
+              <option value="image">Images</option>
             </select>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Media Grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {pagination ? (
-              <>
-                All Media ({pagination.total} file{pagination.total !== 1 ? "s" : ""})
-              </>
-            ) : (
-              "All Media"
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {files.length === 0 ? (
-            <div className="text-center py-12">
-              <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No media files found</p>
-              <p className="text-sm text-gray-500 mt-2">
-                {searchTerm ? "Try a different search term" : "Upload your first media file"}
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="relative group border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => setSelectedFile(file)}
-                  >
-                    {file.type === "image" ? (
-                      <div className="aspect-square relative bg-gray-100">
-                        <img
-                          src={(() => {
-                            // If it's already a full URL, use it
-                            if (file.url.startsWith("http")) {
-                              return file.url;
-                            }
-                            
-                            // Extract filename from URL
-                            const filename = file.url.split("/").pop() || file.filename;
-                            const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
-                            
-                            // Use backend API endpoint directly for all categories
-                            // This ensures images load reliably regardless of where they're stored
-                            return `${apiBaseUrl}/admin/upload/media/${file.category}/${filename}`;
-                          })()}
-                          alt={file.originalName}
-                          className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement;
-                      const retryCount = parseInt(img.getAttribute('data-retry') || '0');
-                      
-                      if (retryCount < 1) {
-                        // Try direct Next.js path as fallback
-                        const filename = file.url.split("/").pop() || file.filename;
-                        const directPath = file.url.startsWith("/media/") ? file.url : `/media/${file.category}/${filename}`;
-                        img.setAttribute('data-retry', String(retryCount + 1));
-                        img.src = directPath;
-                        return;
-                      }
-                      
-                      // Final fallback: show placeholder
-                      img.style.display = 'none';
-                      const parent = img.parentElement;
-                      if (parent && !parent.querySelector('.image-placeholder')) {
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'image-placeholder w-full h-full bg-gray-200 flex items-center justify-center';
-                        placeholder.innerHTML = '<span class="text-xs text-gray-400">Image not found</span>';
-                        parent.appendChild(placeholder);
-                      }
-                    }}
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      </div>
-                    ) : (
-                      <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                            <File className="h-12 w-12 text-gray-400" />
-                          </div>
-                    )}
-                    <div className="p-2 bg-white">
-                      <p className="text-xs font-medium text-gray-900 truncate" title={file.originalName}>
-                        {file.originalName}
-                      </p>
-                      <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(file);
-                      }}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition shadow-lg"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {files.length === 0 ? (
+              <div className="col-span-full py-32 text-center border-2 border-dashed rounded-2xl bg-gray-50">
+                <ImageIcon className="h-16 w-12 mx-auto mb-4 text-gray-300 opacity-20" />
+                <p className="text-gray-400 font-medium">Your library is empty</p>
+                <Button variant="link" onClick={() => setActiveTab("upload")} className="text-primary mt-2">
+                  Upload your first file
+                </Button>
               </div>
+            ) : (
+              files.map((file) => (
+                <div
+                  key={file.id}
+                  className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer group transition-all duration-300 ${
+                    selectedFile?.id === file.id 
+                      ? "ring-4 ring-primary ring-offset-2 scale-[0.96]" 
+                      : "ring-1 ring-gray-200 hover:ring-primary/50"
+                  }`}
+                  onClick={() => setSelectedFile(file)}
+                >
+                  {file.type === "image" ? (
+                    <img
+                      src={file.url.startsWith("http") ? file.url : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/${file.category}/${file.filename}`}
+                      alt={file.originalName}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+                      <File className="h-10 w-10 text-gray-400 mb-2" />
+                      <span className="text-[10px] text-gray-500 font-medium uppercase">{file.mimeType.split('/')[1]}</span>
+                    </div>
+                  )}
+                  
+                  {selectedFile?.id === file.id && (
+                    <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1.5 shadow-lg animate-in zoom-in duration-200">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                  )}
 
-              {/* Pagination */}
-              {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-6 border-t">
-                  <p className="text-sm text-gray-600">
-                    Page {pagination.page} of {pagination.totalPages}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={pagination.page === 1}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={pagination.page === pagination.totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
+                  {onSelect && !standalone && (
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3">
+                      <Button 
+                        size="sm" 
+                        className="w-full font-bold shadow-lg"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(file.url);
+                        }}
+                      >
+                        Select
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </>
+              ))
+            )}
+          </div>
+
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-8 border-t">
+              <p className="text-sm text-gray-500 font-medium">Page {pagination.page} of {pagination.totalPages}</p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={pagination.page === 1}>Previous</Button>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))} disabled={pagination.page === pagination.totalPages}>Next</Button>
+              </div>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* File Details Modal */}
       {selectedFile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Media Details</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedFile(null)}>
-                <X className="h-4 w-4" />
-              </Button>
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border-0">
+            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+              <CardTitle className="text-xl">Media Details</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setSelectedFile(null)} className="rounded-full"><X className="h-5 w-5" /></Button>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedFile.type === "image" && (
-                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                  <img
-                    src={
-                      selectedFile.url.startsWith("http")
-                        ? selectedFile.url
-                        : selectedFile.url.startsWith("/media/")
-                        ? selectedFile.url
-                        : `/${selectedFile.url}`
-                    }
-                    alt={selectedFile.originalName}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement;
-                      const retryCount = parseInt(img.getAttribute('data-retry') || '0');
-                      
-                      if (retryCount < 1) {
-                        // Try direct Next.js path as fallback
-                        const filename = selectedFile.url.split("/").pop() || selectedFile.filename;
-                        const directPath = selectedFile.url.startsWith("/media/") ? selectedFile.url : `/media/${selectedFile.category}/${filename}`;
-                        img.setAttribute('data-retry', String(retryCount + 1));
-                        img.src = directPath;
-                        return;
-                      }
-                      
-                      // Show placeholder if all retries fail
-                      img.style.display = 'none';
-                      const parent = img.parentElement;
-                      if (parent && !parent.querySelector('.image-placeholder')) {
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'image-placeholder w-full h-full bg-gray-200 flex items-center justify-center';
-                        placeholder.innerHTML = '<span class="text-sm text-gray-400">Image not found</span>';
-                        parent.appendChild(placeholder);
-                      }
-                    }}
-                  />
-                </div>
-              )}
-              <div className="space-y-2">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Filename</label>
-                  <p className="text-sm text-gray-900">{selectedFile.originalName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">URL</label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={
-                        selectedFile.url.startsWith("http")
-                          ? selectedFile.url
-                          : selectedFile.url.startsWith("/media/")
-                          ? selectedFile.url
-                          : `/${selectedFile.url}`
-                      }
-                      readOnly
-                      className="text-sm"
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center min-h-[300px] border">
+                  {selectedFile.type === "image" ? (
+                    <img
+                      src={selectedFile.url.startsWith("http") ? selectedFile.url : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/${selectedFile.category}/${selectedFile.filename}`}
+                      alt={selectedFile.originalName}
+                      className="max-w-full max-h-[400px] object-contain"
                     />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const url =
-                          selectedFile.url.startsWith("http")
-                            ? selectedFile.url
-                            : selectedFile.url.startsWith("/media/")
-                            ? selectedFile.url
-                            : `/${selectedFile.url}`;
-                        navigator.clipboard.writeText(url);
-                        toast.success("URL copied to clipboard");
-                      }}
-                    >
-                      Copy
-                    </Button>
+                  ) : (
+                    <File className="h-24 w-24 text-gray-300" />
+                  )}
+                </div>
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Filename</label>
+                    <p className="text-sm font-semibold text-gray-900 break-all">{selectedFile.originalName}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Size</label>
+                      <p className="text-sm font-medium text-gray-700">{formatFileSize(selectedFile.size)}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Type</label>
+                      <p className="text-sm font-medium text-gray-700 capitalize">{selectedFile.type}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">File URL</label>
+                    <div className="flex gap-2">
+                      <Input value={selectedFile.url} readOnly className="h-9 text-xs bg-gray-50" />
+                      <Button variant="outline" size="sm" onClick={() => {navigator.clipboard.writeText(selectedFile.url); toast.success("Copied!");}}><Copy className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3 pt-4 border-t">
+                    {onSelect && (
+                      <Button className="w-full font-bold h-11 shadow-lg" onClick={() => {onSelect(selectedFile.url); setSelectedFile(null);}}>Select Image</Button>
+                    )}
+                    <div className="flex gap-2">
+                      <Button variant="destructive" className="flex-1" onClick={() => handleDelete(selectedFile)} disabled={deleteMutation.isPending}>
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </Button>
+                      <Button variant="outline" className="flex-1" onClick={() => setSelectedFile(null)}>Close</Button>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Size</label>
-                    <p className="text-sm text-gray-900">{formatFileSize(selectedFile.size)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Type</label>
-                    <p className="text-sm text-gray-900">{selectedFile.type}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Category</label>
-                    <p className="text-sm text-gray-900 capitalize">{selectedFile.category}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Uploaded</label>
-                    <p className="text-sm text-gray-900">{formatDate(selectedFile.uploadedAt)}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDelete(selectedFile)}
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-                <Button variant="outline" onClick={() => setSelectedFile(null)}>
-                  Close
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -504,4 +412,3 @@ export function AdminMediaLibrary() {
     </div>
   );
 }
-

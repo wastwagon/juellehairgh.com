@@ -11,37 +11,23 @@ const getApiBaseUrl = () => {
     url = (window as any).__ENV__?.NEXT_PUBLIC_API_BASE_URL;
   }
   
-  // Priority 2: Check if we're in production (client-side detection first)
+  // Priority 2: Check if we're in production
   if (typeof window !== "undefined") {
-    const isProduction = window.location.protocol === "https:" || 
-                        window.location.hostname.includes("render.com") ||
-                        window.location.hostname.includes("onrender.com");
+    const isProduction = window.location.protocol === "https:";
     
     if (isProduction) {
-      // In production, prioritize explicit env var, then infer from frontend URL
       if (!url) {
         url = process.env.NEXT_PUBLIC_API_BASE_URL;
       }
       
-      // If still no URL or URL is localhost, infer from frontend URL
       if (!url || url.includes("localhost")) {
         const frontendUrl = window.location.origin;
-        // Common Render pattern: if frontend is juelle-hair-web, backend might be juelle-hair-api or juelle-hair-backend
-        let backendUrl = frontendUrl.replace("-web", "-api");
-        if (backendUrl === frontendUrl) {
-          backendUrl = frontendUrl.replace("juelle-hair-web", "juelle-hair-api");
-          if (backendUrl === frontendUrl) {
-            backendUrl = frontendUrl.replace("juelle-hair-web", "juelle-hair-backend");
-          }
-        }
-        url = `${backendUrl}/api`;
+        url = `${frontendUrl}/api`;
         if (!process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL.includes("localhost")) {
           console.warn("⚠️ API Base URL not configured or set to localhost, inferred from frontend URL:", url);
-          console.warn("⚠️ Please set NEXT_PUBLIC_API_BASE_URL environment variable in Render!");
         }
       }
     } else {
-      // Development: use build-time env var or localhost
       if (!url) {
         url = process.env.NEXT_PUBLIC_API_BASE_URL;
       }
@@ -50,25 +36,7 @@ const getApiBaseUrl = () => {
       }
     }
   } else {
-    // Server-side: use env var or fallback
     url = process.env.NEXT_PUBLIC_API_BASE_URL;
-    
-    // Server-side production detection
-    if (!url || url.includes("localhost")) {
-      const renderUrl = process.env.RENDER_EXTERNAL_URL || "";
-      if (renderUrl) {
-        let backendUrl = renderUrl.replace("-web", "-api");
-        if (backendUrl === renderUrl) {
-          backendUrl = renderUrl.replace("juelle-hair-web", "juelle-hair-api");
-          if (backendUrl === renderUrl) {
-            backendUrl = renderUrl.replace("juelle-hair-web", "juelle-hair-backend");
-          }
-        }
-        if (backendUrl !== renderUrl) {
-          url = `${backendUrl}/api`;
-        }
-      }
-    }
     
     if (!url) {
       url = "http://localhost:3001/api";

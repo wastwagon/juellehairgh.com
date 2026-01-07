@@ -108,8 +108,7 @@ async function verifyPaystackConfig() {
     }
 
     // Webhook URL
-    const frontendUrl = process.env.FRONTEND_URL || "https://juelle-hair-web.onrender.com";
-    const backendUrl = process.env.RENDER_EXTERNAL_URL || "https://juelle-hair-backend.onrender.com";
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
     const webhookUrl = `${backendUrl}/api/payments/callback`;
 
     console.log("\n🌐 Webhook Configuration:\n");

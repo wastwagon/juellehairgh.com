@@ -5,9 +5,16 @@ import { OrdersModule } from "../orders/orders.module";
 import { CurrencyModule } from "../currency/currency.module";
 import { EmailModule } from "../email/email.module";
 import { WalletModule } from "../wallet/wallet.module";
+import { ProductsModule } from "../products/products.module";
 
 @Module({
-  imports: [OrdersModule, CurrencyModule, EmailModule, WalletModule],
+  imports: [
+    OrdersModule,
+    CurrencyModule,
+    EmailModule,
+    WalletModule,
+    ProductsModule,
+  ],
   controllers: [PaymentsController],
   providers: [PaymentsService],
   exports: [PaymentsService],

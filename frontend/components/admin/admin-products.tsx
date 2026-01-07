@@ -75,8 +75,9 @@ export function AdminProducts() {
         headers: { Authorization: `Bearer ${token}` },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, productId) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "product"] }); // Invalidate all product detail queries
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product deleted successfully");
     },

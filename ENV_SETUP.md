@@ -1,6 +1,6 @@
 # Environment Variables Setup (Production / Coolify)
 
-Copy these variables into your platform (Coolify, Render, Docker secrets). Do **not** commit real keys.
+Copy these variables into your platform (Coolify, Docker secrets). Do **not** commit real keys.
 
 ## Backend (NestJS)
 - `DATABASE_URL` — e.g. `postgresql://user:password@host:5432/juellehair?schema=public`

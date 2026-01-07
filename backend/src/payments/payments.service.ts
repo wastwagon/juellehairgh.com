@@ -9,6 +9,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { OrdersService } from "../orders/orders.service";
 import { EmailService } from "../email/email.service";
 import { WalletService } from "../wallet/wallet.service";
+import { ProductsService } from "../products/products.service";
 
 @Injectable()
 export class PaymentsService {
@@ -20,6 +21,7 @@ export class PaymentsService {
     private ordersService: OrdersService,
     private emailService: EmailService,
     private walletService: WalletService,
+    private productsService: ProductsService,
   ) {}
 
   // Get Paystack secret key from database settings, fallback to environment variable
@@ -226,6 +228,11 @@ export class PaymentsService {
               billingAddress: true,
             },
           });
+
+          // Reduce stock for all items in the order
+          if (updatedOrder.items && updatedOrder.items.length > 0) {
+            await this.productsService.reduceStock(updatedOrder.items);
+          }
 
           // Send payment confirmation email to customer
           try {

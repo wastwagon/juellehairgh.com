@@ -12,6 +12,8 @@ import {
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { ProductsService } from "../products/products.service";
+import { CreateProductDto } from "../products/dto/create-product.dto";
+import { UpdateProductDto } from "../products/dto/update-product.dto";
 import { OrdersService } from "../orders/orders.service";
 import { EmailService } from "../email/email.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -62,12 +64,12 @@ export class AdminController {
   }
 
   @Post("products")
-  async createProduct(@Body() data: any) {
+  async createProduct(@Body() data: CreateProductDto) {
     return this.productsService.create(data);
   }
 
   @Put("products/:id")
-  async updateProduct(@Param("id") id: string, @Body() data: any) {
+  async updateProduct(@Param("id") id: string, @Body() data: UpdateProductDto) {
     return this.productsService.update(id, data);
   }
 

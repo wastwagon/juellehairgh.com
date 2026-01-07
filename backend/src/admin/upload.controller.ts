@@ -607,7 +607,9 @@ export class UploadController {
     }),
   )
   async uploadMedia(@UploadedFile() file: Express.Multer.File | undefined) {
+    console.log(`[Upload] Received file for library: ${file?.originalname}`);
     if (!file) {
+      console.error("[Upload] No file object in request");
       throw new BadRequestException("No file uploaded");
     }
 

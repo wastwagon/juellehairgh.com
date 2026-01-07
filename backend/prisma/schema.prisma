@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -11,145 +8,113 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum OrderStatus {
-  AWAITING_PAYMENT
-  PAID
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-}
-
-enum UserRole {
-  CUSTOMER
-  STAFF
-  MANAGER
-  ADMIN
-}
-
 model User {
-  id                   String    @id @default(uuid())
-  email                String    @unique
+  id                   String         @id @default(uuid())
+  email                String         @unique
   password             String
   name                 String?
   phone                String?
+  displayCurrency      String?        @default("GHS")
+  role                 UserRole       @default(CUSTOMER)
+  emailVerified        Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
   profilePicture       String?
-  displayCurrency      String?   @default("GHS")
-  role                 UserRole  @default(CUSTOMER)
-  emailVerified        Boolean   @default(false)
-  emailMarketing       Boolean   @default(true)
-  emailOrderUpdates    Boolean   @default(true)
-  emailReviewReminders Boolean   @default(true)
-  emailNewsletter      Boolean   @default(false)
+  emailMarketing       Boolean        @default(true)
+  emailOrderUpdates    Boolean        @default(true)
+  emailReviewReminders Boolean        @default(true)
+  emailNewsletter      Boolean        @default(false)
   deletedAt            DateTime?
   deletionReason       String?
   deletionRequestedAt  DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-
-  // Relations
-  addresses Address[]
-  orders    Order[]
-  cart      Cart?
-  wishlist  WishlistItem[]
-  reviews   Review[]
-  wallet    Wallet?
+  addresses            Address[]
+  cart                 Cart?
+  orders               Order[]
+  reviews              Review[]
+  wallet               Wallet?
+  wishlist             WishlistItem[]
 
   @@map("users")
 }
 
 model Address {
-  id           String   @id @default(uuid())
-  userId       String
-  firstName    String
-  lastName     String
-  phone        String
-  addressLine1 String
-  addressLine2 String?
-  city         String
-  region       String
-  postalCode   String?
-  country      String   @default("Ghana")
-  isDefault    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shippingOrders Order[] @relation("ShippingAddress")
-  billingOrders  Order[] @relation("BillingAddress")
+  id             String   @id @default(uuid())
+  userId         String
+  firstName      String
+  lastName       String
+  phone          String
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  region         String
+  postalCode     String?
+  country        String   @default("Ghana")
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingOrders  Order[]  @relation("BillingAddress")
+  shippingOrders Order[]  @relation("ShippingAddress")
 
   @@map("addresses")
 }
 
 model Category {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   name        String
-  slug        String   @unique
+  slug        String       @unique
   description String?
   image       String?
   parentId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  parent   Category?    @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children Category[]   @relation("CategoryTree")
-  products Product[]
-  seo      CategorySEO?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  parent      Category?    @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[]   @relation("CategoryTree")
+  seo         CategorySEO?
+  products    Product[]
 
   @@map("categories")
 }
 
 model Brand {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
   logo      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  products Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 
   @@map("brands")
 }
 
 model Product {
-  id                String   @id @default(uuid())
-  title             String
-  slug              String   @unique
-  description       String?  @db.Text
-  brandId           String?
-  categoryId        String
-  priceGhs          Decimal  @db.Decimal(10, 2)
-  compareAtPriceGhs Decimal? @db.Decimal(10, 2)
-  images            String[]
-  badges            String[]
-  stock             Int      @default(0)
-  sku               String?  @unique
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relations
-  brand              Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  category           Category            @relation(fields: [categoryId], references: [id])
-  variants           ProductVariant[]
-  collectionProducts CollectionProduct[]
+  id                 String              @id @default(uuid())
+  title              String
+  slug               String              @unique
+  description        String?
+  brandId            String?
+  categoryId         String
+  priceGhs           Decimal             @db.Decimal(10, 2)
+  compareAtPriceGhs  Decimal?            @db.Decimal(10, 2)
+  images             String[]
+  badges             String[]
+  stock              Int                 @default(0)
+  sku                String?             @unique
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  shortDescription   String?
   cartItems          CartItem[]
-  orderItems         OrderItem[]
-  wishlistItems      WishlistItem[]
-  reviews            Review[]
+  collectionProducts CollectionProduct[]
   flashSales         FlashSaleProduct[]
+  orderItems         OrderItem[]
   seo                ProductSEO?
+  variants           ProductVariant[]
+  brand              Brand?              @relation(fields: [brandId], references: [id])
+  category           Category            @relation(fields: [categoryId], references: [id])
+  reviews            Review[]
+  wishlistItems      WishlistItem[]
 
   @@index([categoryId])
   @@index([brandId])
@@ -159,30 +124,26 @@ model Product {
 }
 
 model ProductAttribute {
-  id          String   @id @default(uuid())
-  name        String   @unique // e.g., "Color", "Size", "Length"
-  slug        String   @unique
+  id          String                 @id @default(uuid())
+  name        String                 @unique
+  slug        String                 @unique
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  terms ProductAttributeTerm[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  terms       ProductAttributeTerm[]
 
   @@map("product_attributes")
 }
 
 model ProductAttributeTerm {
-  id          String   @id @default(uuid())
-  attributeId String
-  name        String // e.g., "Black", "Red", "Small", "Large"
+  id          String           @id @default(uuid())
+  name        String
   slug        String
-  image       String? // Image URL for this term (e.g., color swatch)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  attribute ProductAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  image       String?
+  attributeId String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  attribute   ProductAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
 
   @@unique([attributeId, slug])
   @@index([attributeId])
@@ -190,53 +151,47 @@ model ProductAttributeTerm {
 }
 
 model ProductVariant {
-  id                String   @id @default(uuid())
+  id                String      @id @default(uuid())
   productId         String
-  name              String // e.g., "Color", "Length"
-  value             String // e.g., "Black", "22 inches"
-  image             String? // Image URL for this variant (e.g., color swatch)
-  priceGhs          Decimal? @db.Decimal(10, 2)
-  compareAtPriceGhs Decimal? @db.Decimal(10, 2) // Sale price for this variant
-  stock             Int      @default(0)
-  sku               String?  @unique
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relations
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  name              String
+  value             String
+  priceGhs          Decimal?    @db.Decimal(10, 2)
+  stock             Int         @default(0)
+  sku               String?     @unique
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  image             String?
+  compareAtPriceGhs Decimal?    @db.Decimal(10, 2)
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+  product           Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("product_variants")
 }
 
 model Collection {
-  id          String   @id @default(uuid())
+  id          String              @id @default(uuid())
   name        String
-  slug        String   @unique
-  description String?  @db.Text
+  slug        String              @unique
+  description String?
   image       String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  products CollectionProduct[]
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  products    CollectionProduct[]
 
   @@map("collections")
 }
 
 model CollectionProduct {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   collectionId String
   productId    String
-  position     Int      @default(0)
-  createdAt    DateTime @default(now())
-
-  // Relations
-  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  position     Int        @default(0)
+  createdAt    DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([collectionId, productId])
   @@index([collectionId])
@@ -245,32 +200,28 @@ model CollectionProduct {
 }
 
 model Cart {
-  id        String   @id @default(uuid())
-  userId    String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items CartItem[]
+  id        String     @id @default(uuid())
+  userId    String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("carts")
 }
 
 model CartItem {
-  id         String   @id @default(uuid())
+  id         String          @id @default(uuid())
   cartId     String
   productId  String
-  variantId  String? // Keep for backward compatibility, but prefer variantIds
-  variantIds String[] @default([]) // Array of variant IDs for multiple selections (Color + Length, etc.)
+  variantId  String?
   quantity   Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relations
-  cart    Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  variantIds String[]        @default([])
+  cart       Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
 
   @@unique([cartId, productId, variantId])
   @@index([cartId])
@@ -290,15 +241,13 @@ model Order {
   paymentStatus     PaymentStatus @default(PENDING)
   shippingMethod    String?
   trackingNumber    String?
-  notes             String?       @db.Text
+  notes             String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-
-  // Relations
-  user            User        @relation(fields: [userId], references: [id])
-  shippingAddress Address     @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
-  billingAddress  Address     @relation("BillingAddress", fields: [billingAddressId], references: [id])
-  items           OrderItem[]
+  items             OrderItem[]
+  billingAddress    Address       @relation("BillingAddress", fields: [billingAddressId], references: [id])
+  shippingAddress   Address       @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  user              User          @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([status])
@@ -309,19 +258,17 @@ model Order {
 }
 
 model OrderItem {
-  id         String   @id @default(uuid())
+  id         String          @id @default(uuid())
   orderId    String
   productId  String
-  variantId  String? // Keep for backward compatibility, but prefer variantIds
-  variantIds String[] @default([]) // Array of variant IDs for multiple selections (Color + Length, etc.)
+  variantId  String?
   quantity   Int
-  priceGhs   Decimal  @db.Decimal(10, 2)
-  createdAt  DateTime @default(now())
-
-  // Relations
-  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product         @relation(fields: [productId], references: [id])
-  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  priceGhs   Decimal         @db.Decimal(10, 2)
+  createdAt  DateTime        @default(now())
+  variantIds String[]        @default([])
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product         @relation(fields: [productId], references: [id])
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
 
   @@index([orderId])
   @@index([productId])
@@ -333,10 +280,8 @@ model WishlistItem {
   userId    String
   productId String
   createdAt DateTime @default(now())
-
-  // Relations
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
   @@index([userId])
@@ -347,16 +292,14 @@ model Review {
   id         String   @id @default(uuid())
   userId     String
   productId  String
-  rating     Int // 1-5
+  rating     Int
   title      String?
-  comment    String?  @db.Text
+  comment    String?
   isVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  // Relations
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([productId, userId])
@@ -364,37 +307,33 @@ model Review {
 }
 
 model ShippingZone {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
   description String?
-  regions     String[] // Array of region names/countries
-  isActive    Boolean  @default(true)
-  position    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  methods ShippingMethod[]
+  regions     String[]
+  isActive    Boolean          @default(true)
+  position    Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  methods     ShippingMethod[]
 
   @@index([isActive])
   @@map("shipping_zones")
 }
 
 model ShippingMethod {
-  id                    String   @id @default(uuid())
+  id                    String       @id @default(uuid())
   zoneId                String
   name                  String
-  description           String?  @db.Text
-  cost                  Decimal? @db.Decimal(10, 2) // null = free
-  freeShippingThreshold Decimal? @db.Decimal(10, 2) // Free if order >= this amount
-  estimatedDays         String? // e.g., "3-5 working days"
-  isActive              Boolean  @default(true)
-  position              Int      @default(0)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  // Relations
-  zone ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  description           String?
+  cost                  Decimal?     @db.Decimal(10, 2)
+  freeShippingThreshold Decimal?     @db.Decimal(10, 2)
+  estimatedDays         String?
+  isActive              Boolean      @default(true)
+  position              Int          @default(0)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  zone                  ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
   @@index([zoneId])
   @@index([isActive])
@@ -434,7 +373,7 @@ model DiscountCode {
   id            String    @id @default(uuid())
   code          String    @unique
   description   String?
-  discountType  String // "PERCENTAGE" or "FIXED"
+  discountType  String
   discountValue Decimal   @db.Decimal(10, 2)
   minPurchase   Decimal?  @db.Decimal(10, 2)
   maxDiscount   Decimal?  @db.Decimal(10, 2)
@@ -453,7 +392,7 @@ model DiscountCode {
 
 model AnalyticsEvent {
   id        String   @id @default(uuid())
-  eventType String // "page_view", "purchase", "add_to_cart", "view_product", "begin_checkout", "session_start"
+  eventType String
   userId    String?
   sessionId String?
   productId String?
@@ -475,13 +414,13 @@ model ProductSEO {
   id              String   @id @default(uuid())
   productId       String   @unique
   metaTitle       String?
-  metaDescription String?  @db.Text
+  metaDescription String?
   focusKeyword    String?
   keywords        String[]
   schemaType      String   @default("Product")
   schemaData      Json     @default("{}")
   ogTitle         String?
-  ogDescription   String?  @db.Text
+  ogDescription   String?
   ogImage         String?
   twitterCard     String?  @default("summary_large_image")
   canonicalUrl    String?
@@ -489,8 +428,7 @@ model ProductSEO {
   nofollow        Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("product_seo")
@@ -500,18 +438,17 @@ model CategorySEO {
   id              String   @id @default(uuid())
   categoryId      String   @unique
   metaTitle       String?
-  metaDescription String?  @db.Text
+  metaDescription String?
   keywords        String[]
   schemaData      Json?    @default("{}")
   ogTitle         String?
-  ogDescription   String?  @db.Text
+  ogDescription   String?
   ogImage         String?
   canonicalUrl    String?
   noindex         Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([categoryId])
   @@map("category_seo")
@@ -520,9 +457,9 @@ model CategorySEO {
 model SEOTemplate {
   id            String   @id @default(uuid())
   name          String
-  type          String // "product", "category", "page"
-  titleTemplate String   @db.Text
-  metaTemplate  String   @db.Text
+  type          String
+  titleTemplate String
+  metaTemplate  String
   variables     Json     @default("{}")
   isDefault     Boolean  @default(false)
   createdAt     DateTime @default(now())
@@ -537,7 +474,7 @@ model Redirect {
   id        String    @id @default(uuid())
   sourceUrl String    @unique
   targetUrl String
-  type      String    @default("301") // 301, 302, 307
+  type      String    @default("301")
   regex     Boolean   @default(false)
   active    Boolean   @default(true)
   hitCount  Int       @default(0)
@@ -571,13 +508,13 @@ model Keyword {
   id           String   @id @default(uuid())
   keyword      String   @unique
   searchVolume Int?
-  difficulty   Int? // 0-100
+  difficulty   Int?
   cpc          Decimal? @db.Decimal(10, 2)
-  competition  Decimal? @db.Decimal(3, 2) // 0.0 - 1.0
-  trends       Json? // Historical data
-  suggestions  String[] // Related keywords
+  trends       Json?
+  suggestions  String[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  competition  Decimal? @db.Decimal(3, 2)
 
   @@index([keyword])
   @@map("keywords")
@@ -588,9 +525,9 @@ model KeywordRank {
   keyword   String
   productId String?
   pageUrl   String
-  position  Int? // Google rank position
+  position  Int?
   country   String   @default("gh")
-  device    String   @default("desktop") // desktop, mobile, tablet
+  device    String   @default("desktop")
   date      DateTime @default(now())
   createdAt DateTime @default(now())
 
@@ -603,16 +540,16 @@ model ContentAnalysis {
   id                String   @id @default(uuid())
   productId         String?  @unique
   pageId            String?
-  seoScore          Int // 0-100
-  readabilityScore  Int? // Flesch reading score
-  keywordDensity    Json? // Keyword density analysis
+  seoScore          Int
+  readabilityScore  Int?
+  keywordDensity    Json?
   contentLength     Int?
   wordCount         Int?
-  headingStructure  Json? // H1, H2, H3 analysis
-  imageOptimization Json? // Alt tags, file size
+  headingStructure  Json?
+  imageOptimization Json?
   internalLinks     Int?
   externalLinks     Int?
-  recommendations   Json? // Array of recommendations
+  recommendations   Json?
   lastAnalyzed      DateTime @default(now())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -631,7 +568,7 @@ model Backlink {
   spamScore       Int?
   firstSeen       DateTime @default(now())
   lastSeen        DateTime @default(now())
-  status          String   @default("active") // active, lost, toxic
+  status          String   @default("active")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -643,10 +580,10 @@ model Backlink {
 
 model InternalLink {
   id         String   @id @default(uuid())
-  sourceId   String // Product or page ID
-  sourceType String // "product", "category", "page"
-  targetId   String // Product or page ID
-  targetType String // "product", "category", "page"
+  sourceId   String
+  sourceType String
+  targetId   String
+  targetType String
   anchorText String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -659,8 +596,8 @@ model InternalLink {
 model Setting {
   id        String   @id @default(uuid())
   key       String   @unique
-  value     String?  @db.Text
-  category  String   @default("general") // general, payment, shipping, email, etc.
+  value     String?
+  category  String   @default("general")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -676,8 +613,8 @@ model Newsletter {
   isActive       Boolean   @default(true)
   subscribedAt   DateTime  @default(now())
   unsubscribedAt DateTime?
-  source         String? // "footer", "account", "checkout", etc.
-  token          String    @unique // For unsubscribe verification
+  source         String?
+  token          String    @unique
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -691,9 +628,9 @@ model BadgeTemplate {
   id           String   @id @default(uuid())
   name         String   @unique
   label        String
-  color        String   @default("#3B82F6") // Background color
-  textColor    String   @default("#FFFFFF") // Text color
-  style        String   @default("rounded") // rounded, pill, square
+  color        String   @default("#3B82F6")
+  textColor    String   @default("#FFFFFF")
+  style        String   @default("rounded")
   isPredefined Boolean  @default(false)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
@@ -706,13 +643,13 @@ model BadgeTemplate {
 
 model EmailTemplate {
   id          String   @id @default(uuid())
-  templateId  String   @unique // e.g., "welcome", "order-confirmation"
+  templateId  String   @unique
   name        String
   subject     String
-  body        String   @db.Text
-  type        String // "customer" | "admin"
-  description String?  @db.Text
-  variables   Json     @default("[]") // Available variables for this template
+  body        String
+  type        String
+  description String?
+  variables   Json     @default("[]")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -723,16 +660,15 @@ model EmailTemplate {
   @@map("email_templates")
 }
 
-
 model TrustBadge {
   id          String   @id @default(uuid())
   title       String
-  description String?  @db.Text
-  icon        String? // Icon name or URL
-  image       String? // Image URL
-  link        String? // Optional link
+  description String?
+  icon        String?
+  image       String?
+  link        String?
   isActive    Boolean  @default(true)
-  position    Int      @default(0) // For ordering
+  position    Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -742,18 +678,16 @@ model TrustBadge {
 }
 
 model FlashSale {
-  id              String   @id @default(uuid())
+  id              String             @id @default(uuid())
   title           String
-  description     String?  @db.Text
+  description     String?
   startDate       DateTime
   endDate         DateTime
-  discountPercent Decimal  @db.Decimal(5, 2) // e.g., 25.00 for 25%
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relations
-  products FlashSaleProduct[]
+  discountPercent Decimal            @db.Decimal(5, 2)
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  products        FlashSaleProduct[]
 
   @@index([isActive])
   @@index([startDate])
@@ -762,13 +696,12 @@ model FlashSale {
 }
 
 model FlashSaleProduct {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   flashSaleId String
   productId   String
-  createdAt   DateTime @default(now())
-
-  flashSale FlashSale @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  flashSale   FlashSale @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([flashSaleId, productId])
   @@index([flashSaleId])
@@ -780,18 +713,18 @@ model BlogPost {
   id             String    @id @default(uuid())
   title          String
   slug           String    @unique
-  excerpt        String?   @db.Text
-  content        String    @db.Text
+  excerpt        String?
+  content        String
   featuredImage  String?
-  authorId       String? // Optional: link to User
-  authorName     String? // Fallback if no user
-  category       String? // e.g., "News", "Tips", "Updates"
-  tags           String[] // Array of tags
+  authorId       String?
+  authorName     String?
+  category       String?
+  tags           String[]
   isPublished    Boolean   @default(false)
   publishedAt    DateTime?
   views          Int       @default(0)
   seoTitle       String?
-  seoDescription String?   @db.Text
+  seoDescription String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -802,24 +735,14 @@ model BlogPost {
   @@map("blog_posts")
 }
 
-enum WalletTransactionType {
-  TOP_UP
-  PAYMENT
-  REFUND
-  ADMIN_CREDIT
-  ADMIN_DEBIT
-}
-
 model Wallet {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  balance   Decimal  @default(0) @db.Decimal(10, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String              @id @default(uuid())
+  userId       String              @unique
+  balance      Decimal             @default(0) @db.Decimal(10, 2)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   transactions WalletTransaction[]
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("wallets")
@@ -830,19 +753,48 @@ model WalletTransaction {
   walletId     String
   type         WalletTransactionType
   amount       Decimal               @db.Decimal(10, 2)
-  balanceAfter Decimal               @db.Decimal(10, 2)
   description  String?
-  reference    String?               @unique // Payment reference for top-ups
-  orderId      String? // If transaction is related to an order
+  reference    String?               @unique
+  orderId      String?
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
-
-  // Relations
-  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  balanceAfter Decimal?              @db.Decimal(10, 2)
+  wallet       Wallet                @relation(fields: [walletId], references: [id], onDelete: Cascade)
 
   @@index([walletId])
   @@index([type])
   @@index([createdAt])
   @@index([reference])
   @@map("wallet_transactions")
+}
+
+enum OrderStatus {
+  AWAITING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum UserRole {
+  CUSTOMER
+  STAFF
+  MANAGER
+  ADMIN
+}
+
+enum WalletTransactionType {
+  TOP_UP
+  PAYMENT
+  REFUND
+  ADMIN_CREDIT
+  ADMIN_DEBIT
 }

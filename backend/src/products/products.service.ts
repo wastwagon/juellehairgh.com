@@ -22,12 +22,21 @@ export class ProductsService {
         maxPrice,
         page = 1,
         limit = 20,
+        includeInactive = false,
       } = query;
 
       const skip = (page - 1) * limit;
-      const where: any = {
-        isActive: true,
-      };
+      const where: any = {};
+
+      if (
+        includeInactive === "true" ||
+        includeInactive === true ||
+        query.admin === "true"
+      ) {
+        // Include all products for admin
+      } else {
+        where.isActive = true;
+      }
 
       if (category) {
         where.categoryId = category;
@@ -71,11 +80,10 @@ export class ProductsService {
                 },
               },
               orderBy: { createdAt: "desc" },
-              // Include all verified reviews for accurate rating and count
             },
           },
           skip,
-          take: parseInt(limit),
+          take: parseInt(limit.toString()),
           orderBy: query.sort
             ? (this.getOrderBy(query.sort) as any)
             : { createdAt: "desc" },
@@ -83,66 +91,18 @@ export class ProductsService {
         this.prisma.product.count({ where }),
       ]);
 
-      // Enrich variants with attribute term images (same as findOne)
-      const colorAttribute = await this.prisma.productAttribute.findFirst({
-        where: { name: { equals: "Color", mode: "insensitive" } },
-        include: { terms: true },
-      });
-
-      const termImageMap = new Map<string, string | null>();
-      if (colorAttribute) {
-        colorAttribute.terms.forEach((term) => {
-          termImageMap.set(term.name.toLowerCase(), term.image);
-        });
-      }
-
-      // Enrich all products' variants with images
-      const products = productsData.map((product) => {
-        if (product.variants && product.variants.length > 0) {
-          product.variants = product.variants.map((variant) => {
-            if (variant.name.toLowerCase().includes("color")) {
-              const variantValueLower = variant.value.toLowerCase();
-              const termImage = termImageMap.get(variantValueLower);
-
-              // Try exact match first
-              if (termImage) {
-                return { ...variant, image: termImage };
-              }
-
-              // Try partial matching (e.g., "2T1B30" matches "2t1b/30")
-              for (const [termName, termImage] of termImageMap.entries()) {
-                const normalizedTerm = termName
-                  .replace(/[\/\s]/g, "")
-                  .toLowerCase();
-                const normalizedVariant = variantValueLower.replace(
-                  /[\/\s]/g,
-                  "",
-                );
-
-                if (
-                  normalizedTerm === normalizedVariant ||
-                  normalizedTerm.includes(normalizedVariant) ||
-                  normalizedVariant.includes(normalizedTerm)
-                ) {
-                  if (termImage) {
-                    return { ...variant, image: termImage };
-                  }
-                }
-              }
-            }
-            return variant;
-          });
-        }
-        return product;
-      });
+      // Enrich all products' variants with images using helper
+      const products = await Promise.all(
+        productsData.map((product) => this.enrichProductVariants(product)),
+      );
 
       return {
         products,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: parseInt(page.toString()),
+          limit: parseInt(limit.toString()),
           total,
-          totalPages: Math.ceil(total / limit),
+          totalPages: Math.ceil(total / parseInt(limit.toString())),
         },
       };
     } catch (error: any) {
@@ -191,48 +151,8 @@ export class ProductsService {
         throw new NotFoundException("Product not found");
       }
 
-      // Enrich variants with attribute term images
-      if (product.variants && product.variants.length > 0) {
-        // Get Color attribute terms
-        const colorAttribute = await this.prisma.productAttribute.findFirst({
-          where: { name: { equals: "Color", mode: "insensitive" } },
-          include: { terms: true },
-        });
-
-        if (colorAttribute) {
-          // Create a map of term names to images
-          const termImageMap = new Map<string, string | null>();
-          colorAttribute.terms.forEach((term) => {
-            termImageMap.set(term.name.toLowerCase(), term.image);
-          });
-
-          // Update variants with images from attribute terms
-          product.variants = product.variants.map((variant) => {
-            if (variant.name.toLowerCase().includes("color")) {
-              const variantValueLower = variant.value.toLowerCase();
-              const termImage = termImageMap.get(variantValueLower);
-
-              // Try exact match first
-              if (termImage) {
-                return { ...variant, image: termImage };
-              }
-
-              // Try partial match
-              for (const [termName, image] of termImageMap.entries()) {
-                if (
-                  variantValueLower.includes(termName) ||
-                  termName.includes(variantValueLower)
-                ) {
-                  return { ...variant, image: image || variant.image };
-                }
-              }
-            }
-            return variant;
-          });
-        }
-      }
-
-      return product;
+      // Enrich variants with attribute term images using helper
+      return await this.enrichProductVariants(product);
     } catch (error: any) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -245,6 +165,55 @@ export class ProductsService {
         `Failed to fetch product: ${error?.message || "Unknown error"}`,
       );
     }
+  }
+
+  /**
+   * Helper to enrich product variants with images from attribute terms
+   */
+  private async enrichProductVariants(product: any) {
+    if (!product.variants || product.variants.length === 0) {
+      return product;
+    }
+
+    // Get Color attribute terms
+    const colorAttribute = await this.prisma.productAttribute.findFirst({
+      where: { name: { equals: "Color", mode: "insensitive" } },
+      include: { terms: true },
+    });
+
+    if (!colorAttribute) {
+      return product;
+    }
+
+    const termImageMap = new Map<string, string | null>();
+    colorAttribute.terms.forEach((term) => {
+      termImageMap.set(term.name.toLowerCase(), term.image);
+    });
+
+    product.variants = product.variants.map((variant) => {
+      if (variant.name.toLowerCase().includes("color")) {
+        const variantValueLower = variant.value.toLowerCase();
+        const termImage = termImageMap.get(variantValueLower);
+
+        // Try exact match first
+        if (termImage) {
+          return { ...variant, image: termImage };
+        }
+
+        // Try partial match
+        for (const [termName, image] of termImageMap.entries()) {
+          if (
+            variantValueLower.includes(termName) ||
+            termName.includes(variantValueLower)
+          ) {
+            return { ...variant, image: image || variant.image };
+          }
+        }
+      }
+      return variant;
+    });
+
+    return product;
   }
 
   async getRecommendations(productId: string, limit: number = 8) {
@@ -478,6 +447,7 @@ export class ProductsService {
     const productData: any = {
       title: createProductDto.title,
       slug,
+      shortDescription: createProductDto.shortDescription || null,
       description: createProductDto.description || null,
       categoryId: createProductDto.categoryId, // Required field
       priceGhs: createProductDto.priceGhs || 0,
@@ -505,6 +475,7 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: any) {
+    this.logger.log(`📝 Updating product ${id} with data:`, JSON.stringify(updateProductDto));
     // If title is being updated and slug is not provided, regenerate slug
     if (updateProductDto.title && !updateProductDto.slug) {
       const existing = await this.prisma.product.findUnique({ where: { id } });
@@ -559,6 +530,54 @@ export class ProductsService {
         return { createdAt: "asc" };
       default:
         return { createdAt: "desc" };
+    }
+  }
+
+  async reduceStock(orderItems: any[]) {
+    this.logger.log(`📉 Reducing stock for ${orderItems.length} items`);
+
+    for (const item of orderItems) {
+      try {
+        if (item.variantId) {
+          // Reduce variant stock
+          await this.prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+          this.logger.log(
+            `✅ Reduced variant ${item.variantId} stock by ${item.quantity}`,
+          );
+        } else if (item.variantIds && item.variantIds.length > 0) {
+          // If multiple variants are selected, we usually track stock on one or the combination
+          for (const vId of item.variantIds) {
+            await this.prisma.productVariant.update({
+              where: { id: vId },
+              data: { stock: { decrement: item.quantity } },
+            });
+          }
+        } else {
+          // Reduce main product stock
+          await this.prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+          this.logger.log(
+            `✅ Reduced product ${item.productId} stock by ${item.quantity}`,
+          );
+        }
+      } catch (error: any) {
+        this.logger.error(
+          `❌ Failed to reduce stock for item ${item.productId}: ${error?.message || "Unknown error"}`,
+        );
+      }
     }
   }
 }

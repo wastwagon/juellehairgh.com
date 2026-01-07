@@ -28,6 +28,7 @@ export interface Product {
   id: string;
   title: string;
   slug: string;
+  shortDescription?: string;
   description: string;
   brand?: string | Brand; // Can be string or Brand object
   brandId?: string;

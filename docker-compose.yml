@@ -6,9 +6,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-juellehair}
-    # Port not exposed - only accessible within Docker network
-    # ports:
-    #   - "${POSTGRES_PORT:-5434}:5432"
+    # Port exposed for local database tools (e.g. TablePlus, pgAdmin)
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

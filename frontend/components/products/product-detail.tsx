@@ -116,53 +116,61 @@ export function ProductDetail({ slug }: ProductDetailProps) {
   const displayComparePrice = isOnSale ? convert(basePrice) : null;
 
   const handleAddToCart = () => {
-    // Check if product has variants and if all required variants are selected
+    // Check if product has variants and if at least one variant is selected
     if (product.variants && product.variants.length > 0) {
-      // Group variants by name to determine required attributes
-      // Use same normalization logic as ProductVariantSelector
-      const variantGroups = new Set<string>();
-      product.variants.forEach(v => {
-        let normalizedName = v.name;
-        const nameLower = v.name.toLowerCase();
-        
-        // Handle combined names (e.g., "Color / Length")
-        if (nameLower.includes(" / ") || nameLower.includes("/")) {
-          const parts = v.name.split(/[\/\s]+/).filter(p => p.trim().length > 0);
-          parts.forEach(part => {
-            let partName = part.trim();
-            // Normalize old "Option" or "PA Color" variants to "Color"
-            if (partName.toLowerCase() === "option" || 
-                partName.toLowerCase().includes("pa color") || 
-                partName.toLowerCase().includes("pa_color") || 
-                partName.toLowerCase().includes("pa-color")) {
-              partName = "Color";
-            }
-            variantGroups.add(partName.toLowerCase());
-          });
-        } else {
-          // Normalize old "Option" or "PA Color" variants to "Color"
-          if (nameLower === "option" || 
-              nameLower.includes("pa color") || 
-              nameLower.includes("pa_color") || 
-              nameLower.includes("pa-color")) {
-            normalizedName = "Color";
-          }
-          variantGroups.add(normalizedName.toLowerCase());
-        }
-      });
+      // Check if at least one variant is selected
+      const hasSelectedVariant = Object.keys(selectedVariants).length > 0;
       
-      // Check if all variant groups have a selection
-      const selectedGroups = new Set(Object.keys(selectedVariants).map(k => k.toLowerCase()));
-      const missingGroups = Array.from(variantGroups).filter(g => !selectedGroups.has(g));
-      
-      if (missingGroups.length > 0) {
-        const missingNames = missingGroups.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(", ");
-        toast.error(`Please select ${missingNames}`, {
-          description: "All options must be selected before adding to cart",
+      if (!hasSelectedVariant) {
+        toast.error("Please select an option", {
+          description: "Please choose from the available options before adding to cart",
           duration: 3000,
         });
         return;
       }
+    }
+    
+    // Check stock availability
+    const hasVariants = product.variants && product.variants.length > 0;
+    const selectedVariantObject = Object.values(selectedVariants).find((v) => v.stock !== undefined);
+    
+    let availableStock: number | undefined;
+    
+    if (hasVariants) {
+      // For variable products, stock is at variant level
+      if (selectedVariantObject) {
+        availableStock = selectedVariantObject.stock;
+      } else {
+        // Fallback: At least one variant is selected (validated above)
+        // but stock info might not be available. Check if any variant has stock.
+        const anyVariantInStock = product.variants!.some(v => v.stock > 0);
+        if (!anyVariantInStock) {
+          toast.error("Out of Stock", {
+            description: "Sorry, all variants are currently unavailable.",
+            duration: 3000,
+          });
+          return;
+        }
+      }
+    } else {
+      // For simple products, use product stock
+      availableStock = product.stock;
+    }
+    
+    if (availableStock !== undefined && availableStock <= 0) {
+      toast.error("Out of Stock", {
+        description: "Sorry, this item is currently unavailable.",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (availableStock !== undefined && quantity > availableStock) {
+      toast.error("Insufficient Stock", {
+        description: `Only ${availableStock} items available in stock.`,
+        duration: 3000,
+      });
+      return;
     }
     
     // Get all selected variant IDs
@@ -301,9 +309,16 @@ export function ProductDetail({ slug }: ProductDetailProps) {
           </div>
 
           {product.brand && (
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-2">
               Brand: {typeof product.brand === "string" ? product.brand : product.brand?.name || ""}
             </p>
+          )}
+
+          {product.shortDescription && (
+            <div 
+              className="text-sm text-gray-600 mb-4 leading-relaxed border-l-4 border-pink-100 pl-4 py-1 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: processDescription(product.shortDescription) }}
+            />
           )}
 
           {/* Rating - Only show if product has reviews */}
@@ -361,16 +376,6 @@ export function ProductDetail({ slug }: ProductDetailProps) {
             </div>
           )}
 
-          {product.description && (
-            <div className="mb-6">
-              <h2 className="font-semibold mb-4 text-gray-900">Description</h2>
-              <div 
-                className="text-gray-600 prose prose-sm max-w-none product-description" 
-                dangerouslySetInnerHTML={{ __html: processDescription(product.description) }} 
-              />
-            </div>
-          )}
-
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex items-center border border-gray-300 rounded-md">
               <button
@@ -395,13 +400,42 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                 +
               </button>
             </div>
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 px-2 py-1 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md flex items-center justify-center gap-1 transition-all duration-200"
-            >
-              <ShoppingCart className="h-3 w-3" />
-              Add to Cart
-            </button>
+            {(() => {
+              // Determine stock availability
+              const hasVariants = product.variants && product.variants.length > 0;
+              const selectedVariantObject = Object.values(selectedVariants).find((v) => v.stock !== undefined);
+              
+              let isOutOfStock = false;
+              let availableStock: number | undefined;
+              
+              if (hasVariants) {
+                // For variable products
+                if (selectedVariantObject) {
+                  // If a variant is selected, check its stock
+                  availableStock = selectedVariantObject.stock;
+                  isOutOfStock = availableStock <= 0;
+                } else {
+                  // If no variant selected, check if ANY variant has stock
+                  const anyVariantInStock = product.variants!.some(v => v.stock > 0);
+                  isOutOfStock = !anyVariantInStock;
+                }
+              } else {
+                // For simple products, use product stock
+                availableStock = product.stock;
+                isOutOfStock = availableStock !== undefined && availableStock <= 0;
+              }
+
+              return (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock}
+                  className={`flex-1 px-2 py-1 ${isOutOfStock ? 'bg-gray-400' : 'bg-pink-600 hover:bg-pink-700'} text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md flex items-center justify-center gap-1 transition-all duration-200`}
+                >
+                  <ShoppingCart className="h-3 w-3" />
+                  {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                </button>
+              );
+            })()}
           </div>
 
           <div className="border-t border-gray-200 pt-6">
@@ -420,6 +454,17 @@ export function ProductDetail({ slug }: ProductDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Full Description Section - Below Gallery, Before Reviews */}
+      {product.description && (
+        <div className="border-t border-gray-200 pt-8 md:pt-12 mb-8 md:mb-12">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900">Product Description</h2>
+          <div 
+            className="text-gray-700 prose prose-sm md:prose-base max-w-none product-description leading-relaxed" 
+            dangerouslySetInnerHTML={{ __html: processDescription(product.description) }} 
+          />
+        </div>
+      )}
 
       {/* Reviews Section */}
       {product.id && (

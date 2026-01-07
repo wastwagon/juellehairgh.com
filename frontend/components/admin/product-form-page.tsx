@@ -38,7 +38,8 @@ export function ProductFormPage({ productId }: ProductFormPageProps) {
     router.push("/admin/products");
   };
 
-  if (productId && isLoading) {
+  // Show loader while fetching product data
+  if (productId && (isLoading || !product)) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -61,6 +62,7 @@ export function ProductFormPage({ productId }: ProductFormPageProps) {
       </div>
 
       <ProductForm
+        key={product?.id || 'new'}
         product={product}
         onClose={handleClose}
         onSuccess={handleSuccess}

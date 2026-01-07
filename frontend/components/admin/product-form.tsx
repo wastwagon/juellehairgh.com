@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,12 +10,17 @@ import { Product, Category, Brand, ProductVariant } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { X, Plus, Trash2, ChevronDown, ChevronUp, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
+import { MediaPicker } from "./media-picker";
 import { ProductSEOForm } from "@/components/admin/seo/product-seo-form";
 import { VariationTermModal, VariationTermData } from "@/components/admin/variation-term-modal";
+import { RichTextEditor } from "./rich-text-editor";
+import { Controller } from "react-hook-form";
+import { toast } from "sonner";
 
 const productSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  shortDescription: z.string().optional(),
   description: z.string().optional(),
   brandId: z.string().optional(),
   categoryId: z.string().min(1, "Category is required"),
@@ -147,10 +152,12 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     setValue,
     watch,
     reset,
+    control,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       title: product?.title || "",
+      shortDescription: product?.shortDescription || "",
       description: product?.description || "",
       brandId: typeof product?.brand === "object" ? product.brand?.id : product?.brandId || "",
       categoryId: typeof product?.category === "object" ? product.category?.id : product?.categoryId || "",
@@ -167,8 +174,17 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
   // Reset form when product changes (for editing)
   useEffect(() => {
     if (product) {
-      reset({
+      // Reset all state
+      setImageUrls(product.images || []);
+      setFeaturedImage(product.images?.[0] || null);
+      setGalleryImages(product.images?.slice(1) || []);
+      setBadges(product.badges || []);
+      setVariants(product.variants || []);
+      
+      // Reset form values
+      const resetData = {
         title: product.title || "",
+        shortDescription: product.shortDescription || "",
         description: product.description || "",
         brandId: typeof product.brand === "object" ? product.brand?.id : product.brandId || "",
         categoryId: typeof product.category === "object" ? product.category?.id : product.categoryId || "",
@@ -179,9 +195,11 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
         isActive: product.isActive ?? true,
         images: product.images || [],
         badges: product.badges || [],
-      });
+      };
+      
+      reset(resetData);
     }
-  }, [product?.id, reset]);
+  }, [product, reset]);
 
   // Update imageUrls when featuredImage or galleryImages change
   // Format: [featuredImage, ...galleryImages] - matches WooCommerce pattern where featured is first
@@ -435,41 +453,79 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     setAttributes(updated);
   };
 
-  // Generate variation combinations (Color × Length)
+  // Generate variation combinations (Color × Length, or Color only, or Length only)
   const variationCombinations = useMemo(() => {
-    if (productType !== "variable" || selectedColorTerms.length === 0) {
+    if (productType !== "variable") {
       return [];
     }
 
-    const colors = selectedColorTerms;
-    const lengths = selectedLengthTerms.length > 0 ? selectedLengthTerms : [null]; // If no length, create single variant per color
-
-    return colors.flatMap(color => 
-      lengths.map(length => {
-        const comboKey = length ? `${color} / ${length}` : color;
-        
-        // Find existing variant for this combination
-        const existingVariant = variants.find(v => {
-          if (length) {
-            // Combined variant: "Color / Length" with value "1 / 18 inches"
+    // Case 1: Both colors and lengths selected → Generate combinations (Color × Length)
+    if (selectedColorTerms.length > 0 && selectedLengthTerms.length > 0) {
+      return selectedColorTerms.flatMap(color => 
+        selectedLengthTerms.map(length => {
+          const comboKey = `${color} / ${length}`;
+          
+          // Find existing variant for this combination
+          const existingVariant = variants.find(v => {
             return v.name.toLowerCase().includes('color') && 
                    v.name.toLowerCase().includes('length') &&
                    v.value === comboKey;
-          } else {
-            // Single color variant
-            return (v.name.toLowerCase().includes('color') || v.name.toLowerCase().includes('colour')) &&
-                   v.value === color;
-          }
+          });
+
+          return {
+            color,
+            length,
+            comboKey,
+            existingVariant: existingVariant || null,
+          };
+        })
+      );
+    }
+    
+    // Case 2: Only colors selected → Generate color-only variations
+    if (selectedColorTerms.length > 0) {
+      return selectedColorTerms.map(color => {
+        const comboKey = color;
+        
+        // Find existing variant for this color
+        const existingVariant = variants.find(v => {
+          return (v.name.toLowerCase().includes('color') || v.name.toLowerCase().includes('colour')) &&
+                 !v.name.toLowerCase().includes('length') &&
+                 v.value === color;
         });
 
         return {
           color,
-          length: length || null,
+          length: null,
           comboKey,
           existingVariant: existingVariant || null,
         };
-      })
-    );
+      });
+    }
+    
+    // Case 3: Only lengths selected → Generate length-only variations
+    if (selectedLengthTerms.length > 0) {
+      return selectedLengthTerms.map(length => {
+        const comboKey = length;
+        
+        // Find existing variant for this length
+        const existingVariant = variants.find(v => {
+          return v.name.toLowerCase().includes('length') && 
+                 !v.name.toLowerCase().includes('color') &&
+                 !v.name.toLowerCase().includes('colour') &&
+                 v.value === length;
+        });
+
+        return {
+          color: null,
+          length,
+          comboKey,
+          existingVariant: existingVariant || null,
+        };
+      });
+    }
+
+    return [];
   }, [selectedColorTerms, selectedLengthTerms, variants, productType]);
 
   // Open variation modal
@@ -513,10 +569,21 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       }
     } else {
       // Remove from local state (for new products)
-      const variantName = combo.length ? "Color / Length" : "Color";
-      const variantValue = combo.length
-        ? `${combo.color} / ${combo.length}`
-        : combo.color;
+      let variantName: string;
+      let variantValue: string;
+      
+      if (combo.color && combo.length) {
+        variantName = "Color / Length";
+        variantValue = `${combo.color} / ${combo.length}`;
+      } else if (combo.color) {
+        variantName = "Color";
+        variantValue = combo.color;
+      } else if (combo.length) {
+        variantName = "Length";
+        variantValue = combo.length;
+      } else {
+        return; // Should not happen
+      }
       
       setVariants(prev => prev.filter(v => 
         !(v.name === variantName && v.value === variantValue)
@@ -525,11 +592,13 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
 
     // Remove from selected terms if no other variations use them
     // Check if this color is still used by other combinations
-    const otherCombosUsingColor = variationCombinations.filter(c => 
-      c.color === combo.color && c !== combo
-    );
-    if (otherCombosUsingColor.length === 0) {
-      setSelectedColorTerms(prev => prev.filter(c => c !== combo.color));
+    if (combo.color) {
+      const otherCombosUsingColor = variationCombinations.filter(c => 
+        c.color === combo.color && c !== combo
+      );
+      if (otherCombosUsingColor.length === 0) {
+        setSelectedColorTerms(prev => prev.filter(c => c !== combo.color));
+      }
     }
 
     // Check if this length is still used by other combinations
@@ -553,12 +622,24 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     // For new products, store variation data temporarily
     if (!product?.id) {
       // Store in local state for now - will be created after product is saved
-      const variantName = selectedVariationCombo.length 
-        ? "Color / Length" 
-        : "Color";
-      const variantValue = selectedVariationCombo.length
-        ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
-        : selectedVariationCombo.color;
+      let variantName: string;
+      let variantValue: string;
+      
+      if (selectedVariationCombo.color && selectedVariationCombo.length) {
+        // Both color and length
+        variantName = "Color / Length";
+        variantValue = `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`;
+      } else if (selectedVariationCombo.color) {
+        // Color only
+        variantName = "Color";
+        variantValue = selectedVariationCombo.color;
+      } else if (selectedVariationCombo.length) {
+        // Length only
+        variantName = "Length";
+        variantValue = selectedVariationCombo.length;
+      } else {
+        return; // Should not happen
+      }
 
       const newVariant: ProductVariant = {
         id: `temp-${Date.now()}`,
@@ -595,12 +676,24 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
 
     // For existing products, save immediately
     try {
-      const variantName = selectedVariationCombo.length 
-        ? "Color / Length" 
-        : "Color";
-      const variantValue = selectedVariationCombo.length
-        ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
-        : selectedVariationCombo.color;
+      let variantName: string;
+      let variantValue: string;
+      
+      if (selectedVariationCombo.color && selectedVariationCombo.length) {
+        // Both color and length
+        variantName = "Color / Length";
+        variantValue = `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`;
+      } else if (selectedVariationCombo.color) {
+        // Color only
+        variantName = "Color";
+        variantValue = selectedVariationCombo.color;
+      } else if (selectedVariationCombo.length) {
+        // Length only
+        variantName = "Length";
+        variantValue = selectedVariationCombo.length;
+      } else {
+        return; // Should not happen
+      }
 
       if (selectedVariationCombo.existingVariant?.id) {
         // Update existing variant
@@ -696,7 +789,6 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
         images: imageUrls,
         badges,
       };
-      console.log("Creating product with data:", productData);
       const response = await api.post("/admin/products", productData, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -728,7 +820,8 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      toast.success("Product created successfully!");
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       onSuccess?.();
@@ -737,7 +830,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     onError: (error: any) => {
       console.error("Error creating product:", error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to create product";
-      alert(errorMessage);
+      toast.error(errorMessage);
     },
   });
 
@@ -750,8 +843,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
         images: imageUrls,
         badges,
       };
-      console.log("Updating product with data:", productData);
-      await api.put(`/admin/products/${product?.id}`, productData, {
+      return api.put(`/admin/products/${product?.id}`, productData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -759,7 +851,9 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       // No auto-generation - admin must click each combination and set prices
     },
     onSuccess: () => {
+      toast.success("Product updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "product", product?.id] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", product?.slug] });
       onSuccess?.();
@@ -768,19 +862,20 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
     onError: (error: any) => {
       console.error("Error updating product:", error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to update product";
-      alert(errorMessage);
+      toast.error(errorMessage);
     },
   });
 
   const onSubmit = (data: ProductFormData) => {
     // Validate required fields
     if (!data.categoryId || data.categoryId.trim() === "") {
-      alert("Please select a category");
+      toast.error("Please select a category");
       return;
     }
 
     const formData: any = {
       title: data.title,
+      shortDescription: data.shortDescription || "",
       description: data.description || "",
       brandId: data.brandId && data.brandId.trim() !== "" ? data.brandId : undefined,
       categoryId: data.categoryId, // Required, don't allow empty
@@ -819,10 +914,11 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
       formData.stock = 0;
     }
 
-    // Remove undefined/null/empty values (but keep categoryId as it's required)
+    // Remove undefined/null values (but keep categoryId as it's required, and allow empty strings for descriptions)
     Object.keys(formData).forEach((key) => {
       if (key === "categoryId") return; // Don't delete required field
-      if (formData[key] === undefined || formData[key] === null || formData[key] === "") {
+      if (key === "description" || key === "shortDescription") return; // Allow empty strings for these
+      if (formData[key] === undefined || formData[key] === null) {
         delete formData[key];
       }
     });
@@ -863,11 +959,34 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <textarea
-                {...register("description")}
-                className="w-full px-3 py-2 border rounded-md min-h-[100px]"
-                rows={4}
+              <label className="block text-sm font-medium mb-2">Short Description</label>
+              <Controller
+                name="shortDescription"
+                control={control}
+                render={({ field }) => (
+                  <RichTextEditor
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="A brief summary of the product (shown near price)"
+                    minHeight="100px"
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Main Description</label>
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <RichTextEditor
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Full product details and specifications"
+                    minHeight="300px"
+                  />
+                )}
               />
             </div>
 
@@ -879,7 +998,9 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                   className="w-full px-3 py-2 border rounded-md"
                 >
                   <option value="">Select Category</option>
-                  {categories?.map((cat) => (
+                  {categories?.filter((cat, index, self) => 
+                    index === self.findIndex((c) => c.id === cat.id)
+                  ).map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.parent ? `${cat.parent.name} > ` : ""}{cat.name}
                     </option>
@@ -897,7 +1018,9 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                   className="w-full px-3 py-2 border rounded-md"
                 >
                   <option value="">Select Brand</option>
-                  {brands?.map((brand) => (
+                  {brands?.filter((brand, index, self) => 
+                    index === self.findIndex((b) => b.id === brand.id)
+                  ).map((brand) => (
                     <option key={brand.id} value={brand.id}>
                       {brand.name}
                     </option>
@@ -1116,7 +1239,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                 </div>
 
                 {/* Variation Matrix */}
-                {selectedColorTerms.length > 0 && (
+                {(selectedColorTerms.length > 0 || selectedLengthTerms.length > 0) && (
                   <div className="mt-6">
                     <label className="block text-sm font-medium mb-3">
                       Variation Combinations ({variationCombinations.length})
@@ -1162,13 +1285,18 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                                 {colorImageUrl && (
                                   <img
                                     src={colorImageUrl}
-                                    alt={combo.color}
+                                    alt={combo.color || ''}
                                     className="w-8 h-8 object-cover rounded border"
                                   />
                                 )}
-                                <span className="text-xs font-medium text-gray-900">{combo.color}</span>
+                                {combo.color && (
+                                  <span className="text-xs font-medium text-gray-900">{combo.color}</span>
+                                )}
+                                {combo.length && !combo.color && (
+                                  <span className="text-xs font-medium text-gray-900">{combo.length}</span>
+                                )}
                               </div>
-                              {combo.length && (
+                              {combo.length && combo.color && (
                                 <div className="text-xs text-gray-600 mb-2">{combo.length}</div>
                               )}
                               {combo.existingVariant ? (
@@ -1205,146 +1333,41 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
             <div>
               <label className="block text-sm font-medium mb-2">Product Images</label>
               <p className="text-xs text-gray-500 mb-3">
-                Upload product images. The first image will be the main featured image shown in listings.
+                Select images from your media library. The first image will be the main featured image shown in listings.
               </p>
 
               <div className="space-y-4">
-                {/* Upload Section */}
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  {/* File Upload */}
-                  <div>
-                    <label className="block text-xs font-medium mb-2 text-gray-700">Upload Image File</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) {
-                          setSelectedImagePreview(null);
-                          return;
-                        }
-
-                        // Show immediate local preview BEFORE upload starts
-                        const localPreviewUrl = URL.createObjectURL(file);
-                        setSelectedImagePreview(localPreviewUrl);
-                        setUploadingImage(true);
-
-                        try {
-                          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-                          if (!token) {
-                            alert("Please log in to upload images");
-                            setUploadingImage(false);
-                            setSelectedImagePreview(null);
-                            URL.revokeObjectURL(localPreviewUrl);
-                            e.target.value = "";
-                            return;
-                          }
-
-                          const formData = new FormData();
-                          formData.append("file", file);
-
-                          const response = await api.post("/admin/upload/product", formData, {
-                            headers: {
-                              Authorization: `Bearer ${token}`,
-                              "Content-Type": "multipart/form-data",
-                            },
-                            transformRequest: (data) => data,
-                          });
-
-                          if (response.data.success) {
-                            const newImageUrl = response.data.url;
-                            
-                            // Clean up local preview URL
-                            URL.revokeObjectURL(localPreviewUrl);
-                            
-                            // Update preview to show uploaded image URL
-                            setSelectedImagePreview(newImageUrl);
-                            
-                            // If no featured image, set as featured, otherwise add to gallery
-                            if (!featuredImage) {
-                              setFeaturedImage(newImageUrl);
-                            } else {
-                              setGalleryImages([...galleryImages, newImageUrl]);
-                            }
-                            
-                            // Keep preview visible for 3 seconds to show success, then clear
-                            setTimeout(() => {
-                              setSelectedImagePreview(null);
-                              setUploadingImage(false);
-                              e.target.value = "";
-                            }, 3000);
-                          }
-                        } catch (error: any) {
-                          console.error("Error uploading image:", error);
-                          alert(error.response?.data?.message || error.message || "Failed to upload image.");
-                          URL.revokeObjectURL(localPreviewUrl);
-                          setSelectedImagePreview(null);
-                          setUploadingImage(false);
-                          e.target.value = "";
-                        }
-                      }}
-                      disabled={uploadingImage}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {uploadingImage ? "Uploading..." : "Select image (max 10MB) - Auto-uploads on selection"}
-                    </p>
-                  </div>
-
-                  {/* Upload Preview - Shows immediately when file is selected, during upload, and after success */}
-                  {selectedImagePreview && (
-                    <div className="mt-4 p-3 bg-white rounded-lg border-2 border-dashed border-primary">
-                      <p className="text-xs font-medium text-gray-700 mb-2">
-                        {uploadingImage ? "Uploading image..." : "✓ Image uploaded successfully!"}
-                      </p>
-                      <div className="relative inline-block">
-                        <img 
-                          src={selectedImagePreview} 
-                          alt={uploadingImage ? "Uploading..." : "Uploaded"} 
-                          className="w-48 h-48 object-cover rounded-lg border-2 border-primary shadow-lg"
-                          onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            // Try backend API fallback if direct path fails
-                            if (!selectedImagePreview.includes("http") && !selectedImagePreview.startsWith("/media/")) {
-                              const filename = selectedImagePreview.split("/").pop() || selectedImagePreview;
-                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
-                            }
-                          }}
-                        />
-                        {uploadingImage && (
-                          <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-lg">
-                            <div className="text-white text-sm font-medium flex items-center gap-2">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                              Uploading...
-                            </div>
-                          </div>
-                        )}
-                        {!uploadingImage && (
-                          <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded shadow-lg flex items-center gap-1">
-                            <span>✓</span>
-                            <span>Uploaded</span>
-                          </div>
-                        )}
-                      </div>
-                      {!uploadingImage && (
-                        <p className="text-xs text-gray-600 mt-2">
-                          This image has been added to your product images below.
-                        </p>
-                      )}
-                    </div>
-                  )}
+                <div className="flex flex-col gap-4">
+                  <MediaPicker 
+                    onSelect={(url) => {
+                      if (!featuredImage) {
+                        setFeaturedImage(url);
+                      } else {
+                        setGalleryImages([...galleryImages, url]);
+                      }
+                    }}
+                    title="Add Product Image"
+                    trigger={
+                      <Button type="button" variant="outline" className="w-full h-24 border-2 border-dashed border-gray-300 hover:border-primary hover:bg-gray-50 group transition-all">
+                        <div className="flex flex-col items-center gap-2">
+                          <Plus className="h-6 w-6 text-gray-400 group-hover:text-primary" />
+                          <span className="text-sm font-medium text-gray-500 group-hover:text-primary">Add from Media Library</span>
+                        </div>
+                      </Button>
+                    }
+                  />
                 </div>
 
                 {/* All Product Images - Single Unified View */}
                 {(featuredImage || galleryImages.length > 0) && (
-                  <div className="border border-gray-200 rounded-lg p-4 bg-white">
-                    <label className="block text-sm font-medium mb-3 text-gray-900">
-                      Your Product Images ({featuredImage ? 1 + galleryImages.length : galleryImages.length} total)
+                  <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                      Current Images ({featuredImage ? 1 + galleryImages.length : galleryImages.length})
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {/* Featured Image First */}
                       {featuredImage && (
-                        <div className="relative group">
+                        <div className="relative group aspect-square">
                           <img 
                             src={
                               featuredImage.startsWith("http")
@@ -1356,34 +1379,20 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                                 : `/${featuredImage}`
                             } 
                             alt="Featured product image" 
-                            className="w-full h-32 object-cover rounded border-2 border-primary shadow-md"
+                            className="w-full h-full object-cover rounded-lg border-2 border-primary shadow-md transition-transform group-hover:scale-[1.02]"
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
-                              const retryCount = parseInt(img.getAttribute('data-retry') || '0');
-                              
-                              if (retryCount < 2) {
-                                // Try backend API fallback
-                                const filename = featuredImage.split("/").pop() || featuredImage;
-                                const fallbackUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
-                                img.setAttribute('data-retry', String(retryCount + 1));
-                                img.src = fallbackUrl;
-                              } else {
-                                // Show placeholder if all retries fail
-                                img.style.display = 'none';
-                                const placeholder = document.createElement('div');
-                                placeholder.className = 'w-full h-32 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs';
-                                placeholder.textContent = 'Image not found';
-                                img.parentElement?.appendChild(placeholder);
-                              }
+                              const filename = featuredImage.split("/").pop() || featuredImage;
+                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
                             }}
                           />
-                          <div className="absolute top-1 left-1 bg-primary text-white text-xs font-semibold px-2 py-1 rounded shadow-lg">
+                          <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg uppercase">
                             Featured
                           </div>
                           <button
                             type="button"
                             onClick={removeFeaturedImage}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition shadow-lg"
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition shadow-lg hover:bg-red-600"
                             title="Remove"
                           >
                             <X className="h-3 w-3" />
@@ -1393,7 +1402,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                       
                       {/* Gallery Images */}
                       {galleryImages.map((url, index) => (
-                        <div key={index} className="relative group">
+                        <div key={index} className="relative group aspect-square">
                           <img 
                             src={
                               url.startsWith("http")
@@ -1405,31 +1414,18 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                                 : `/${url}`
                             } 
                             alt={`Product image ${index + 2}`} 
-                            className="w-full h-32 object-cover rounded border border-gray-200"
+                            className="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm transition-transform group-hover:scale-[1.02]"
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
-                              const retryCount = parseInt(img.getAttribute('data-retry') || '0');
-                              
-                              if (retryCount < 2) {
-                                // Try backend API fallback
-                                const filename = url.split("/").pop() || url;
-                                const fallbackUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
-                                img.setAttribute('data-retry', String(retryCount + 1));
-                                img.src = fallbackUrl;
-                              } else {
-                                // Show placeholder if all retries fail
-                                img.style.display = 'none';
-                                const placeholder = document.createElement('div');
-                                placeholder.className = 'w-full h-32 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs';
-                                placeholder.textContent = 'Image not found';
-                                img.parentElement?.appendChild(placeholder);
-                              }
+                              const filename = url.split("/").pop() || url;
+                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
                             }}
                           />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none rounded-lg" />
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition shadow-lg"
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition shadow-lg hover:bg-red-600"
                             title="Remove"
                           >
                             <X className="h-3 w-3" />
@@ -1437,7 +1433,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                           <button
                             type="button"
                             onClick={() => setAsFeatured(url, index)}
-                            className="absolute bottom-1 left-1 bg-primary text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition shadow-lg font-medium"
+                            className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm text-primary text-[10px] py-1 rounded opacity-0 group-hover:opacity-100 transition shadow-lg font-bold uppercase hover:bg-primary hover:text-white"
                             title="Set as featured"
                           >
                             Set Featured
@@ -1445,8 +1441,8 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-3">
-                      <strong>Featured image</strong> (marked with badge) is the main product image shown in listings. Hover over images to remove or change the featured image.
+                    <p className="text-[10px] text-gray-400 mt-4 italic">
+                      Tip: The featured image is the main image shown in product listings. You can swap any gallery image to be featured by clicking "Set Featured".
                     </p>
                   </div>
                 )}
@@ -1528,11 +1524,16 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                 disabled={createMutation.isPending || updateMutation.isPending}
                 className="flex-1"
               >
-                {createMutation.isPending || updateMutation.isPending
-                  ? "Saving..."
-                  : product
-                  ? "Update Product"
-                  : "Create Product"}
+                {createMutation.isPending || updateMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : product ? (
+                  "Update Product"
+                ) : (
+                  "Create Product"
+                )}
               </Button>
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
@@ -1568,10 +1569,20 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
               setSelectedVariationCombo(null);
             }}
             onSave={handleSaveVariation}
-            attributeName={selectedVariationCombo.length ? "Color / Length" : "Color"}
-            termName={selectedVariationCombo.length 
-              ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
-              : selectedVariationCombo.color}
+            attributeName={
+              selectedVariationCombo.color && selectedVariationCombo.length 
+                ? "Color / Length" 
+                : selectedVariationCombo.color 
+                  ? "Color" 
+                  : "Length"
+            }
+            termName={
+              selectedVariationCombo.color && selectedVariationCombo.length 
+                ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
+                : selectedVariationCombo.color 
+                  ? selectedVariationCombo.color
+                  : selectedVariationCombo.length || ''
+            }
             existingVariant={selectedVariationCombo.existingVariant || null}
           />
         )}
@@ -1595,10 +1606,20 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
             setSelectedVariationCombo(null);
           }}
           onSave={handleSaveVariation}
-          attributeName={selectedVariationCombo.length ? "Color / Length" : "Color"}
-          termName={selectedVariationCombo.length 
-            ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
-            : selectedVariationCombo.color}
+          attributeName={
+            selectedVariationCombo.color && selectedVariationCombo.length 
+              ? "Color / Length" 
+              : selectedVariationCombo.color 
+                ? "Color" 
+                : "Length"
+          }
+          termName={
+            selectedVariationCombo.color && selectedVariationCombo.length 
+              ? `${selectedVariationCombo.color} / ${selectedVariationCombo.length}`
+              : selectedVariationCombo.color 
+                ? selectedVariationCombo.color
+                : selectedVariationCombo.length || ''
+          }
           existingVariant={selectedVariationCombo.existingVariant || null}
         />
       )}

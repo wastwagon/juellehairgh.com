@@ -59,7 +59,7 @@ export function FeaturedCollections() {
       // For /media/collections/ paths, use backend URL directly
       // Backend serves static files at /media/collections/ via static assets middleware
       if (imagePath.startsWith("/media/collections/")) {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
         const backendBaseUrl = apiBaseUrl.replace('/api', '');
         // Use backend static file serving: /media/collections/filename.jpg
         return `${backendBaseUrl}${imagePath}`;
@@ -67,7 +67,7 @@ export function FeaturedCollections() {
       
       // Handle /media/ paths (general case) - use backend URL directly
       if (imagePath.startsWith("/media/")) {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
         const backendBaseUrl = apiBaseUrl.replace('/api', '');
         return `${backendBaseUrl}${imagePath}`;
       }
@@ -75,7 +75,7 @@ export function FeaturedCollections() {
       // Handle paths that contain "collections" or "media" (fallback)
       if (imagePath.includes("collections") || imagePath.includes("media")) {
         const filename = imagePath.split("/").pop() || imagePath;
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
         const backendBaseUrl = apiBaseUrl.replace('/api', '');
         return `${backendBaseUrl}/media/collections/${filename}`;
       }
@@ -83,7 +83,7 @@ export function FeaturedCollections() {
       // For other absolute paths starting with /
       if (imagePath.startsWith("/")) {
         if (imagePath.includes("/media/")) {
-          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
           const backendBaseUrl = apiBaseUrl.replace('/api', '');
           return `${backendBaseUrl}${imagePath}`;
         }
@@ -91,7 +91,7 @@ export function FeaturedCollections() {
       }
       
       // Relative filename - assume it's a collection image
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
       const backendBaseUrl = apiBaseUrl.replace('/api', '');
       return `${backendBaseUrl}/media/collections/${imagePath}`;
     }
@@ -174,7 +174,7 @@ export function FeaturedCollections() {
                       
                       if (retryCount < 3) {
                         let fallbackUrl = '';
-                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://juelle-hair-backend.onrender.com/api';
+                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
                         const backendBaseUrl = apiBaseUrl.replace('/api', '');
                         const filename = originalSrc.split('/').pop() || '';
                         

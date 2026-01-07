@@ -6,7 +6,8 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X } from "lucide-react";
+import { X, Image as ImageIcon } from "lucide-react";
+import { MediaPicker } from "./media-picker";
 
 interface Collection {
   id: string;
@@ -141,74 +142,29 @@ export function CollectionForm({ collection, onClose, onSuccess }: CollectionFor
             <div>
               <label className="block text-sm font-medium mb-2">Collection Image</label>
               
-              {/* File Upload */}
-              <div className="mb-3">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    setUploadingImage(true);
-                    const localPreviewUrl = URL.createObjectURL(file);
-                    setImagePreview(localPreviewUrl);
-
-                    try {
-                      const uploadFormData = new FormData();
-                      uploadFormData.append("file", file);
-
-                      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-                      if (!token) throw new Error("Not authenticated");
-
-                      const response = await api.post("/admin/upload/collection", uploadFormData, {
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                          "Content-Type": "multipart/form-data",
-                        },
-                      });
-
-                      if (response.data?.url) {
-                        const uploadedUrl = response.data.url;
-                        setFormData({ ...formData, image: uploadedUrl });
-                        URL.revokeObjectURL(localPreviewUrl);
-                        setImagePreview(uploadedUrl);
-                        setTimeout(() => {
-                          setUploadingImage(false);
-                          e.target.value = "";
-                        }, 1000);
-                      }
-                    } catch (error: any) {
-                      console.error("Error uploading image:", error);
-                      alert(error.response?.data?.message || error.message || "Failed to upload image.");
-                      URL.revokeObjectURL(localPreviewUrl);
-                      setImagePreview(null);
-                      setUploadingImage(false);
-                      e.target.value = "";
-                    }
+              <div className="flex flex-col gap-4">
+                <MediaPicker 
+                  onSelect={(url) => {
+                    setFormData({ ...formData, image: url });
+                    setImagePreview(url);
                   }}
-                  disabled={uploadingImage}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Select Collection Image"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  {uploadingImage ? "Uploading..." : "Upload image file (max 10MB) - Auto-uploads on selection"}
-                </p>
               </div>
 
               {/* Image Preview */}
               {(imagePreview || formData.image) && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <p className="text-xs font-medium text-gray-700 mb-2">
-                    {uploadingImage ? "Uploading image..." : "Collection Image"}
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                    Preview
                   </p>
-                  <div className="relative inline-block">
+                  <div className="relative inline-block group">
                     <img
                       src={imagePreview || formData.image}
                       alt="Collection preview"
-                      className="w-48 h-48 object-cover rounded-lg border-2 border-gray-300 shadow-lg"
+                      className="w-48 h-48 object-cover rounded-lg border border-gray-200 shadow-md transition-transform group-hover:scale-[1.02]"
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
-                        // Try backend API fallback if direct path fails
                         if (!img.src.includes("http") && !img.src.startsWith("/media/")) {
                           const filename = (imagePreview || formData.image).split("/").pop();
                           if (filename) {
@@ -217,44 +173,20 @@ export function CollectionForm({ collection, onClose, onSuccess }: CollectionFor
                         }
                       }}
                     />
-                    {uploadingImage && (
-                      <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-lg">
-                        <div className="text-white text-sm font-medium flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                          Uploading...
-                        </div>
-                      </div>
-                    )}
-                    {!uploadingImage && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormData({ ...formData, image: "" });
-                          setImagePreview(null);
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded shadow-lg hover:bg-red-600"
-                      >
-                        Remove
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, image: "" });
+                        setImagePreview(null);
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors"
+                      title="Remove image"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               )}
-
-              {/* URL Input (Fallback) */}
-              <div className="mt-3">
-                <label className="block text-xs font-medium mb-1 text-gray-600">Or enter image URL:</label>
-                <Input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) => {
-                    setFormData({ ...formData, image: e.target.value });
-                    setImagePreview(e.target.value || null);
-                  }}
-                  placeholder="/media/collections/image.jpg or https://example.com/image.jpg"
-                  className="text-sm"
-                />
-              </div>
             </div>
 
             <div className="flex items-center gap-2">
