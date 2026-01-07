@@ -1,11 +1,14 @@
 FROM node:20-slim
 
 # Install system dependencies for native modules (required for bcrypt)
+# Also install postgresql-client for database operations and netcat for health checks
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
     openssl \
+    postgresql-client \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -31,9 +34,14 @@ RUN npm run prisma:generate || (npm install @prisma/client@latest prisma@latest 
 # Build the application
 RUN npm run build
 
+# Make scripts executable
+RUN chmod +x scripts/*.sh
+
 # Expose port
 EXPOSE 3001
 
-# Run migrations and start
-# Allow app to start even if migrations fail (database might not be ready yet)
-CMD sh -c "npx prisma migrate deploy || echo '⚠️ Migration failed, continuing anyway...'; node dist/src/main.js"
+# Use our custom entrypoint that handles migrations automatically
+ENTRYPOINT ["./scripts/docker-entrypoint.sh"]
+
+# Default command (can be overridden)
+CMD ["node", "dist/src/main.js"]

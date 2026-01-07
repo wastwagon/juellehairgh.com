@@ -36,11 +36,14 @@ Thumbs.db
 backups/
 *.tar.gz
 
-# Prisma
-backend/prisma/migrations/
+# Prisma - Allow migrations directory for production baseline
+# backend/prisma/migrations/ is now tracked for deployment
 
 # Uploaded media files (user-generated content)
-backend/uploads/
+# Allow backend/uploads/media/ for product images (committed once for production)
+# Block other uploads directories
+backend/uploads/*
+!backend/uploads/media/
 frontend/public/uploads/
 
 # Export files (temporary data exports)

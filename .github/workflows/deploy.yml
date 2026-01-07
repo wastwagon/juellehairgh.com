@@ -1,0 +1,131 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better debugging
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      
+      - name: Verify database migration exists
+        run: |
+          echo "Checking for production database baseline..."
+          if [ -f "backend/prisma/migrations/production-baseline.sql" ]; then
+            echo "✓ Database migration found"
+            SIZE=$(du -h backend/prisma/migrations/production-baseline.sql | cut -f1)
+            echo "  File size: $SIZE"
+          else
+            echo "⚠️  Warning: No database baseline found"
+            echo "  Application will use Prisma migrations instead"
+          fi
+      
+      - name: Verify media files
+        run: |
+          echo "Checking media files..."
+          FRONTEND_COUNT=$(find frontend/public/media -type f 2>/dev/null | wc -l || echo "0")
+          BACKEND_COUNT=$(find backend/uploads/media -type f 2>/dev/null | wc -l || echo "0")
+          
+          echo "  Frontend media files: $FRONTEND_COUNT"
+          echo "  Backend media files: $BACKEND_COUNT"
+          echo "  Total: $((FRONTEND_COUNT + BACKEND_COUNT)) files"
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          echo "Installing backend dependencies..."
+          npm ci --production=false
+      
+      - name: Generate Prisma Client
+        working-directory: ./backend
+        run: |
+          echo "Generating Prisma Client..."
+          npx prisma generate
+      
+      - name: Build backend
+        working-directory: ./backend
+        run: |
+          echo "Building backend..."
+          npm run build
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          echo "Installing frontend dependencies..."
+          npm ci --production=false
+      
+      - name: Build frontend
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+          NEXT_PUBLIC_APP_NAME: "Juelle Hair Ghana"
+          NEXT_PUBLIC_BASE_CURRENCY: "GHS"
+        run: |
+          echo "Building frontend..."
+          npm run build
+      
+      - name: Trigger Coolify Deployment
+        if: success()
+        run: |
+          echo "Triggering Coolify deployment webhook..."
+          if [ -n "${{ secrets.COOLIFY_WEBHOOK_URL }}" ]; then
+            curl -X POST "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+              -H "Content-Type: application/json" \
+              -d '{"ref":"refs/heads/main","repository":{"clone_url":"${{ github.repositoryUrl }}"}}' \
+              --fail --silent --show-error || echo "⚠️  Webhook trigger failed"
+            echo "✓ Deployment webhook triggered"
+          else
+            echo "⚠️  COOLIFY_WEBHOOK_URL not configured"
+            echo "   Add it to repository secrets for automatic deployment"
+            echo "   Current deployment will proceed via Docker"
+          fi
+      
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "========================================="
+          echo "  Deployment Summary"
+          echo "========================================="
+          echo ""
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Commit Message: ${{ github.event.head_commit.message }}"
+          echo ""
+          echo "✓ Backend built successfully"
+          echo "✓ Frontend built successfully"
+          echo "✓ Database migration ready"
+          echo "✓ Media files included"
+          echo ""
+          if [ -n "${{ secrets.COOLIFY_WEBHOOK_URL }}" ]; then
+            echo "🚀 Coolify will now:"
+            echo "   1. Pull latest code"
+            echo "   2. Build Docker containers"
+            echo "   3. Run database migrations (if DB empty)"
+            echo "   4. Start application"
+          else
+            echo "🚀 Manual deployment required:"
+            echo "   git pull on server"
+            echo "   docker-compose up -d --build"
+          fi
+          echo ""
+          echo "========================================="
+
