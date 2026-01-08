@@ -51,7 +51,20 @@ RUN echo "=== Build Environment ===" && \
     ls -la app/ 2>&1 | head -10 && \
     ls -la components/ 2>&1 | head -10 && \
     test -f next.config.js && echo "next.config.js found" || echo "ERROR: next.config.js missing" && \
-    test -f package.json && echo "package.json found" || echo "ERROR: package.json missing"
+    test -f package.json && echo "package.json found" || echo "ERROR: package.json missing" && \
+    echo "" && \
+    echo "=== Verifying Required Environment Variables ===" && \
+    if [ -z "$NEXT_PUBLIC_API_BASE_URL" ] || [ "$NEXT_PUBLIC_API_BASE_URL" = "" ]; then \
+        echo "ERROR: NEXT_PUBLIC_API_BASE_URL is empty or not set!"; \
+        exit 1; \
+    else \
+        echo "✓ NEXT_PUBLIC_API_BASE_URL is set: ${NEXT_PUBLIC_API_BASE_URL}"; \
+    fi && \
+    if [ -z "$NEXT_PUBLIC_APP_NAME" ] || [ "$NEXT_PUBLIC_APP_NAME" = "" ]; then \
+        echo "WARNING: NEXT_PUBLIC_APP_NAME is empty, using default"; \
+    else \
+        echo "✓ NEXT_PUBLIC_APP_NAME is set: ${NEXT_PUBLIC_APP_NAME}"; \
+    fi
 
 # Verify Next.js is installed correctly
 RUN echo "Verifying Next.js installation..." && \
