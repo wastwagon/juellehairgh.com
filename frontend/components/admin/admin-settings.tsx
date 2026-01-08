@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Settings, Save, CreditCard, Loader2, Eye, EyeOff, Mail, Send, CheckCircle2, XCircle } from "lucide-react";
+import { Settings, Save, CreditCard, Loader2, Eye, EyeOff, Mail, Send, CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -28,6 +28,7 @@ export function AdminSettings() {
     paystackPublicKey: "",
     emailProvider: "sendgrid",
     sendgridApiKey: "",
+    maintenanceMode: false,
   });
 
   // Fetch settings from API
@@ -59,6 +60,7 @@ export function AdminSettings() {
         shippingFreeThreshold: apiSettings.SHIPPING_FREE_THRESHOLD ? parseFloat(apiSettings.SHIPPING_FREE_THRESHOLD) : prev.shippingFreeThreshold,
         shippingStandardDays: apiSettings.SHIPPING_STANDARD_DAYS || prev.shippingStandardDays,
         returnPolicyDays: apiSettings.RETURN_POLICY_DAYS ? parseInt(apiSettings.RETURN_POLICY_DAYS) : prev.returnPolicyDays,
+        maintenanceMode: apiSettings.MAINTENANCE_MODE === "true",
       }));
     }
   }, [apiSettings]);
@@ -83,6 +85,7 @@ export function AdminSettings() {
             { key: "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY", value: settingsToSave.paystackPublicKey, category: "payment" },
             { key: "EMAIL_PROVIDER", value: settingsToSave.emailProvider, category: "email" },
             { key: "SENDGRID_API_KEY", value: settingsToSave.sendgridApiKey, category: "email" },
+            { key: "MAINTENANCE_MODE", value: settingsToSave.maintenanceMode.toString(), category: "general" },
           ],
         },
         {
@@ -192,6 +195,33 @@ export function AdminSettings() {
               value={settings.sitePhone}
               onChange={(e) => setSettings({ ...settings, sitePhone: e.target.value })}
             />
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div>
+                  <label className="text-sm font-bold text-amber-900 block">
+                    Maintenance Mode
+                  </label>
+                  <p className="text-xs text-amber-700 mt-1">
+                    When active, only administrators can access the website. All other visitors will see a maintenance page.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.maintenanceMode}
+                    onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

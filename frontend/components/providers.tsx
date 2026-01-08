@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { SessionProvider } from "next-auth/react";
 import { AnalyticsProvider } from "./analytics-provider";
 import { Toaster } from "sonner";
 
@@ -19,12 +20,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AnalyticsProvider>
-        {children}
-        <Toaster position="top-right" />
-      </AnalyticsProvider>
-    </QueryClientProvider>
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <AnalyticsProvider>
+          {children}
+          <Toaster position="top-right" />
+        </AnalyticsProvider>
+      </QueryClientProvider>
+    </SessionProvider>
   );
 }
 

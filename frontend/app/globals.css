@@ -205,30 +205,8 @@ body.mobile-menu-open {
   margin: 1.5rem 0;
 }
 
-/* Hero Banner - Ensure consistent sizing across all environments */
+/* Hero Banner - Responsive sizing controlled in component */
 .hero-banner-section {
-  height: 500px;
-  min-height: 500px;
-}
-
-@media (min-width: 768px) {
-  .hero-banner-section {
-    height: 600px;
-    min-height: 600px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .hero-banner-section {
-    height: 700px;
-    min-height: 700px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .hero-banner-section {
-    height: 750px;
-    min-height: 750px;
-  }
+  width: 100%;
 }
 

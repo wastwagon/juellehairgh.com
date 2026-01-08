@@ -15,6 +15,7 @@ export class SettingsService {
             "SOCIAL_FACEBOOK",
             "SOCIAL_INSTAGRAM",
             "SOCIAL_TWITTER",
+            "MAINTENANCE_MODE",
           ],
         },
       },
@@ -32,6 +33,16 @@ export class SettingsService {
       facebook: settingsObj.SOCIAL_FACEBOOK || "",
       instagram: settingsObj.SOCIAL_INSTAGRAM || "",
       twitter: settingsObj.SOCIAL_TWITTER || "",
+      maintenanceMode: settingsObj.MAINTENANCE_MODE === "true",
+    };
+  }
+
+  async getMaintenanceStatus() {
+    const setting = await this.prisma.setting.findUnique({
+      where: { key: "MAINTENANCE_MODE" },
+    });
+    return {
+      enabled: setting?.value === "true",
     };
   }
 

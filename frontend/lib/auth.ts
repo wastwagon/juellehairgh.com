@@ -32,6 +32,12 @@ export const logout = (): void => {
   if (typeof window === "undefined") return;
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  
+  // Clear the role cookie
+  if (typeof document !== "undefined") {
+    document.cookie = "user_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  }
+
   window.location.href = "/";
 };
 

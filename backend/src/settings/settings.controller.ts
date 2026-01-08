@@ -10,6 +10,11 @@ export class SettingsController {
     return this.settingsService.getSiteSettings();
   }
 
+  @Get("maintenance")
+  async getMaintenanceStatus() {
+    return this.settingsService.getMaintenanceStatus();
+  }
+
   @Get("about")
   async getAboutContent() {
     return this.settingsService.getPageContent("ABOUT_US");

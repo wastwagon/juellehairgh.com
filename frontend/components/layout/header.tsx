@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Heart, Search, Menu, X, Home, Phone, Mail, Package, Facebook, Instagram, Twitter, Clock, Zap, Sparkles, ChevronDown } from "lucide-react";
+import { ShoppingCart, User, Heart, Search, Menu, X, Home, Phone, Mail, Package, Facebook, Instagram, Twitter, Clock, Zap, Sparkles, ChevronDown, ShieldAlert } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { isAdmin as checkIsAdmin } from "@/lib/auth";
 import { SearchBar } from "./search-bar";
 import { SearchModal } from "./search-modal";
 import { CurrencySelector } from "./currency-selector";
@@ -17,6 +18,7 @@ export function Header() {
   const { getTotalItems, items } = useCartStore();
   const [cartCount, setCartCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Fetch site settings for top bar
   const { data: settings } = useQuery({
@@ -33,8 +35,11 @@ export function Header() {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
+  const isMaintenanceMode = settings?.maintenanceMode === true;
+
   useEffect(() => {
     setMounted(true);
+    setIsAdmin(checkIsAdmin());
   }, []);
 
   useEffect(() => {
@@ -206,8 +211,23 @@ export function Header() {
   const instagram = settings?.instagram || "";
   const twitter = settings?.twitter || "";
 
+  const isHomePage = pathname === "/";
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-sm shadow-sm">
+    <header className={cn(
+      "sticky top-0 z-50 w-full transition-all duration-200 bg-white/95 backdrop-blur-sm",
+      isHomePage ? "shadow-none border-b-0" : "shadow-sm border-b"
+    )}>
+      {/* Maintenance Mode Banner for Admins */}
+      {isMaintenanceMode && isAdmin && (
+        <div className="bg-amber-600 text-white text-xs md:text-sm py-1.5 px-4 text-center font-bold flex items-center justify-center gap-2">
+          <ShieldAlert className="h-4 w-4" />
+          Storefront Offline: You are viewing the site in Administrative Preview mode.
+          <Link href="/admin/settings" className="underline hover:text-amber-100 ml-2">
+            Settings
+          </Link>
+        </div>
+      )}
       {/* Top Bar - Phone, Email, Order Tracking, Social Media */}
       <div className="bg-black text-white text-xs md:text-sm">
         <div className="container mx-auto px-3 md:px-4">

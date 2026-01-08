@@ -41,6 +41,13 @@ export function LoginForm() {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       
       const userRole = response.data.user?.role;
+
+      // Set cookie for middleware access (expires in 7 days)
+      if (typeof document !== "undefined") {
+        const date = new Date();
+        date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
+        document.cookie = `user_role=${userRole}; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
+      }
       
       // Check for redirect parameter
       const params = new URLSearchParams(window.location.search);

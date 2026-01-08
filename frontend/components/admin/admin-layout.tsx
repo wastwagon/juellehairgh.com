@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { logout } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import {
   LayoutDashboard,
   Package,
@@ -27,10 +32,8 @@ import {
   FileText,
   LogOut,
   Zap,
+  ShieldAlert,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { logout } from "@/lib/auth";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -65,8 +68,34 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Fetch site settings to check maintenance mode
+  const { data: settings } = useQuery({
+    queryKey: ["settings", "site"],
+    queryFn: async () => {
+      try {
+        const response = await api.get("/settings/site");
+        return response.data || {};
+      } catch (error) {
+        return {};
+      }
+    },
+  });
+
+  const isMaintenanceMode = settings?.maintenanceMode === true;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Maintenance Mode Banner for Admins */}
+      {isMaintenanceMode && (
+        <div className="bg-amber-600 text-white text-xs md:text-sm py-2 px-4 text-center font-bold flex items-center justify-center gap-2 z-[60]">
+          <ShieldAlert className="h-4 w-4" />
+          Storefront Offline: You are viewing the site in Administrative Preview mode.
+          <Link href="/admin/settings" className="underline hover:text-amber-100 ml-2">
+            Settings
+          </Link>
+        </div>
+      )}
+
       {/* Mobile Header */}
       <div className="lg:hidden bg-white border-b sticky top-0 z-40">
         <div className="flex items-center justify-between p-4">

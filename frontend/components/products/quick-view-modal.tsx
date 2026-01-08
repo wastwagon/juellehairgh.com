@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ProductVariantSelector } from "./product-variant-selector";
 import Link from "next/link";
 import { toast } from "sonner";
-import { getShippingBannerText, getShippingStatus, isBeforeCutoff } from "@/lib/shipping-time";
+import { getShippingBannerText, isBeforeCutoff } from "@/lib/shipping-time";
 
 interface QuickViewModalProps {
   product: Product;

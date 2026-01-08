@@ -22,7 +22,7 @@ import { SchemaMarkup } from "@/components/seo/schema-markup";
 import { MetaTags } from "@/components/seo/meta-tags-app";
 import { ProductReviews } from "./product-reviews";
 import { toast } from "sonner";
-import { getShippingBannerText, getShippingStatus, isBeforeCutoff } from "@/lib/shipping-time";
+import { getShippingBannerText, isBeforeCutoff } from "@/lib/shipping-time";
 import { processDescription } from "@/lib/process-description";
 
 interface ProductDetailProps {

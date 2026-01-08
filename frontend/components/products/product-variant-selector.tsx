@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { ProductVariant } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
-import { getShippingStatus } from "@/lib/shipping-time";
 
 interface ProductVariantSelectorProps {
   variants?: ProductVariant[];
@@ -290,12 +289,6 @@ export function ProductVariantSelector({
                       </button>
                       {/* Labels outside the image */}
                       <div className="w-full flex flex-col items-center gap-1">
-                        {/* Shipping status badge */}
-                        {variant.stock > 0 && (
-                          <div className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
-                            {getShippingStatus()}
-                          </div>
-                        )}
                         {/* Color name */}
                         <span className={`text-xs text-center font-medium ${variant.stock === 0 ? 'text-gray-400' : 'text-gray-700'} truncate w-full px-1`}>
                           {variant.value}
