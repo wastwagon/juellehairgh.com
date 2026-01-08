@@ -29,8 +29,13 @@ RUN npm ci
 COPY . .
 
 # Build the application
-# We use a higher memory limit for the build process
-RUN NODE_OPTIONS='--max-old-space-size=4096' npm run build
+# We use a conservative memory limit for the build process to avoid OOM on small servers
+ENV NODE_OPTIONS='--max-old-space-size=2048'
+RUN npm run build
+
+# Copy static and public files to the standalone directory so they are served correctly
+RUN cp -r public .next/standalone/ && \
+    cp -r .next/static .next/standalone/.next/
 
 # Production stage
 FROM node:18-alpine AS runner
