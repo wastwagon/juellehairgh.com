@@ -44,15 +44,15 @@ RUN echo "=== Build Environment ===" && \
     echo "NODE_ENV=${NODE_ENV:-production}" && \
     echo "=========================" && \
     echo "Node version:" && node --version && \
-    echo "NPM version:" && npm --version
+    echo "NPM version:" && npm --version && \
+    echo "Checking source files..." && \
+    ls -la app/ 2>&1 | head -10 && \
+    ls -la components/ 2>&1 | head -10 && \
+    test -f next.config.js && echo "next.config.js found" || echo "ERROR: next.config.js missing" && \
+    test -f package.json && echo "package.json found" || echo "ERROR: package.json missing"
 
-# Run build with verbose output
-RUN npm run build || { \
-    echo "=== BUILD FAILED ==="; \
-    echo "Checking for build output..."; \
-    ls -la .next/ 2>&1 || echo "No .next directory"; \
-    exit 1; \
-}
+# Run build - let npm show all output naturally
+RUN npm run build
 
 # Verify standalone output exists before copying
 RUN if [ ! -d ".next/standalone" ]; then \
