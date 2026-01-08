@@ -5,19 +5,22 @@ WORKDIR /app
 # Install libc6-compat for some node modules
 RUN apk add --no-cache libc6-compat
 
-# Declare build arguments
-ARG NEXT_PUBLIC_API_BASE_URL
-ARG NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-ARG NEXT_PUBLIC_APP_NAME
-ARG NEXT_PUBLIC_BASE_CURRENCY
+# Declare build arguments with defaults
+ARG NEXT_PUBLIC_API_BASE_URL="http://localhost:3001/api"
+ARG NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=""
+ARG NEXT_PUBLIC_APP_NAME="Juelle Hair Ghana"
+ARG NEXT_PUBLIC_BASE_CURRENCY="GHS"
+# Allow overriding Node heap limit on constrained builders
+ARG NODE_OPTIONS="--max-old-space-size=2048"
 
 # Set environment variables from arguments for build time
 # These MUST be available during 'npm run build'
-ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=$NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
-ENV NEXT_PUBLIC_BASE_CURRENCY=$NEXT_PUBLIC_BASE_CURRENCY
-ENV NEXT_TELEMETRY_DISABLED 1
+# Note: ARG defaults above ensure these are never truly empty, but we set ENV explicitly
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+ENV NEXT_PUBLIC_BASE_CURRENCY=${NEXT_PUBLIC_BASE_CURRENCY}
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy package files
 COPY package*.json ./
@@ -29,9 +32,19 @@ RUN npm ci
 COPY . .
 
 # Build the application
-# We use a conservative memory limit for the build process to avoid OOM on small servers
-ENV NODE_OPTIONS='--max-old-space-size=2048'
-RUN npm run build
+# Default to 2GB heap but allow override via build-arg NODE_OPTIONS (e.g., --build-arg NODE_OPTIONS="--max-old-space-size=1024")
+ENV NODE_OPTIONS=${NODE_OPTIONS}
+
+# Debug: Print environment variables before build (without exposing secrets)
+RUN echo "Build environment:" && \
+    echo "  NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}" && \
+    echo "  NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}" && \
+    echo "  NEXT_PUBLIC_BASE_CURRENCY=${NEXT_PUBLIC_BASE_CURRENCY}" && \
+    echo "  NODE_OPTIONS=${NODE_OPTIONS}" && \
+    echo "  NODE_ENV=${NODE_ENV:-production}"
+
+# Run build with error output
+RUN npm run build || (echo "Build failed! Check errors above." && exit 1)
 
 # Copy static and public files to the standalone directory so they are served correctly
 RUN cp -r public .next/standalone/ && \

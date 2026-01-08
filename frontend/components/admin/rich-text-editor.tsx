@@ -223,7 +223,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
         onPaste={handlePaste}
         className="p-4 focus:outline-none min-h-[200px] product-description-editor prose prose-sm max-w-none"
         style={{ minHeight }}
-        placeholder={placeholder}
+        data-placeholder={placeholder}
       />
       
       <style jsx>{`
@@ -231,7 +231,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           outline: none;
         }
         .product-description-editor:empty:before {
-          content: attr(placeholder);
+          content: attr(data-placeholder);
           color: #9ca3af;
           cursor: text;
         }
