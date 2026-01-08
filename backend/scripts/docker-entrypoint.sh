@@ -41,13 +41,15 @@ echo ""
 # Wait for database to be ready
 echo -e "${BLUE}→${NC} Waiting for database..."
 
-# Parse host and port from DATABASE_URL
-DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\).*/\1/p')
-DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+# Parse host and port more robustly
+DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:/]*\).*/\1/p')
+DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p' | cut -d'/' -f1)
 
 if [ -z "$DB_PORT" ]; then
     DB_PORT=5432
 fi
+
+echo "   Connecting to $DB_HOST:$DB_PORT..."
 
 # Wait for database (max 30 seconds)
 timeout=30

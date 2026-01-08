@@ -45,4 +45,4 @@ EXPOSE 3001
 ENTRYPOINT ["./scripts/docker-entrypoint.sh"]
 
 # Default command (can be overridden)
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]
