@@ -11,7 +11,8 @@ ARG NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=""
 ARG NEXT_PUBLIC_APP_NAME="Juelle Hair Ghana"
 ARG NEXT_PUBLIC_BASE_CURRENCY="GHS"
 # Allow overriding Node heap limit on constrained builders
-ARG NODE_OPTIONS="--max-old-space-size=2048"
+# Increased to 4GB to handle large builds in Coolify
+ARG NODE_OPTIONS="--max-old-space-size=4096"
 
 # Set environment variables from arguments for build time
 # These MUST be available during 'npm run build'
