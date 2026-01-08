@@ -36,19 +36,38 @@ COPY . .
 ENV NODE_OPTIONS=${NODE_OPTIONS}
 
 # Debug: Print environment variables before build (without exposing secrets)
-RUN echo "Build environment:" && \
-    echo "  NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}" && \
-    echo "  NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}" && \
-    echo "  NEXT_PUBLIC_BASE_CURRENCY=${NEXT_PUBLIC_BASE_CURRENCY}" && \
-    echo "  NODE_OPTIONS=${NODE_OPTIONS}" && \
-    echo "  NODE_ENV=${NODE_ENV:-production}"
+RUN echo "=== Build Environment ===" && \
+    echo "NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}" && \
+    echo "NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}" && \
+    echo "NEXT_PUBLIC_BASE_CURRENCY=${NEXT_PUBLIC_BASE_CURRENCY}" && \
+    echo "NODE_OPTIONS=${NODE_OPTIONS}" && \
+    echo "NODE_ENV=${NODE_ENV:-production}" && \
+    echo "=========================" && \
+    echo "Node version:" && node --version && \
+    echo "NPM version:" && npm --version
 
-# Run build with error output
-RUN npm run build || (echo "Build failed! Check errors above." && exit 1)
+# Run build with verbose output
+RUN npm run build || { \
+    echo "=== BUILD FAILED ==="; \
+    echo "Checking for build output..."; \
+    ls -la .next/ 2>&1 || echo "No .next directory"; \
+    exit 1; \
+}
+
+# Verify standalone output exists before copying
+RUN if [ ! -d ".next/standalone" ]; then \
+    echo "ERROR: Standalone output not found!"; \
+    echo "Build may have failed or standalone output is not enabled"; \
+    ls -la .next/ 2>&1; \
+    exit 1; \
+fi
 
 # Copy static and public files to the standalone directory so they are served correctly
 RUN cp -r public .next/standalone/ && \
-    cp -r .next/static .next/standalone/.next/
+    cp -r .next/static .next/standalone/.next/ || { \
+    echo "ERROR: Failed to copy static files"; \
+    exit 1; \
+}
 
 # Production stage
 FROM node:18-alpine AS runner
