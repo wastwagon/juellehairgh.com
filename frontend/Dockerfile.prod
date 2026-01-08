@@ -51,8 +51,20 @@ RUN echo "=== Build Environment ===" && \
     test -f next.config.js && echo "next.config.js found" || echo "ERROR: next.config.js missing" && \
     test -f package.json && echo "package.json found" || echo "ERROR: package.json missing"
 
-# Run build - let npm show all output naturally
-RUN npm run build
+# Verify Next.js is installed correctly
+RUN echo "Verifying Next.js installation..." && \
+    npx next --version && \
+    echo "Next.js version check complete"
+
+# Run build - output should be visible in Docker logs
+RUN echo "========================================" && \
+    echo "Starting Next.js build..." && \
+    echo "========================================" && \
+    npm run build && \
+    echo "========================================" && \
+    echo "Build completed successfully!" && \
+    echo "========================================" && \
+    ls -la .next/ 2>&1 | head -20
 
 # Verify standalone output exists before copying
 RUN if [ ! -d ".next/standalone" ]; then \
