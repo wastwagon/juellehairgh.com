@@ -122,7 +122,7 @@ echo ""
 # Build application (if needed)
 if [ ! -d "./dist" ]; then
     echo -e "${BLUE}→${NC} Building application..."
-    npm run build > /dev/null 2>&1
+    npm run build
     echo -e "${GREEN}✓${NC} Build complete"
     echo ""
 fi
