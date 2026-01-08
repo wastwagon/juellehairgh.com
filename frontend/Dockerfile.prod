@@ -57,15 +57,15 @@ RUN echo "Verifying Next.js installation..." && \
     npx next --version && \
     echo "Next.js version check complete"
 
-# Run build - output should be visible in Docker logs
-RUN echo "========================================" && \
-    echo "Starting Next.js build..." && \
-    echo "========================================" && \
-    npm run build && \
-    echo "========================================" && \
-    echo "Build completed successfully!" && \
-    echo "========================================" && \
-    ls -la .next/ 2>&1 | head -20
+# Run build - split into separate commands for better error visibility
+RUN echo "========================================"
+RUN echo "Starting Next.js build..."
+RUN echo "========================================"
+RUN npm run build
+RUN echo "========================================"
+RUN echo "Build completed successfully!"
+RUN echo "========================================"
+RUN ls -la .next/ 2>&1 | head -20
 
 # Verify standalone output exists before copying
 RUN if [ ! -d ".next/standalone" ]; then \
