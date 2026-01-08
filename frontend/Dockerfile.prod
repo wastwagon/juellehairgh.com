@@ -15,7 +15,8 @@ ARG NODE_OPTIONS="--max-old-space-size=2048"
 
 # Set environment variables from arguments for build time
 # These MUST be available during 'npm run build'
-# Note: ARG defaults above ensure these are never truly empty, but we set ENV explicitly
+# Use shell parameter expansion to ensure defaults are used even if Coolify passes empty values
+# Note: Docker ENV doesn't support ${VAR:-default} syntax directly, so we use ARG defaults above
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 ENV NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
 ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
@@ -89,8 +90,8 @@ RUN apk add --no-cache wget
 
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy built application from standalone output
 COPY --from=builder /app/public ./public
@@ -103,8 +104,8 @@ RUN chmod -R 755 ./.next/static
 # Expose port
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # Start the application
 CMD ["node", "server.js"]
