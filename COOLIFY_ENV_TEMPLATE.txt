@@ -1,0 +1,63 @@
+# ================================================================
+# Juelle Hair Ghana - Coolify Environment Variables Template
+# ================================================================
+# Copy these to Coolify's Environment Variables section
+# Replace all placeholder values with your actual production values
+# ================================================================
+
+# ================================================================
+# DATABASE (PostgreSQL)
+# ================================================================
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=CHANGE_THIS_TO_SECURE_PASSWORD_MIN_20_CHARS
+POSTGRES_DB=juellehair
+
+# ================================================================
+# BACKEND (NestJS API)
+# ================================================================
+
+# Database connection (internal - uses container name "postgres")
+DATABASE_URL=postgresql://postgres:CHANGE_THIS_TO_SECURE_PASSWORD_MIN_20_CHARS@postgres:5432/juellehair?schema=public
+
+# JWT Secret (generate with: openssl rand -base64 32)
+JWT_SECRET=CHANGE_THIS_GENERATE_WITH_OPENSSL_RAND_BASE64_32
+
+# Paystack Payment Gateway
+PAYSTACK_SECRET_KEY=sk_live_YOUR_PAYSTACK_SECRET_KEY_HERE
+
+# Currency API (optional - can leave empty)
+CURRENCY_API_KEY=
+
+# Frontend URL (your actual domain)
+FRONTEND_URL=https://juellehair.com
+
+# ================================================================
+# FRONTEND (Next.js)
+# ================================================================
+
+# API Base URL (your backend domain with /api path)
+NEXT_PUBLIC_API_BASE_URL=https://api.juellehair.com/api
+
+# NextAuth URL (your frontend domain)
+NEXTAUTH_URL=https://juellehair.com
+
+# NextAuth Secret (generate with: openssl rand -base64 32)
+NEXTAUTH_SECRET=CHANGE_THIS_GENERATE_WITH_OPENSSL_RAND_BASE64_32
+
+# Paystack Public Key
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_live_YOUR_PAYSTACK_PUBLIC_KEY_HERE
+
+# App Configuration
+NEXT_PUBLIC_APP_NAME=Juelle Hair Ghana
+NEXT_PUBLIC_BASE_CURRENCY=GHS
+
+# ================================================================
+# HOW TO GENERATE SECRETS
+# ================================================================
+# Run these commands in your terminal:
+#
+# openssl rand -base64 32
+#
+# Use the output for JWT_SECRET and NEXTAUTH_SECRET (different values)
+# ================================================================
+
