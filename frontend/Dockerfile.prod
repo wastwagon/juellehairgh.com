@@ -2,6 +2,23 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Install libc6-compat for some node modules
+RUN apk add --no-cache libc6-compat
+
+# Declare build arguments
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+ARG NEXT_PUBLIC_APP_NAME
+ARG NEXT_PUBLIC_BASE_CURRENCY
+
+# Set environment variables from arguments for build time
+# These MUST be available during 'npm run build'
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=$NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
+ENV NEXT_PUBLIC_BASE_CURRENCY=$NEXT_PUBLIC_BASE_CURRENCY
+ENV NEXT_TELEMETRY_DISABLED 1
+
 # Copy package files
 COPY package*.json ./
 
@@ -12,7 +29,8 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run build
+# We use a higher memory limit for the build process
+RUN NODE_OPTIONS='--max-old-space-size=4096' npm run build
 
 # Production stage
 FROM node:18-alpine AS runner
@@ -23,6 +41,7 @@ RUN apk add --no-cache wget
 WORKDIR /app
 
 ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
 # Copy built application from standalone output
 COPY --from=builder /app/public ./public
