@@ -43,6 +43,7 @@ services:
       start_period: 300s
     networks:
       - juelle-hair-network
+      - coolify
     restart: unless-stopped
 
 volumes:
@@ -54,3 +55,5 @@ volumes:
 networks:
   juelle-hair-network:
     driver: bridge
+  coolify:
+    external: true
