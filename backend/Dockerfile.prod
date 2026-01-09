@@ -1,3 +1,6 @@
+# ================================================================
+# BACKEND DOCKERFILE - CONTAINS PRISMA COPY
+# ================================================================
 FROM node:20-slim
 
 # Install system dependencies for native modules (required for bcrypt)
