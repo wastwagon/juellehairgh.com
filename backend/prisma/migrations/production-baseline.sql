@@ -260,10 +260,10 @@ DROP TABLE IF EXISTS public.backlinks CASCADE;
 DROP TABLE IF EXISTS public.analytics_events CASCADE;
 DROP TABLE IF EXISTS public.addresses CASCADE;
 DROP TABLE IF EXISTS public._prisma_migrations CASCADE;
-DROP TYPE IF EXISTS public."WalletTransactionType";
-DROP TYPE IF EXISTS public."UserRole";
-DROP TYPE IF EXISTS public."PaymentStatus";
-DROP TYPE IF EXISTS public."OrderStatus";
+DROP TYPE IF EXISTS public."WalletTransactionType" CASCADE;
+DROP TYPE IF EXISTS public."UserRole" CASCADE;
+DROP TYPE IF EXISTS public."PaymentStatus" CASCADE;
+DROP TYPE IF EXISTS public."OrderStatus" CASCADE;
 --
 -- Name: OrderStatus; Type: TYPE; Schema: public; Owner: -
 --
