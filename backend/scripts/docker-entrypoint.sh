@@ -22,6 +22,19 @@ echo -e "${GREEN}  Juelle Hair Backend${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
+# Fix Environment Variables (handle special chars in password)
+if [ -f "./scripts/fix-db-env.js" ]; then
+    echo -e "${BLUE}→${NC} Fixing database environment..."
+    eval $(node ./scripts/fix-db-env.js)
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}✗ Failed to fix database environment${NC}"
+        exit 1
+    fi
+fi
+
+# Export password for psql
+export PGPASSWORD="$DB_PASS"
+
 # Check required environment variables
 echo -e "${BLUE}→${NC} Checking environment..."
 
@@ -40,14 +53,6 @@ echo ""
 
 # Wait for database to be ready
 echo -e "${BLUE}→${NC} Waiting for database..."
-
-# Parse host and port more robustly
-DB_HOST=$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:/]*\).*/\1/p')
-DB_PORT=$(echo "$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p' | cut -d'/' -f1)
-
-if [ -z "$DB_PORT" ]; then
-    DB_PORT=5432
-fi
 
 echo "   Connecting to $DB_HOST:$DB_PORT..."
 
@@ -78,7 +83,7 @@ echo ""
 echo -e "${BLUE}→${NC} Checking database status..."
 
 # Count tables (excluding _prisma_migrations)
-TABLE_COUNT=$(psql "$DATABASE_URL" -t -c \
+TABLE_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c \
     "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name != '_prisma_migrations';" \
     2>/dev/null | tr -d ' ' || echo "0")
 

@@ -22,11 +22,11 @@ echo -e "${GREEN}========================================${NC}"
 echo ""
 
 # Configuration - reads from environment
-DB_URL="${DATABASE_URL}"
+# Expects DB_* variables to be set by docker-entrypoint.sh (via fix-db-env.js)
 MIGRATION_FILE="./prisma/migrations/production-baseline.sql"
 
-if [ -z "$DB_URL" ]; then
-    echo -e "${RED}Error: DATABASE_URL environment variable not set${NC}"
+if [ -z "$DB_HOST" ]; then
+    echo -e "${RED}Error: DB_HOST environment variable not set${NC}"
     exit 1
 fi
 
@@ -35,14 +35,19 @@ if [ ! -f "$MIGRATION_FILE" ]; then
     exit 1
 fi
 
+# Ensure PGPASSWORD is set
+export PGPASSWORD="$DB_PASS"
+
 echo -e "${BLUE}[1/5]${NC} Checking database status..."
 
 # Check if database is empty (no tables except _prisma_migrations)
-TABLE_COUNT=$(psql "$DB_URL" -t -c \
+TABLE_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c \
     "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name != '_prisma_migrations';" 2>/dev/null | tr -d ' ')
 
 if [ -z "$TABLE_COUNT" ]; then
     echo -e "${RED}Error: Could not connect to database${NC}"
+    # Try printing error
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" || true
     exit 1
 fi
 
@@ -65,7 +70,7 @@ if [ "$TABLE_COUNT" -gt 0 ]; then
     else
         echo -e "${YELLOW}FORCE_IMPORT=true detected${NC}"
         echo -e "${RED}⚠️  Nuclear Option: Dropping public schema...${NC}"
-        psql "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
         
         echo -e "${BLUE}→${NC} Schema dropped. Proceeding with import..."
         echo "   Waiting 2 seconds..."
@@ -86,7 +91,7 @@ echo -e "${BLUE}[3/5]${NC} Importing database (this may take 30-60 seconds)..."
 echo ""
 
 # Run the SQL import
-psql "$DB_URL" \
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
     -f "$MIGRATION_FILE" \
     -v ON_ERROR_STOP=1 \
     --quiet 2>&1 | grep -v "^$"
@@ -103,9 +108,9 @@ echo ""
 echo -e "${BLUE}[4/5]${NC} Verifying import..."
 
 # Verify key tables
-PRODUCT_COUNT=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM products;" | tr -d ' ')
-CATEGORY_COUNT=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM categories;" | tr -d ' ')
-USER_COUNT=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM users;" | tr -d ' ')
+PRODUCT_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM products;" | tr -d ' ')
+CATEGORY_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM categories;" | tr -d ' ')
+USER_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM users;" | tr -d ' ')
 
 echo -e "${GREEN}✓${NC} Database verification:"
 echo "   - Products: $PRODUCT_COUNT"
