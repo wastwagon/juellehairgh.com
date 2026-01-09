@@ -104,6 +104,7 @@ RUN cp -r public .next/standalone/ && \
 }
 
 # Production stage
+# Explicitly reference the builder stage to avoid BuildKit confusion
 FROM node:18-alpine AS runner
 
 # Install wget for healthcheck
@@ -115,10 +116,11 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy built application from standalone output
-# Note: 'builder' refers to the build stage defined above, not an external image
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# CRITICAL: 'builder' must reference the stage defined above (line 1: FROM node:18-alpine AS builder)
+# Using explicit stage reference to prevent BuildKit from treating it as an external image
+COPY --from=0 /app/public ./public
+COPY --from=0 /app/.next/standalone ./
+COPY --from=0 /app/.next/static ./.next/static
 
 # Ensure proper permissions
 RUN chmod -R 755 ./.next/static
