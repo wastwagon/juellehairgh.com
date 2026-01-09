@@ -1,0 +1,138 @@
+# ================================================================
+# FRONTEND DOCKERFILE - DO NOT COPY PRISMA (backend only)
+# ================================================================
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Install libc6-compat for some node modules
+RUN apk add --no-cache libc6-compat
+
+# Declare build arguments with defaults
+ARG NEXT_PUBLIC_API_BASE_URL="http://localhost:3001/api"
+ARG NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=""
+ARG NEXT_PUBLIC_APP_NAME="Juelle Hair Ghana"
+ARG NEXT_PUBLIC_BASE_CURRENCY="GHS"
+# Allow overriding Node heap limit on constrained builders
+# Increased to 4GB to handle large builds in Coolify
+ARG NODE_OPTIONS="--max-old-space-size=4096"
+
+# Set environment variables from arguments for build time
+# These MUST be available during 'npm run build'
+# Use shell parameter expansion to ensure defaults are used even if Coolify passes empty values
+# Note: Docker ENV doesn't support ${VAR:-default} syntax directly, so we use ARG defaults above
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+ENV NEXT_PUBLIC_BASE_CURRENCY=${NEXT_PUBLIC_BASE_CURRENCY}
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+# Default to 2GB heap but allow override via build-arg NODE_OPTIONS (e.g., --build-arg NODE_OPTIONS="--max-old-space-size=1024")
+ENV NODE_OPTIONS=${NODE_OPTIONS}
+
+# Debug: Print environment variables before build (without exposing secrets)
+RUN echo "=== Build Environment ===" && \
+    echo "NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}" && \
+    echo "NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}" && \
+    echo "NEXT_PUBLIC_BASE_CURRENCY=${NEXT_PUBLIC_BASE_CURRENCY}" && \
+    echo "NODE_OPTIONS=${NODE_OPTIONS}" && \
+    echo "NODE_ENV=${NODE_ENV:-production}" && \
+    echo "=========================" && \
+    echo "Node version:" && node --version && \
+    echo "NPM version:" && npm --version && \
+    echo "Checking source files..." && \
+    ls -la app/ 2>&1 | head -10 && \
+    ls -la components/ 2>&1 | head -10 && \
+    test -f next.config.js && echo "next.config.js found" || echo "ERROR: next.config.js missing" && \
+    test -f package.json && echo "package.json found" || echo "ERROR: package.json missing" && \
+    echo "" && \
+    echo "=== Verifying Required Environment Variables ===" && \
+    if [ -z "$NEXT_PUBLIC_API_BASE_URL" ] || [ "$NEXT_PUBLIC_API_BASE_URL" = "" ]; then \
+        echo "ERROR: NEXT_PUBLIC_API_BASE_URL is empty or not set!"; \
+        exit 1; \
+    else \
+        echo "✓ NEXT_PUBLIC_API_BASE_URL is set: ${NEXT_PUBLIC_API_BASE_URL}"; \
+    fi && \
+    if [ -z "$NEXT_PUBLIC_APP_NAME" ] || [ "$NEXT_PUBLIC_APP_NAME" = "" ]; then \
+        echo "WARNING: NEXT_PUBLIC_APP_NAME is empty, using default"; \
+    else \
+        echo "✓ NEXT_PUBLIC_APP_NAME is set: ${NEXT_PUBLIC_APP_NAME}"; \
+    fi
+
+# Verify Next.js is installed correctly
+RUN echo "Verifying Next.js installation..." && \
+    npx next --version && \
+    echo "Next.js version check complete"
+
+# Run build with explicit error capture
+RUN echo "========================================" && \
+    echo "Starting Next.js build..." && \
+    echo "========================================" && \
+    npm run build 2>&1 || { \
+        echo ""; \
+        echo "========================================"; \
+        echo "BUILD FAILED - Full Error Output:"; \
+        echo "========================================"; \
+        exit 1; \
+    } && \
+    echo "" && \
+    echo "========================================" && \
+    echo "Build completed successfully!" && \
+    echo "========================================" && \
+    ls -la .next/ 2>&1 | head -20
+
+# Verify standalone output exists before copying
+RUN if [ ! -d ".next/standalone" ]; then \
+    echo "ERROR: Standalone output not found!"; \
+    echo "Build may have failed or standalone output is not enabled"; \
+    ls -la .next/ 2>&1; \
+    exit 1; \
+fi
+
+# Copy static and public files to the standalone directory so they are served correctly
+RUN cp -r public .next/standalone/ && \
+    cp -r .next/static .next/standalone/.next/ || { \
+    echo "ERROR: Failed to copy static files"; \
+    exit 1; \
+}
+
+# Production stage
+# Explicitly reference the builder stage to avoid BuildKit confusion
+FROM node:18-alpine AS runner
+
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy built application from standalone output
+# CRITICAL: 'builder' must reference the stage defined above (line 1: FROM node:18-alpine AS builder)
+# Using explicit stage reference to prevent BuildKit from treating it as an external image
+COPY --from=0 /app/public ./public
+COPY --from=0 /app/.next/standalone ./
+COPY --from=0 /app/.next/static ./.next/static
+
+# Ensure proper permissions
+RUN chmod -R 755 ./.next/static
+
+# Expose port
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Start the application
+CMD ["node", "server.js"]
