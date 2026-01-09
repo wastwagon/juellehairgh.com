@@ -77,15 +77,8 @@ echo ""
 # Check if database needs migration
 echo -e "${BLUE}→${NC} Checking database status..."
 
-# Parse connection details
-DB_NAME=$(echo "$DATABASE_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p')
-DB_USER=$(echo "$DATABASE_URL" | sed -n 's/.*:\/\/\([^:]*\).*/\1/p')
-DB_PASS=$(echo "$DATABASE_URL" | sed -n 's/.*:\/\/[^:]*:\([^@]*\).*/\1/p')
-
-export PGPASSWORD="$DB_PASS"
-
 # Count tables (excluding _prisma_migrations)
-TABLE_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c \
+TABLE_COUNT=$(psql "$DATABASE_URL" -t -c \
     "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name != '_prisma_migrations';" \
     2>/dev/null | tr -d ' ' || echo "0")
 

@@ -37,18 +37,8 @@ fi
 
 echo -e "${BLUE}[1/5]${NC} Checking database status..."
 
-# Parse DATABASE_URL to get connection details
-# Format: postgresql://user:pass@host:port/dbname?schema=public
-DB_HOST=$(echo "$DB_URL" | sed -n 's/.*@\([^:]*\).*/\1/p')
-DB_PORT=$(echo "$DB_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
-DB_NAME=$(echo "$DB_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p')
-DB_USER=$(echo "$DB_URL" | sed -n 's/.*:\/\/\([^:]*\).*/\1/p')
-DB_PASS=$(echo "$DB_URL" | sed -n 's/.*:\/\/[^:]*:\([^@]*\).*/\1/p')
-
-export PGPASSWORD="$DB_PASS"
-
 # Check if database is empty (no tables except _prisma_migrations)
-TABLE_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c \
+TABLE_COUNT=$(psql "$DB_URL" -t -c \
     "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name != '_prisma_migrations';" 2>/dev/null | tr -d ' ')
 
 if [ -z "$TABLE_COUNT" ]; then
@@ -75,7 +65,7 @@ if [ "$TABLE_COUNT" -gt 0 ]; then
     else
         echo -e "${YELLOW}FORCE_IMPORT=true detected${NC}"
         echo -e "${RED}⚠️  Nuclear Option: Dropping public schema...${NC}"
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        psql "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
         
         echo -e "${BLUE}→${NC} Schema dropped. Proceeding with import..."
         echo "   Waiting 2 seconds..."
@@ -96,7 +86,7 @@ echo -e "${BLUE}[3/5]${NC} Importing database (this may take 30-60 seconds)..."
 echo ""
 
 # Run the SQL import
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+psql "$DB_URL" \
     -f "$MIGRATION_FILE" \
     -v ON_ERROR_STOP=1 \
     --quiet 2>&1 | grep -v "^$"
@@ -113,9 +103,9 @@ echo ""
 echo -e "${BLUE}[4/5]${NC} Verifying import..."
 
 # Verify key tables
-PRODUCT_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM products;" | tr -d ' ')
-CATEGORY_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM categories;" | tr -d ' ')
-USER_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM users;" | tr -d ' ')
+PRODUCT_COUNT=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM products;" | tr -d ' ')
+CATEGORY_COUNT=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM categories;" | tr -d ' ')
+USER_COUNT=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM users;" | tr -d ' ')
 
 echo -e "${GREEN}✓${NC} Database verification:"
 echo "   - Products: $PRODUCT_COUNT"
