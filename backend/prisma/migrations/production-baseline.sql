@@ -9363,16 +9363,20 @@ ALTER TABLE ONLY public.wishlist_items
 
 DO $$
 BEGIN
-    -- Delete test user data (cascades to related records)
-    DELETE FROM users 
-    WHERE email LIKE '%@example.com'
-    AND email NOT IN (
-        'admin@juellehair.com',
-        'juellehair@juellehair.com',
-        'iwisebrain@yahoo.com'
-    );
-    
-    RAISE NOTICE 'Cleaned up test users successfully';
+    -- Check if users table exists before trying to delete
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') THEN
+        -- Delete test user data (cascades to related records)
+        DELETE FROM users 
+        WHERE email LIKE '%@example.com'
+        AND email NOT IN (
+            'admin@juellehair.com',
+            'juellehair@juellehair.com',
+            'iwisebrain@yahoo.com'
+        );
+        RAISE NOTICE 'Cleaned up test users successfully';
+    ELSE
+        RAISE NOTICE 'Users table not found, skipping cleanup';
+    END IF;
 END $$;
 
 -- Reset sequences (optional, ensures proper ID generation)
