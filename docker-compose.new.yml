@@ -1,0 +1,104 @@
+version: '3.8'
+
+# ================================================================
+# Juelle Hair Ghana - New Production Docker Compose
+# ================================================================
+# This file contains prefilled environment variables
+# Update the domain and Paystack keys before deploying
+# ================================================================
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: juelle-hair-db-new
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ChangeThisToSecurePassword123!@#}
+      POSTGRES_DB: juellehair
+    volumes:
+      - postgres_data_new:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - juelle-hair-network-new
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: juelle-hair-backend-new
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-ChangeThisToSecurePassword123!@#}@postgres:5432/juellehair?schema=public
+      JWT_SECRET: ${JWT_SECRET:-PCwghTqQLAVLZzw2UdQlrnKc1d1uQhC15nRxq04dT5s=}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY:-sk_live_YOUR_PAYSTACK_SECRET_KEY}
+      CURRENCY_API_KEY: ${CURRENCY_API_KEY:-}
+      FRONTEND_URL: ${FRONTEND_URL:-https://juellehair.com}
+      PORT: 3001
+      NODE_ENV: production
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Persistent volume for user uploads (future uploads after deployment)
+      - backend_uploads_new:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 3001 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 300s
+    networks:
+      - juelle-hair-network-new
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        # These MUST be set at build time for Next.js
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://api.juellehair.com/api}
+        NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:-pk_live_YOUR_PAYSTACK_PUBLIC_KEY}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Juelle Hair Ghana}
+        NEXT_PUBLIC_BASE_CURRENCY: ${NEXT_PUBLIC_BASE_CURRENCY:-GHS}
+        NODE_OPTIONS: ${NODE_OPTIONS:---max-old-space-size=4096}
+    container_name: juelle-hair-frontend-new
+    environment:
+      # Runtime environment variables
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://api.juellehair.com/api}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://juellehair.com}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-fn5e7Nhost1t/ONNBVVWGZYDS8nqz+fyEJ2Y5ykUdN0=}
+      NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: ${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY:-pk_live_YOUR_PAYSTACK_PUBLIC_KEY}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Juelle Hair Ghana}
+      NEXT_PUBLIC_BASE_CURRENCY: ${NEXT_PUBLIC_BASE_CURRENCY:-GHS}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - juelle-hair-network-new
+    restart: unless-stopped
+
+volumes:
+  postgres_data_new:
+    driver: local
+  backend_uploads_new:
+    driver: local
+
+networks:
+  juelle-hair-network-new:
+    driver: bridge
