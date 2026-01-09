@@ -89,8 +89,12 @@ TABLE_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c
     "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name != '_prisma_migrations';" \
     2>/dev/null | tr -d ' ' || echo "0")
 
-if [ "$TABLE_COUNT" = "0" ]; then
-    echo -e "${YELLOW}⚠️  Empty database detected${NC}"
+if [ "$TABLE_COUNT" = "0" ] || [ "$FORCE_IMPORT" = "true" ]; then
+    if [ "$FORCE_IMPORT" = "true" ]; then
+        echo -e "${YELLOW}⚠️  FORCE_IMPORT detected${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Empty database detected${NC}"
+    fi
     echo ""
     echo -e "${BLUE}→${NC} Running production baseline import..."
     
