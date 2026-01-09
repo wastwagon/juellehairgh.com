@@ -9366,7 +9366,7 @@ BEGIN
     -- Check if users table exists before trying to delete
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') THEN
         -- Delete test user data (cascades to related records)
-        DELETE FROM users 
+        DELETE FROM public.users 
         WHERE email LIKE '%@example.com'
         AND email NOT IN (
             'admin@juellehair.com',
