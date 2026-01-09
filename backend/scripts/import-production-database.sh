@@ -74,9 +74,12 @@ if [ "$TABLE_COUNT" -gt 0 ]; then
         exit 0
     else
         echo -e "${YELLOW}FORCE_IMPORT=true detected${NC}"
-        echo -e "${RED}⚠️  Will drop all existing tables and reimport${NC}"
-        echo "   Waiting 5 seconds... (Ctrl+C to cancel)"
-        sleep 5
+        echo -e "${RED}⚠️  Nuclear Option: Dropping public schema...${NC}"
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        
+        echo -e "${BLUE}→${NC} Schema dropped. Proceeding with import..."
+        echo "   Waiting 2 seconds..."
+        sleep 2
     fi
 else
     echo -e "${GREEN}✓${NC} Database is empty - safe to import"
