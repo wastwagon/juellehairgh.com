@@ -25,23 +25,60 @@ echo ""
 # Fix Environment Variables (handle special chars in password)
 if [ -f "./scripts/fix-db-env.js" ]; then
     echo -e "${BLUE}→${NC} Fixing database environment..."
-    eval $(node ./scripts/fix-db-env.js)
-    if [ $? -ne 0 ]; then
+    FIX_OUTPUT=$(node ./scripts/fix-db-env.js 2>&1)
+    FIX_EXIT=$?
+    if [ $FIX_EXIT -ne 0 ]; then
         echo -e "${RED}✗ Failed to fix database environment${NC}"
+        echo "$FIX_OUTPUT"
         exit 1
     fi
+    # Evaluate the export statements
+    eval "$FIX_OUTPUT"
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}✗ Failed to set database environment variables${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✓${NC} Database environment configured"
+else
+    echo -e "${YELLOW}⚠️  fix-db-env.js not found, using environment variables${NC}"
+    # Fallback: construct from individual environment variables
+    DB_HOST="${POSTGRES_HOST:-postgres}"
+    DB_PORT="${POSTGRES_PORT:-5432}"
+    DB_USER="${POSTGRES_USER:-postgres}"
+    DB_NAME="${POSTGRES_DB:-juellehair}"
+    DB_PASS="${POSTGRES_PASSWORD}"
+    
+    if [ -z "$DB_PASS" ]; then
+        echo -e "${RED}✗ POSTGRES_PASSWORD is required${NC}"
+        exit 1
+    fi
+    
+    # URL encode password using a temp file to avoid shell escaping issues
+    ENCODED_PASS=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$DB_PASS" 2>/dev/null || echo "$DB_PASS")
+    if [ "$ENCODED_PASS" = "$DB_PASS" ]; then
+        # Fallback: basic encoding (no special characters to encode)
+        ENCODED_PASS="$DB_PASS"
+    fi
+    DATABASE_URL="postgresql://${DB_USER}:${ENCODED_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public"
+    export DATABASE_URL
+fi
+
+# Verify all required variables are set
+if [ -z "$DATABASE_URL" ] || [ -z "$DB_HOST" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ] || [ -z "$DB_NAME" ]; then
+    echo -e "${RED}✗ Missing required database environment variables${NC}"
+    echo "  DATABASE_URL: ${DATABASE_URL:+SET}"
+    echo "  DB_HOST: ${DB_HOST:-NOT SET}"
+    echo "  DB_USER: ${DB_USER:-NOT SET}"
+    echo "  DB_PASS: ${DB_PASS:+SET (hidden)}"
+    echo "  DB_NAME: ${DB_NAME:-NOT SET}"
+    exit 1
 fi
 
 # Export password for psql
 export PGPASSWORD="$DB_PASS"
 
-# Check required environment variables
+# Check other required environment variables
 echo -e "${BLUE}→${NC} Checking environment..."
-
-if [ -z "$DATABASE_URL" ]; then
-    echo -e "${RED}✗ DATABASE_URL is not set${NC}"
-    exit 1
-fi
 
 if [ -z "$JWT_SECRET" ]; then
     echo -e "${RED}✗ JWT_SECRET is not set${NC}"
@@ -71,6 +108,21 @@ while ! nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; do
 done
 
 echo -e "${GREEN}✓${NC} Database is ready"
+echo ""
+
+# Test database connection with credentials
+echo -e "${BLUE}→${NC} Testing database credentials..."
+if PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" > /dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Database credentials are valid"
+else
+    echo -e "${RED}✗ Database authentication failed${NC}"
+    echo -e "${YELLOW}  Host: $DB_HOST${NC}"
+    echo -e "${YELLOW}  Port: $DB_PORT${NC}"
+    echo -e "${YELLOW}  User: $DB_USER${NC}"
+    echo -e "${YELLOW}  Database: $DB_NAME${NC}"
+    echo -e "${RED}  Please verify POSTGRES_PASSWORD matches the database password${NC}"
+    exit 1
+fi
 echo ""
 
 # Generate Prisma Client

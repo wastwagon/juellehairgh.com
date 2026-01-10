@@ -1,5 +1,17 @@
 const fs = require('fs');
 
+// Helper function to escape bash strings safely
+function escapeBashString(str) {
+    // Replace single quotes with '\'' (end quote, escaped quote, start quote)
+    return str.replace(/'/g, "'\\''");
+}
+
+// Helper function to safely export bash variables
+function safeExport(varName, value) {
+    const escaped = escapeBashString(value);
+    return `export ${varName}='${escaped}'`;
+}
+
 // Get environment variables or defaults
 const user = process.env.POSTGRES_USER || 'postgres';
 const host = process.env.POSTGRES_HOST || 'postgres';
@@ -32,7 +44,7 @@ if (!pass && process.env.DATABASE_URL) {
                         // But wait, last @ is the host separator.
                         // So password is url.substring(protocolEnd + 3 + firstColon + 1, lastAt)
                         const passwordStart = protocolEnd + 3 + firstColon + 1;
-                        pass = url.substring(passwordStart, lastAt);
+                        pass = decodeURIComponent(url.substring(passwordStart, lastAt));
                     }
                 }
             }
@@ -43,7 +55,15 @@ if (!pass && process.env.DATABASE_URL) {
 }
 
 if (!pass) {
-    console.error('Could not determine database password');
+    console.error('ERROR: Could not determine database password');
+    console.error('POSTGRES_PASSWORD environment variable is required');
+    console.error('Current env vars:');
+    console.error('  POSTGRES_USER:', user);
+    console.error('  POSTGRES_HOST:', host);
+    console.error('  POSTGRES_PORT:', port);
+    console.error('  POSTGRES_DB:', db);
+    console.error('  POSTGRES_PASSWORD:', pass ? '***' : 'NOT SET');
+    console.error('  DATABASE_URL:', process.env.DATABASE_URL ? 'SET (hidden)' : 'NOT SET');
     process.exit(1);
 }
 
@@ -51,9 +71,10 @@ if (!pass) {
 const encodedPass = encodeURIComponent(pass);
 const safeUrl = `postgresql://${user}:${encodedPass}@${host}:${port}/${db}?schema=public`;
 
-console.log(`export DATABASE_URL="${safeUrl}"`);
-console.log(`export DB_HOST="${host}"`);
-console.log(`export DB_PORT="${port}"`);
-console.log(`export DB_USER="${user}"`);
-console.log(`export DB_PASS="${pass}"`);
-console.log(`export DB_NAME="${db}"`);
+// Output exports with safe escaping
+console.log(safeExport('DATABASE_URL', safeUrl));
+console.log(safeExport('DB_HOST', host));
+console.log(safeExport('DB_PORT', port));
+console.log(safeExport('DB_USER', user));
+console.log(safeExport('DB_PASS', pass));
+console.log(safeExport('DB_NAME', db));
