@@ -1,24 +1,6 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: juelle-hair-db-prod
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_DB: ${POSTGRES_DB:-juellehair}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - juelle-hair-network
-    restart: unless-stopped
-
   backend:
     build:
       context: ./backend
@@ -30,17 +12,15 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-juellehair}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+      POSTGRES_HOST: ${POSTGRES_HOST:?POSTGRES_HOST is required}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       # Fallback DATABASE_URL (overwritten by entrypoint script fix-db-env.js)
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-juellehair}?schema=public
+      # Use POSTGRES_HOST environment variable for external database connection
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-juellehair}?schema=public
       PORT: 3001
       NODE_ENV: production
     ports:
       - "3001:3001"
-    depends_on:
-      postgres:
-        condition: service_healthy
     volumes:
       - backend_uploads:/app/uploads
     healthcheck:
@@ -50,18 +30,13 @@ services:
       retries: 10
       start_period: 300s
     networks:
-      - juelle-hair-network
       - coolify
     restart: unless-stopped
 
 volumes:
-  postgres_data:
-    driver: local
   backend_uploads:
     driver: local
 
 networks:
-  juelle-hair-network:
-    driver: bridge
   coolify:
     external: true
