@@ -6,8 +6,10 @@ import { api } from "@/lib/api";
 import { Address } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
+import { GHANA_REGIONS } from "@/lib/ghana-regions";
 
 interface AddressFormProps {
   address?: Address | null;
@@ -171,12 +173,18 @@ export function AddressForm({ address, onClose, onSuccess }: AddressFormProps) {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Region *</label>
-                <Input
-                  type="text"
+                <Select
                   required
                   value={formData.region}
                   onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                />
+                >
+                  <option value="">Select Region</option>
+                  {GHANA_REGIONS.map((region) => (
+                    <option key={region} value={region}>
+                      {region}
+                    </option>
+                  ))}
+                </Select>
               </div>
             </div>
 

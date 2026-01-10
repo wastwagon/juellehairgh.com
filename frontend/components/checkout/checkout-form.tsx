@@ -11,7 +11,9 @@ import { ShippingMethodSelector } from "./shipping-method-selector";
 import { CheckoutLoginPrompt } from "./checkout-login-prompt";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GHANA_REGIONS } from "@/lib/ghana-regions";
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -528,10 +530,8 @@ export function CheckoutForm() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Region</label>
-                <Input
-                  type="text"
+                <Select
                   required
-                  placeholder="Greater Accra"
                   value={formData.shippingAddress.region}
                   onChange={(e) =>
                     setFormData({
@@ -542,7 +542,14 @@ export function CheckoutForm() {
                       },
                     })
                   }
-                />
+                >
+                  <option value="">Select Region</option>
+                  {GHANA_REGIONS.map((region) => (
+                    <option key={region} value={region}>
+                      {region}
+                    </option>
+                  ))}
+                </Select>
               </div>
             </div>
           </div>
