@@ -4,10 +4,30 @@ import type { NextRequest } from "next/server";
 // Configuration for maintenance mode check
 // In Docker development, we need to use the service name 'backend' and internal port 3001
 const getApiUrl = () => {
-  if (process.env.NODE_ENV === "development" && typeof window === "undefined") {
-    return "http://backend:3001/api";
+  // Priority 1: Check if NEXT_PUBLIC_API_BASE_URL is set and not a production URL
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  
+  // If set and not localhost/production domain, use it
+  if (apiUrl && !apiUrl.includes('api.juellehairgh.com')) {
+    return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
   }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001/api";
+  
+  // Priority 2: Development mode - use localhost
+  if (process.env.NODE_ENV === "development" && typeof window === "undefined") {
+    // Try Docker service name first (for Docker Compose)
+    if (process.env.DOCKER_ENV) {
+      return "http://backend:3001/api";
+    }
+    // Fallback to localhost
+    return "http://localhost:3001/api";
+  }
+  
+  // Priority 3: Fallback to localhost or production
+  if (apiUrl && apiUrl.includes('api.juellehairgh.com')) {
+    return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+  }
+  
+  return "http://localhost:3001/api";
 };
 
 export async function middleware(request: NextRequest) {
