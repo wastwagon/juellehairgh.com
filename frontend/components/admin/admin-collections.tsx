@@ -95,11 +95,13 @@ export function AdminCollections() {
                   {collection.image ? (
                     <img
                       src={
-                        collection.image.startsWith("/")
+                        collection.image.startsWith("http://") || collection.image.startsWith("https://")
                           ? collection.image
-                          : collection.image.startsWith("http")
+                          : collection.image.startsWith("/media/")
+                          ? `/api${collection.image}`
+                          : collection.image.startsWith("/")
                           ? collection.image
-                          : `/media/collections/${collection.image.split("/").pop()}`
+                          : `/api/media/collections/${collection.image.split("/").pop()}`
                       }
                       alt={collection.name}
                       className="w-10 h-10 object-cover rounded"
