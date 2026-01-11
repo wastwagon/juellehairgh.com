@@ -58,22 +58,37 @@ export function PromotionalBanners() {
 
   const getImageUrl = (url?: string) => {
     if (!url) return null;
+    
+    // Handle absolute URLs
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     
     // Handle media library paths - use Next.js API proxy route
+    if (url.startsWith("/media/banners/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle /media/ paths (general case) - use Next.js API proxy route
     if (url.startsWith("/media/")) {
       return `/api${url}`;
     }
     
-    // Handle paths containing "media" or "banners"
-    if (url.includes("media") || url.includes("banners")) {
+    // Handle paths containing "banners" (extract filename)
+    if (url.includes("banners")) {
       const filename = url.split("/").pop() || url;
       return `/api/media/banners/${filename}`;
     }
     
-    // For other paths
-    if (url.startsWith("/")) return url;
-    return `/${url}`;
+    // For other absolute paths starting with /
+    if (url.startsWith("/")) {
+      if (url.includes("/media/")) {
+        return `/api${url}`;
+      }
+      return url;
+    }
+    
+    // Bare filename - assume it's a banner image
+    // Use Next.js API proxy route which forwards to backend
+    return `/api/media/banners/${url}`;
   };
 
   // Show loading state
