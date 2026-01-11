@@ -56,44 +56,36 @@ export function FeaturedCollections() {
         return imagePath;
       }
       
-      // For /media/collections/ paths, use backend URL directly
-      // Backend serves static files at /media/collections/ via static assets middleware
+      // For /media/collections/ paths, use Next.js API proxy route
       if (imagePath.startsWith("/media/collections/")) {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-        const backendBaseUrl = apiBaseUrl.replace('/api', '');
-        // Use backend static file serving: /media/collections/filename.jpg
-        return `${backendBaseUrl}${imagePath}`;
+        // Use Next.js API proxy route which forwards to backend
+        return `/api${imagePath}`;
       }
       
-      // Handle /media/ paths (general case) - use backend URL directly
+      // Handle /media/ paths (general case) - use Next.js API proxy route
       if (imagePath.startsWith("/media/")) {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-        const backendBaseUrl = apiBaseUrl.replace('/api', '');
-        return `${backendBaseUrl}${imagePath}`;
+        return `/api${imagePath}`;
       }
       
-      // Handle paths that contain "collections" or "media" (fallback)
+      // Handle paths that contain "collections" or "media" (extract filename)
       if (imagePath.includes("collections") || imagePath.includes("media")) {
         const filename = imagePath.split("/").pop() || imagePath;
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-        const backendBaseUrl = apiBaseUrl.replace('/api', '');
-        return `${backendBaseUrl}/media/collections/${filename}`;
+        // Use Next.js API proxy route
+        return `/api/media/collections/${filename}`;
       }
       
       // For other absolute paths starting with /
       if (imagePath.startsWith("/")) {
         if (imagePath.includes("/media/")) {
-          const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-          const backendBaseUrl = apiBaseUrl.replace('/api', '');
-          return `${backendBaseUrl}${imagePath}`;
+          // Use Next.js API proxy route
+          return `/api${imagePath}`;
         }
         return imagePath;
       }
       
       // Relative filename - assume it's a collection image
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-      const backendBaseUrl = apiBaseUrl.replace('/api', '');
-      return `${backendBaseUrl}/media/collections/${imagePath}`;
+      // Use Next.js API proxy route which forwards to backend
+      return `/api/media/collections/${imagePath}`;
     }
     
     // If no image, try to use first product image as fallback
