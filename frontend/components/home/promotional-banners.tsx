@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { ArrowRight, Sparkles, Layers, Droplet, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 
 interface Banner {
   id: string;
@@ -120,11 +119,10 @@ export function PromotionalBanners() {
               {/* Background Image */}
               {imageUrl ? (
                 <div className="absolute inset-0">
-                  <Image
+                  <img
                     src={imageUrl}
                     alt={banner.title}
-                    fill
-                    className="object-cover opacity-80 group-hover:opacity-90 transition-opacity"
+                    className="w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity"
                     onError={(e) => {
                       // Hide image if it fails to load, gradient will show
                       (e.target as HTMLImageElement).style.display = 'none';
