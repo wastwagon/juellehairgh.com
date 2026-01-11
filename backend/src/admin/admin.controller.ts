@@ -558,7 +558,14 @@ export class AdminController {
     if (!body.email || !body.email.includes("@")) {
       throw new Error("Valid email address is required");
     }
-    return this.emailService.sendTestEmail(body.email);
+    try {
+      return await this.emailService.sendTestEmail(body.email);
+    } catch (error: any) {
+      console.error("Test email error:", error);
+      throw new Error(
+        error?.message || "Failed to send test email. Please check your SMTP configuration.",
+      );
+    }
   }
 
   // Discount Codes Management

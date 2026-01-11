@@ -1,18 +1,41 @@
 {{> header}}
 
-<h1>New Customer Registered</h1>
+<h1 style="color: #db2777; font-size: 28px; margin-bottom: 10px;">New Customer Registration! 👤</h1>
 
-<p>A new customer has just registered on <strong>{{siteName}}</strong>.</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">A new customer has just registered on <strong>{{siteName}}</strong>.</p>
 
-<div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin: 25px 0;">
-  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Customer Details</h2>
-  <p style="margin: 10px 0;"><strong>Name:</strong> {{customerName}}</p>
-  <p style="margin: 10px 0;"><strong>Email:</strong> {{customerEmail}}</p>
-  <p style="margin: 10px 0;"><strong>Registration Date:</strong> {{registrationDate}}</p>
+<!-- Customer Details Card -->
+<div style="background: linear-gradient(to bottom, #fdf2f8 0%, #ffffff 100%); border: 1px solid #fbcfe8; border-radius: 12px; padding: 30px; margin: 30px 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+  <h2 style="color: #db2777; font-size: 22px; margin-top: 0; margin-bottom: 25px; font-weight: 600;">Customer Details</h2>
+  
+  <div style="background-color: #f9fafb; border-radius: 8px; padding: 25px; border: 1px solid #e5e7eb;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500; width: 35%; vertical-align: top;">Name:</td>
+        <td style="padding: 12px 0; font-size: 15px; color: #111827; font-weight: 600;">{{customerName}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500; vertical-align: top;">Email:</td>
+        <td style="padding: 12px 0; font-size: 15px; color: #111827; font-weight: 600;">
+          <a href="mailto:{{customerEmail}}" style="color: #db2777; text-decoration: none;">{{customerEmail}}</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500; vertical-align: top;">Registration Date:</td>
+        <td style="padding: 12px 0; font-size: 15px; color: #111827; font-weight: 600;">{{registrationDate}}</td>
+      </tr>
+    </table>
+  </div>
 </div>
 
-<div style="text-align: center; margin-top: 30px;">
-  <a href="{{adminUsersUrl}}" class="button">View All Customers</a>
+<!-- Welcome Message -->
+<div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);">
+  <p style="margin: 0; font-size: 15px; color: #065f46; font-weight: 500;">A new customer has joined {{siteName}}. Welcome them with excellent service!</p>
+</div>
+
+<!-- Call to Action -->
+<div style="text-align: center; margin: 35px 0;">
+  <a href="{{adminUsersUrl}}" style="display: inline-block; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3);">View All Customers</a>
 </div>
 
 {{> footer}}

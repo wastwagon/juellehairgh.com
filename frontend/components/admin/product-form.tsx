@@ -1383,7 +1383,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
                               const filename = featuredImage.split("/").pop() || featuredImage;
-                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
+                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api'}/admin/upload/media/products/${filename}`;
                             }}
                           />
                           <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg uppercase">
@@ -1418,7 +1418,7 @@ export function ProductForm({ product, onClose, onSuccess, asPage = false }: Pro
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
                               const filename = url.split("/").pop() || url;
-                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/products/${filename}`;
+                              img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api'}/admin/upload/media/products/${filename}`;
                             }}
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none rounded-lg" />

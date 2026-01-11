@@ -33,8 +33,9 @@ export default function CheckoutCallbackPage() {
               }, 2000);
             } else if (response.data.order?.id) {
               setMessage("Payment verified successfully! Redirecting to order confirmation...");
+              // Use window.location.href for full page navigation to ensure redirect works
               setTimeout(() => {
-                router.push(`/checkout/thank-you?orderId=${response.data.order.id}`);
+                window.location.href = `/checkout/thank-you?orderId=${response.data.order.id}`;
               }, 1500);
             } else {
               setMessage("Payment successful! Redirecting...");

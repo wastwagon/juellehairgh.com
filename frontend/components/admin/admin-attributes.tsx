@@ -425,7 +425,7 @@ export function AdminAttributes() {
                                     if (retryCount === 0 && !currentSrc.includes("/api/admin/upload/media/")) {
                                       const filename = newTermImage.split("/").pop();
                                       if (filename) {
-                                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001/api";
+                                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:9001/api";
                                         const fallbackUrl = `${apiBaseUrl}/admin/upload/media/swatches/${filename}`;
                                         console.log("Trying fallback URL:", fallbackUrl);
                                         img.setAttribute("data-retry", "1");
@@ -592,7 +592,7 @@ export function AdminAttributes() {
                                   if (retryCount === 0 && !currentSrc.includes("/api/admin/upload/media/")) {
                                     const filename = term.image.split("/").pop();
                                     if (filename) {
-                                      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001/api";
+                                      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:9001/api";
                                       const fallbackUrl = `${apiBaseUrl}/admin/upload/media/swatches/${filename}`;
                                       console.log("Trying fallback URL for existing term:", fallbackUrl);
                                       img.setAttribute("data-retry", "1");
@@ -769,7 +769,7 @@ export function AdminAttributes() {
                             if (!currentSrc.includes("/api/admin/upload/media/")) {
                               const filename = editingTerm.term?.image?.split("/").pop();
                               if (filename) {
-                                const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001/api";
+                                const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:9001/api";
                                 const fallbackUrl = `${apiBaseUrl}/admin/upload/media/swatches/${filename}`;
                                 console.log("Trying fallback URL:", fallbackUrl);
                                 img.src = fallbackUrl;

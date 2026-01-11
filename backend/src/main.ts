@@ -13,7 +13,7 @@ async function bootstrap() {
     const allowedOriginsList = [
       "https://juellehairgh.com",
       "https://www.juellehairgh.com",
-      "http://localhost:8002",
+      "http://localhost:9002",
       "http://localhost:3000",
       process.env.FRONTEND_URL,
     ].filter(Boolean);

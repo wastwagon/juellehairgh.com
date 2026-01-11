@@ -14,7 +14,8 @@ export class AnalyticsService {
     revenue?: number;
     metadata?: any;
   }) {
-    return this.prisma.analyticsEvent.create({
+    try {
+      return await this.prisma.analyticsEvent.create({
       data: {
         eventType: data.eventType,
         userId: data.userId,
@@ -25,6 +26,11 @@ export class AnalyticsService {
         metadata: data.metadata || {},
       },
     });
+    } catch (error: any) {
+      // Log error but don't throw - analytics is non-critical
+      console.error("Failed to track analytics event:", error?.message || error);
+      throw error; // Re-throw to be handled by controller
+    }
   }
 
   async getRealtimeStats() {

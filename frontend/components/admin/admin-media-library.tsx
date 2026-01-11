@@ -300,7 +300,7 @@ export function AdminMediaLibrary({ onSelect, standalone = true }: MediaLibraryP
                 >
                   {file.type === "image" ? (
                     <img
-                      src={file.url.startsWith("http") ? file.url : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/${file.category}/${file.filename}`}
+                      src={file.url.startsWith("http") ? file.url : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api'}/admin/upload/media/${file.category}/${file.filename}`}
                       alt={file.originalName}
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -362,7 +362,7 @@ export function AdminMediaLibrary({ onSelect, standalone = true }: MediaLibraryP
                 <div className="bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center min-h-[300px] border">
                   {selectedFile.type === "image" ? (
                     <img
-                      src={selectedFile.url.startsWith("http") ? selectedFile.url : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/${selectedFile.category}/${selectedFile.filename}`}
+                      src={selectedFile.url.startsWith("http") ? selectedFile.url : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api'}/admin/upload/media/${selectedFile.category}/${selectedFile.filename}`}
                       alt={selectedFile.originalName}
                       className="max-w-full max-h-[400px] object-contain"
                     />

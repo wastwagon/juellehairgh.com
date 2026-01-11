@@ -1,23 +1,64 @@
 {{> header}}
 
-<h1>Welcome to {{siteName}}, {{customerName}}!</h1>
+<h1 style="color: #db2777; font-size: 28px; margin-bottom: 10px;">Welcome to {{siteName}}, {{customerName}}! 🎉</h1>
 
-<p>Thank you for joining our community! We are thrilled to have you with us.</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">We're absolutely thrilled to have you join our community! Thank you for becoming part of the {{siteName}} family.</p>
 
-<p>With your new account, you can:</p>
-<ul>
-  <li>Shop our premium collection of hair products</li>
-  <li>Track your orders easily</li>
-  <li>Manage your wishlist and preferences</li>
-  <li>Receive exclusive offers and updates</li>
-</ul>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">At {{siteName}}, we're passionate about helping you discover your perfect look with our premium collection of high-quality hair products. We're here to make your shopping experience exceptional.</p>
 
-<p>Click the button below to explore our shop and find your perfect look!</p>
+<!-- Welcome Benefits Card -->
+<div style="background: linear-gradient(to bottom, #fdf2f8 0%, #ffffff 100%); border: 1px solid #fbcfe8; border-radius: 12px; padding: 30px; margin: 30px 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+  <h2 style="color: #db2777; font-size: 20px; margin-top: 0; margin-bottom: 25px; font-weight: 600;">What You Can Do With Your Account</h2>
+  
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 15px 0; vertical-align: top; width: 50px;">
+        <div style="width: 40px; height: 40px; background-color: #fce7f3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">🛍️</div>
+      </td>
+      <td style="padding: 15px 0; padding-left: 15px;">
+        <div style="font-weight: 600; font-size: 16px; color: #111827; margin-bottom: 5px;">Shop Our Premium Collection</div>
+        <div style="font-size: 14px; color: #6b7280; line-height: 1.5;">Browse our extensive range of premium hair products and find exactly what you're looking for.</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 0; vertical-align: top;">
+        <div style="width: 40px; height: 40px; background-color: #fce7f3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">📦</div>
+      </td>
+      <td style="padding: 15px 0; padding-left: 15px;">
+        <div style="font-weight: 600; font-size: 16px; color: #111827; margin-bottom: 5px;">Track Your Orders Easily</div>
+        <div style="font-size: 14px; color: #6b7280; line-height: 1.5;">Keep tabs on all your orders from one convenient location.</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 0; vertical-align: top;">
+        <div style="width: 40px; height: 40px; background-color: #fce7f3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">❤️</div>
+      </td>
+      <td style="padding: 15px 0; padding-left: 15px;">
+        <div style="font-weight: 600; font-size: 16px; color: #111827; margin-bottom: 5px;">Manage Your Wishlist</div>
+        <div style="font-size: 14px; color: #6b7280; line-height: 1.5;">Save your favorite products and preferences for quick access later.</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 0; vertical-align: top;">
+        <div style="width: 40px; height: 40px; background-color: #fce7f3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎁</div>
+      </td>
+      <td style="padding: 15px 0; padding-left: 15px;">
+        <div style="font-weight: 600; font-size: 16px; color: #111827; margin-bottom: 5px;">Receive Exclusive Offers</div>
+        <div style="font-size: 14px; color: #6b7280; line-height: 1.5;">Get notified about special promotions, new arrivals, and exclusive deals.</div>
+      </td>
+    </tr>
+  </table>
+</div>
 
-<a href="{{siteUrl}}/categories/shop-all" class="button">Start Shopping</a>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin-top: 30px;">Ready to start shopping? Click the button below to explore our collection and discover your perfect look!</p>
 
-<p>If you have any questions or need assistance, feel free to reply to this email.</p>
+<!-- Call to Action -->
+<div style="text-align: center; margin: 35px 0;">
+  <a href="{{siteUrl}}/categories/shop-all" style="display: inline-block; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3);">Start Shopping</a>
+</div>
 
-<p>Happy shopping!<br>The {{siteName}} Team</p>
+<p style="font-size: 15px; line-height: 1.6; color: #6b7280; margin-top: 30px;">If you have any questions, need assistance, or just want to say hello, feel free to <a href="mailto:support@juellehairgh.com" style="color: #db2777; text-decoration: none;">reply to this email</a> or visit our <a href="{{siteUrl}}/contact" style="color: #db2777; text-decoration: none;">contact page</a>. We're always happy to help!</p>
+
+<p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-top: 20px;">Happy shopping!<br><strong style="color: #db2777;">The {{siteName}} Team</strong></p>
 
 {{> footer}}

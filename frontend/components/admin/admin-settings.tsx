@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export function AdminSettings() {
   const queryClient = useQueryClient();
   const [showSecretKey, setShowSecretKey] = useState(false);
-  const [showSendGridKey, setShowSendGridKey] = useState(false);
+  const [showSmtpPassword, setShowSmtpPassword] = useState(false);
   const [testEmail, setTestEmail] = useState("");
   const [testEmailStatus, setTestEmailStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [testEmailMessage, setTestEmailMessage] = useState("");
@@ -26,8 +26,14 @@ export function AdminSettings() {
     currencyBase: "GHS",
     paystackSecretKey: "",
     paystackPublicKey: "",
-    emailProvider: "sendgrid",
-    sendgridApiKey: "",
+    emailProvider: "smtp",
+    smtpHost: "mail.juellehairgh.com",
+    smtpPort: "587",
+    smtpUser: "admin@juellehairgh.com",
+    smtpPassword: "",
+    emailFrom: "admin@juellehairgh.com",
+    emailFromName: "Juelle Hair Ghana",
+    adminEmail: "",
     maintenanceMode: false,
   });
 
@@ -52,8 +58,14 @@ export function AdminSettings() {
         ...prev,
         paystackSecretKey: apiSettings.PAYSTACK_SECRET_KEY || "",
         paystackPublicKey: apiSettings.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-        emailProvider: apiSettings.EMAIL_PROVIDER || "sendgrid",
-        sendgridApiKey: apiSettings.SENDGRID_API_KEY || "",
+        emailProvider: apiSettings.EMAIL_PROVIDER || "smtp",
+        smtpHost: apiSettings.SMTP_HOST || "",
+        smtpPort: apiSettings.SMTP_PORT || "587",
+        smtpUser: apiSettings.SMTP_USER || "",
+        smtpPassword: apiSettings.SMTP_PASSWORD || "",
+        emailFrom: apiSettings.EMAIL_FROM || "",
+        emailFromName: apiSettings.EMAIL_FROM_NAME || "Juelle Hair Ghana",
+        adminEmail: apiSettings.ADMIN_EMAIL || "",
         siteName: apiSettings.SITE_NAME || prev.siteName,
         siteEmail: apiSettings.SITE_EMAIL || prev.siteEmail,
         sitePhone: apiSettings.SITE_PHONE || prev.sitePhone,
@@ -84,7 +96,13 @@ export function AdminSettings() {
             { key: "PAYSTACK_SECRET_KEY", value: settingsToSave.paystackSecretKey, category: "payment" },
             { key: "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY", value: settingsToSave.paystackPublicKey, category: "payment" },
             { key: "EMAIL_PROVIDER", value: settingsToSave.emailProvider, category: "email" },
-            { key: "SENDGRID_API_KEY", value: settingsToSave.sendgridApiKey, category: "email" },
+            { key: "SMTP_HOST", value: settingsToSave.smtpHost, category: "email" },
+            { key: "SMTP_PORT", value: settingsToSave.smtpPort, category: "email" },
+            { key: "SMTP_USER", value: settingsToSave.smtpUser, category: "email" },
+            { key: "SMTP_PASSWORD", value: settingsToSave.smtpPassword, category: "email" },
+            { key: "EMAIL_FROM", value: settingsToSave.emailFrom, category: "email" },
+            { key: "EMAIL_FROM_NAME", value: settingsToSave.emailFromName, category: "email" },
+            { key: "ADMIN_EMAIL", value: settingsToSave.adminEmail, category: "email" },
             { key: "MAINTENANCE_MODE", value: settingsToSave.maintenanceMode.toString(), category: "general" },
           ],
         },
@@ -305,8 +323,7 @@ export function AdminSettings() {
               onChange={(e) => setSettings({ ...settings, emailProvider: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
-              <option value="sendgrid">SendGrid</option>
-              <option value="smtp">SMTP (Gmail, Outlook, etc.)</option>
+              <option value="smtp">SMTP (Namecheap, Gmail, Outlook, etc.)</option>
               <option value="mailgun">Mailgun</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">
@@ -314,25 +331,64 @@ export function AdminSettings() {
             </p>
           </div>
 
-          {settings.emailProvider === "sendgrid" && (
+          {settings.emailProvider === "smtp" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">SendGrid API Key</label>
+                <label className="block text-sm font-medium mb-2">SMTP Host</label>
+                <Input
+                  type="text"
+                  value={settings.smtpHost}
+                  onChange={(e) => setSettings({ ...settings, smtpHost: e.target.value })}
+                  placeholder="smtp.gmail.com or smtp.yourdomain.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Your SMTP server hostname (e.g., smtp.gmail.com, mail.yourdomain.com)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">SMTP Port</label>
+                <Input
+                  type="text"
+                  value={settings.smtpPort}
+                  onChange={(e) => setSettings({ ...settings, smtpPort: e.target.value })}
+                  placeholder="587"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  SMTP port (usually 587 for TLS, 465 for SSL, or 25 for unencrypted)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">SMTP Username</label>
+                <Input
+                  type="text"
+                  value={settings.smtpUser}
+                  onChange={(e) => setSettings({ ...settings, smtpUser: e.target.value })}
+                  placeholder="your-email@yourdomain.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Your SMTP account username/email address
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">SMTP Password</label>
                 <div className="relative">
                   <Input
-                    type={showSendGridKey ? "text" : "password"}
-                    value={settings.sendgridApiKey}
-                    onChange={(e) => setSettings({ ...settings, sendgridApiKey: e.target.value })}
-                    placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    type={showSmtpPassword ? "text" : "password"}
+                    value={settings.smtpPassword}
+                    onChange={(e) => setSettings({ ...settings, smtpPassword: e.target.value })}
+                    placeholder="Your SMTP password or app password"
                     className="pr-10"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowSendGridKey(!showSendGridKey)}
+                    onClick={() => setShowSmtpPassword(!showSmtpPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                    aria-label={showSendGridKey ? "Hide API key" : "Show API key"}
+                    aria-label={showSmtpPassword ? "Hide password" : "Show password"}
                   >
-                    {showSendGridKey ? (
+                    {showSmtpPassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
@@ -340,15 +396,46 @@ export function AdminSettings() {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  SendGrid API key for email delivery. Get your API key from{" "}
-                  <a
-                    href="https://app.sendgrid.com/settings/api_keys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-600 hover:underline"
-                  >
-                    SendGrid Dashboard
-                  </a>
+                  Your SMTP account password. For Gmail, use an App Password instead of your regular password.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">From Email Address</label>
+                <Input
+                  type="email"
+                  value={settings.emailFrom}
+                  onChange={(e) => setSettings({ ...settings, emailFrom: e.target.value })}
+                  placeholder="noreply@yourdomain.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Email address that appears as the sender (must match your SMTP account domain)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">From Name</label>
+                <Input
+                  type="text"
+                  value={settings.emailFromName}
+                  onChange={(e) => setSettings({ ...settings, emailFromName: e.target.value })}
+                  placeholder="Juelle Hair Ghana"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Display name that appears as the sender (e.g., "Juelle Hair Ghana")
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Admin Notification Email</label>
+                <Input
+                  type="email"
+                  value={settings.adminEmail}
+                  onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
+                  placeholder="admin@gmail.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Email address to receive admin notifications (new orders, payments, new customers). Can be any email address including Gmail.
                 </p>
               </div>
 
@@ -356,7 +443,7 @@ export function AdminSettings() {
               <div className="border-t pt-4">
                 <label className="block text-sm font-medium mb-2">Test Email Configuration</label>
                 <p className="text-xs text-gray-500 mb-3">
-                  Enter an email address to send a test email and verify your SendGrid configuration is working.
+                  Enter an email address to send a test email and verify your SMTP configuration is working.
                 </p>
                 <div className="flex gap-2">
                   <Input
@@ -411,20 +498,15 @@ export function AdminSettings() {
 
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  <strong>Free Tier:</strong> 100 emails/day forever. Perfect for getting started!
+                  <strong>Note:</strong> After saving SMTP settings, restart the backend server for changes to take effect.
                 </p>
                 <p className="text-xs text-blue-800 mt-1">
-                  <strong>Note:</strong> After saving, restart the backend server for changes to take effect.
+                  <strong>Gmail Users:</strong> You need to enable 2-factor authentication and create an App Password. Go to Google Account → Security → App Passwords.
+                </p>
+                <p className="text-xs text-blue-800 mt-1">
+                  <strong>Domain Email:</strong> Use your domain's SMTP server (e.g., mail.yourdomain.com) for professional email delivery.
                 </p>
               </div>
-            </div>
-          )}
-
-          {settings.emailProvider === "smtp" && (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-xs text-yellow-800">
-                <strong>SMTP Configuration:</strong> For SMTP settings, configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASSWORD in your environment variables or contact your administrator.
-              </p>
             </div>
           )}
 

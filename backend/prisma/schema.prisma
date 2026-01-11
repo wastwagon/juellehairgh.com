@@ -27,6 +27,8 @@ model User {
   deletedAt            DateTime?
   deletionReason       String?
   deletionRequestedAt  DateTime?
+  passwordResetToken   String?        @unique
+  passwordResetExpires DateTime?
   addresses            Address[]
   cart                 Cart?
   orders               Order[]
@@ -34,6 +36,7 @@ model User {
   wallet               Wallet?
   wishlist             WishlistItem[]
 
+  @@index([passwordResetToken])
   @@map("users")
 }
 

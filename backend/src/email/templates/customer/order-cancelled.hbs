@@ -1,25 +1,33 @@
 {{> header}}
 
-<h1 style="color: #991b1b;">Order Cancelled</h1>
+<h1 style="color: #dc2626; font-size: 28px; margin-bottom: 10px;">Order Cancelled</h1>
 
-<p>Hi {{customerName}},</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Hi {{customerName}},</p>
 
-<p>Your order <strong>#{{orderNumber}}</strong> has been cancelled.</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">We're writing to inform you that your order <strong style="color: #dc2626;">#{{orderNumber}}</strong> has been cancelled.</p>
 
-<div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fee2e2;">
-  <p style="margin: 0;"><strong>Reason for cancellation:</strong><br>{{reason}}</p>
+<!-- Cancellation Reason Card -->
+<div style="background: linear-gradient(to bottom, #fef2f2 0%, #ffffff 100%); border: 2px solid #fca5a5; border-radius: 12px; padding: 25px; margin: 30px 0; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.1);">
+  <h3 style="color: #991b1b; font-size: 18px; margin-top: 0; margin-bottom: 15px; font-weight: 600;">Reason for Cancellation</h3>
+  <p style="margin: 0; font-size: 15px; color: #7f1d1d; line-height: 1.6;">{{reason}}</p>
 </div>
 
 {{#if refundInfo}}
-<div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #dcfce7;">
-  <p style="margin: 0;"><strong>Refund Information:</strong><br>{{refundInfo}}</p>
+<!-- Refund Information Card -->
+<div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 12px; padding: 25px; margin: 30px 0; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);">
+  <h3 style="color: #059669; font-size: 18px; margin-top: 0; margin-bottom: 15px; font-weight: 600;">Refund Information</h3>
+  <p style="margin: 0; font-size: 15px; color: #065f46; line-height: 1.6;">{{refundInfo}}</p>
+  <p style="margin: 15px 0 0 0; font-size: 14px; color: #047857; line-height: 1.6;">The refund will be processed to your original payment method. You should see the funds reflected in your account within 5-7 business days.</p>
 </div>
 {{/if}}
 
-<p>We're sorry for any inconvenience this may have caused. If you have any questions or if you didn't request this cancellation, please contact our support team immediately.</p>
+<p style="font-size: 15px; line-height: 1.6; color: #6b7280; margin-top: 30px;">We're sorry for any inconvenience this may have caused. If you didn't request this cancellation or if you have any questions, please <a href="mailto:support@juellehairgh.com" style="color: #db2777; text-decoration: none;">contact our support team immediately</a> and we'll be happy to assist you.</p>
 
-<div style="text-align: center; margin-top: 30px;">
-  <a href="{{siteUrl}}" class="button">Return to Shop</a>
+<!-- Call to Action -->
+<div style="text-align: center; margin: 35px 0;">
+  <a href="{{siteUrl}}" style="display: inline-block; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3);">Return to Shop</a>
 </div>
+
+<p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-top: 20px;">We hope to see you again soon at {{siteName}}!</p>
 
 {{> footer}}

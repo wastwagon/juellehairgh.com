@@ -18,14 +18,21 @@ import { Roles } from "../auth/decorators/roles.decorator";
 export class ShippingController {
   constructor(private shippingService: ShippingService) {}
 
-  // Public: Get available shipping methods for a region
+  // Public: Get available shipping methods for a country/region/city
   @Get("methods")
   async getMethods(
-    @Query("region") region: string,
+    @Query("country") country?: string,
+    @Query("region") region?: string,
+    @Query("city") city?: string,
     @Query("orderTotal") orderTotal?: string,
   ) {
     const total = orderTotal ? parseFloat(orderTotal) : undefined;
-    return this.shippingService.getMethodsForRegion(region || "Ghana", total);
+    return this.shippingService.getMethodsForLocation(
+      country || "Ghana",
+      region,
+      city,
+      total,
+    );
   }
 
   // Public: Get all active zones

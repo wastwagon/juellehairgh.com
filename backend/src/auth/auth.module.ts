@@ -8,11 +8,13 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LocalStrategy } from "./strategies/local.strategy";
 import { UsersModule } from "../users/users.module";
 import { EmailModule } from "../email/email.module";
+import { WalletModule } from "../wallet/wallet.module";
 
 @Module({
   imports: [
     UsersModule,
     EmailModule,
+    WalletModule,
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],

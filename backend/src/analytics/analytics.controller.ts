@@ -18,7 +18,14 @@ export class AnalyticsController {
 
   @Post("track")
   async trackEvent(@Body() data: any) {
-    return this.analyticsService.trackEvent(data);
+    try {
+      return await this.analyticsService.trackEvent(data);
+    } catch (error: any) {
+      // Silently fail analytics tracking to prevent 500 errors
+      // Analytics is non-critical and shouldn't break the user experience
+      console.error("Analytics tracking error:", error?.message || error);
+      return { success: false, error: "Failed to track event" };
+    }
   }
 
   @Get("realtime")

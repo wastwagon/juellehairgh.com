@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GHANA_REGIONS } from "@/lib/ghana-regions";
+import { COUNTRIES } from "@/lib/countries";
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -308,9 +309,11 @@ export function CheckoutForm() {
       // Handle payment based on selected method
       if (formData.paymentMethod === "wallet") {
         // Wallet payment is already processed in order creation
-        // Redirect to thank you page
+        // Clear cart and redirect to thank you page
+        // Use window.location.href for full page navigation to prevent useEffect interference
         clearCart();
-        router.push(`/checkout/thank-you?orderId=${order.id}`);
+        window.location.href = `/checkout/thank-you?orderId=${order.id}`;
+        return; // Exit early to prevent further execution
       } else {
         // Initialize Paystack payment
         const paymentResponse = await api.post(
@@ -529,7 +532,34 @@ export function CheckoutForm() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Region</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Country *</label>
+                <Select
+                  required
+                  value={formData.shippingAddress.country}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      shippingAddress: {
+                        ...formData.shippingAddress,
+                        country: e.target.value,
+                        // Reset region when country changes (if not Ghana, region may not apply)
+                        region: e.target.value === "Ghana" ? formData.shippingAddress.region : "",
+                      },
+                    })
+                  }
+                >
+                  <option value="">Select Country</option>
+                  {COUNTRIES.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+            {formData.shippingAddress.country === "Ghana" && (
+              <div className="mt-4">
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Region *</label>
                 <Select
                   required
                   value={formData.shippingAddress.region}
@@ -551,12 +581,14 @@ export function CheckoutForm() {
                   ))}
                 </Select>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Shipping Method Selection */}
           <ShippingMethodSelector
-            region={formData.shippingAddress.region || formData.shippingAddress.country || "Ghana"}
+            country={formData.shippingAddress.country || "Ghana"}
+            region={formData.shippingAddress.region || ""}
+            city={formData.shippingAddress.city || ""}
             orderTotal={subtotalGhs}
             selectedMethodId={formData.shippingMethodId || undefined}
             onSelect={(method) => {

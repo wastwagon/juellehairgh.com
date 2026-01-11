@@ -1,81 +1,112 @@
 {{> header}}
 
-<h1>Thank you for your order!</h1>
+<h1 style="color: #db2777; font-size: 28px; margin-bottom: 10px;">Thank You for Your Order!</h1>
 
-<p>Hi {{customerName}},</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Hi {{customerName}},</p>
 
-<p>We've received your order <strong>#{{orderNumber}}</strong> and are getting it ready for you. You'll receive another email as soon as it ships.</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">We're delighted to confirm that we've received your order <strong style="color: #db2777;">#{{orderNumber}}</strong> and our team is preparing it for shipment. You'll receive a notification email as soon as your order is on its way.</p>
 
-<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Order Summary</h2>
-  <table class="order-table">
+<!-- Order Summary Card -->
+<div style="background: linear-gradient(to bottom, #fdf2f8 0%, #ffffff 100%); border: 1px solid #fbcfe8; border-radius: 12px; padding: 30px; margin: 30px 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+  <h2 style="color: #db2777; font-size: 22px; margin-top: 0; margin-bottom: 25px; font-weight: 600;">Order Summary</h2>
+  
+  <!-- Order Items with Images -->
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
     <thead>
-      <tr>
-        <th>Product</th>
-        <th>Qty</th>
-        <th style="text-align: right;">Price</th>
+      <tr style="border-bottom: 2px solid #f3f4f6;">
+        <th style="text-align: left; padding: 12px 0; font-size: 13px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Product</th>
+        <th style="text-align: center; padding: 12px 0; font-size: 13px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; width: 80px;">Quantity</th>
+        <th style="text-align: right; padding: 12px 0; font-size: 13px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; width: 100px;">Price</th>
       </tr>
     </thead>
     <tbody>
       {{#each orderItems}}
-      <tr>
-        <td>
-          <strong>{{name}}</strong>
-          {{#if variant}}<br><small style="color: #666;">{{variant}}</small>{{/if}}
+      <tr style="border-bottom: 1px solid #f3f4f6;">
+        <td style="padding: 20px 0; vertical-align: top;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              {{#if image}}
+              <td style="width: 80px; padding-right: 15px; vertical-align: top;">
+                <img src="{{image}}" alt="{{name}}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; background-color: #f9fafb;" />
+              </td>
+              {{/if}}
+              <td style="vertical-align: top;">
+                <div style="font-weight: 600; font-size: 15px; color: #111827; margin-bottom: 5px;">{{name}}</div>
+                {{#if variant}}
+                <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">{{variant}}</div>
+                {{/if}}
+              </td>
+            </tr>
+          </table>
         </td>
-        <td>{{quantity}}</td>
-        <td style="text-align: right;">{{../currency}} {{total}}</td>
+        <td style="text-align: center; padding: 20px 10px; color: #4b5563; font-size: 15px; font-weight: 500;">{{quantity}}</td>
+        <td style="text-align: right; padding: 20px 0; color: #111827; font-size: 15px; font-weight: 600;">{{../currency}} {{total}}</td>
       </tr>
       {{/each}}
-      <tr class="total-row">
-        <td colspan="2" style="text-align: right;">Subtotal</td>
-        <td style="text-align: right;">{{currency}} {{subtotal}}</td>
-      </tr>
-      <tr>
-        <td colspan="2" style="text-align: right;">Shipping</td>
-        <td style="text-align: right;">{{currency}} {{shippingCost}}</td>
-      </tr>
-      <tr class="total-row" style="font-size: 18px; color: #db2777;">
-        <td colspan="2" style="text-align: right;">Total</td>
-        <td style="text-align: right;">{{currency}} {{total}}</td>
-      </tr>
     </tbody>
   </table>
+
+  <!-- Order Totals -->
+  <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="text-align: right; padding: 8px 0; font-size: 14px; color: #6b7280;">Subtotal:</td>
+        <td style="text-align: right; padding: 8px 0; font-size: 14px; color: #4b5563; font-weight: 500; width: 120px;">{{currency}} {{subtotal}}</td>
+      </tr>
+      <tr>
+        <td style="text-align: right; padding: 8px 0; font-size: 14px; color: #6b7280;">Shipping:</td>
+        <td style="text-align: right; padding: 8px 0; font-size: 14px; color: #4b5563; font-weight: 500;">{{currency}} {{shippingCost}}</td>
+      </tr>
+      <tr style="border-top: 2px solid #e5e7eb; margin-top: 10px;">
+        <td style="text-align: right; padding: 15px 0 8px 0; font-size: 18px; color: #111827; font-weight: 700;">Total:</td>
+        <td style="text-align: right; padding: 15px 0 8px 0; font-size: 20px; color: #db2777; font-weight: 700;">{{currency}} {{total}}</td>
+      </tr>
+    </table>
+  </div>
 </div>
 
-<div class="address-grid">
+<!-- Order Details Grid -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0;">
   {{#if shippingAddress}}
-  <div class="address-box">
-    <h3 style="margin-top: 0; color: #db2777;">Shipping Address</h3>
-    <p style="margin: 0;">
+  <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+    <h3 style="color: #db2777; font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 15px;">Shipping Address</h3>
+    <p style="margin: 5px 0; font-size: 14px; color: #4b5563; line-height: 1.6;">
       {{shippingAddress.firstName}} {{shippingAddress.lastName}}<br>
       {{shippingAddress.address}}<br>
       {{shippingAddress.city}}, {{shippingAddress.state}}<br>
-      {{shippingAddress.country}}
+      {{shippingAddress.country}}<br>
+      {{#if shippingAddress.phone}}<br>Phone: {{shippingAddress.phone}}{{/if}}
     </p>
   </div>
   {{/if}}
   
-  <div class="address-box">
-    <h3 style="margin-top: 0; color: #db2777;">Order Details</h3>
-    <p style="margin: 0;">
+  <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+    <h3 style="color: #db2777; font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 15px;">Order Details</h3>
+    <p style="margin: 5px 0; font-size: 14px; color: #4b5563; line-height: 1.6;">
       <strong>Order ID:</strong> #{{orderNumber}}<br>
-      <strong>Date:</strong> {{orderDate}}<br>
-      <strong>Payment Status:</strong> {{paymentStatus}}<br>
+      <strong>Order Date:</strong> {{orderDate}}<br>
+      <strong>Payment Status:</strong> <span style="color: {{#if paymentStatus}}{{#if (is paymentStatus 'PAID')}}#059669{{else}}#dc2626{{/if}}{{else}}#dc2626{{/if}}; font-weight: 600;">{{paymentStatus}}</span><br>
       <strong>Shipping Method:</strong> {{shippingMethod}}
     </p>
   </div>
 </div>
 
 {{#if paymentUrl}}
-<div style="text-align: center; margin-top: 30px;">
-  <p>Your payment is pending. Click the button below to complete your payment.</p>
-  <a href="{{paymentUrl}}" class="button">Complete Payment</a>
+<!-- Payment Pending Call to Action -->
+<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 25px; margin: 30px 0; text-align: center;">
+  <h3 style="color: #92400e; font-size: 18px; margin-top: 0; margin-bottom: 10px;">Payment Pending</h3>
+  <p style="color: #78350f; font-size: 15px; margin-bottom: 20px;">Complete your payment to proceed with order processing.</p>
+  <a href="{{paymentUrl}}" style="display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">Complete Payment</a>
 </div>
 {{else}}
-<div style="text-align: center; margin-top: 30px;">
-  <a href="{{orderUrl}}" class="button">View Order Status</a>
+<!-- Order Tracking Call to Action -->
+<div style="text-align: center; margin: 35px 0;">
+  <a href="{{orderUrl}}" style="display: inline-block; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3);">View Order Status</a>
 </div>
 {{/if}}
+
+<p style="font-size: 15px; line-height: 1.6; color: #6b7280; margin-top: 30px;">If you have any questions about your order, please don't hesitate to <a href="mailto:support@juellehairgh.com" style="color: #db2777; text-decoration: none;">contact our support team</a>. We're here to help!</p>
+
+<p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-top: 20px;">Thank you for choosing {{siteName}}!</p>
 
 {{> footer}}

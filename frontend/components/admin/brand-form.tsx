@@ -144,7 +144,7 @@ export function BrandForm({ brand, onClose, onSuccess }: BrandFormProps) {
                         if (!img.src.includes("http") && !img.src.startsWith("/media/")) {
                           const filename = formData.logo.split("/").pop();
                           if (filename) {
-                            img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/brands/${filename}`;
+                            img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api'}/admin/upload/media/brands/${filename}`;
                           }
                         }
                       }}

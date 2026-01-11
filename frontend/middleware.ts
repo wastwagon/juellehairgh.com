@@ -4,25 +4,26 @@ import type { NextRequest } from "next/server";
 // Configuration for maintenance mode check
 // In Docker development, we need to use the service name 'backend' and internal port 3001
 const getApiUrl = () => {
-  // Priority 1: Use NEXT_PUBLIC_API_BASE_URL if set
+  // Middleware runs server-side in Next.js, so we can use Docker service names
+  // Priority 1: Check if NEXT_PUBLIC_API_BASE_URL contains localhost:9001 (Docker external port)
+  // This indicates we're in Docker, so use the internal service name
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (apiUrl && apiUrl.includes("localhost:9001")) {
+    // We're in Docker - use the service name for internal communication
+    return "http://backend:3001/api";
+  }
   
-  // If explicitly set, use it (handles preview URLs, production, etc.)
+  // Priority 2: Use NEXT_PUBLIC_API_BASE_URL if set (for production/preview URLs)
   if (apiUrl && apiUrl.trim() !== '') {
     return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
   }
   
-  // Priority 2: Development mode - use localhost
-  if (process.env.NODE_ENV === "development" && typeof window === "undefined") {
-    // Try Docker service name first (for Docker Compose)
-    if (process.env.DOCKER_ENV) {
+  // Priority 3: Check for explicit Docker environment variable
+  if (process.env.DOCKER_ENV === "true" && typeof window === "undefined") {
       return "http://backend:3001/api";
-    }
-    // Fallback to localhost
-    return "http://localhost:3001/api";
   }
   
-  // Priority 3: Fallback to localhost
+  // Priority 4: Fallback to localhost (for local development without Docker)
   return "http://localhost:3001/api";
 };
 
@@ -59,6 +60,19 @@ export async function middleware(request: NextRequest) {
     
     clearTimeout(timeoutId);
     
+    // Check if response is OK before parsing
+    if (!response.ok) {
+      console.error(`Maintenance check failed: HTTP ${response.status}`);
+      // If we can't check maintenance status, default to maintenance mode for safety
+      // Only allow admins and public paths
+      const userRole = request.cookies.get("user_role")?.value;
+      const isAdmin = userRole === "ADMIN" || userRole === "MANAGER";
+      if (!isAdmin && !isPublicPath) {
+        return NextResponse.redirect(new URL("/maintenance", request.url));
+      }
+      return NextResponse.next();
+    }
+    
     const data = await response.json();
     const isMaintenanceMode = data.enabled === true;
 
@@ -79,9 +93,16 @@ export async function middleware(request: NextRequest) {
       }
     }
   } catch (error) {
-    // If the check fails (e.g. backend down), we default to letting people in 
-    // to avoid a site-wide crash, or you can choose to redirect to maintenance.
+    // If the check fails (e.g. backend down, network error), default to maintenance mode for safety
+    // This ensures the site is protected even if the API is unavailable
     console.error("Maintenance check failed:", error);
+    
+    // Only allow admins and public paths when we can't verify maintenance status
+    const userRole = request.cookies.get("user_role")?.value;
+    const isAdmin = userRole === "ADMIN" || userRole === "MANAGER";
+    if (!isAdmin && !isPublicPath) {
+      return NextResponse.redirect(new URL("/maintenance", request.url));
+    }
   }
 
   return NextResponse.next();

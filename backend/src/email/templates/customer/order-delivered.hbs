@@ -1,44 +1,61 @@
 {{> header}}
 
-<h1>Your order has been delivered!</h1>
+<h1 style="color: #059669; font-size: 28px; margin-bottom: 10px;">Your Order Has Been Delivered! ✨</h1>
 
-<p>Hi {{customerName}},</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Hi {{customerName}},</p>
 
-<p>Your order <strong>#{{orderNumber}}</strong> was delivered on {{deliveryDate}}. We hope you love your new hair!</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Excellent news! Your order <strong style="color: #059669;">#{{orderNumber}}</strong> was successfully delivered on <strong>{{deliveryDate}}</strong>. We hope you're absolutely thrilled with your new hair products!</p>
 
-<div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin: 25px 0; text-align: center;">
-  <h2 style="margin-top: 0; font-size: 18px; color: #db2777;">Enjoyed your shopping experience?</h2>
-  <p>We'd love to hear your thoughts. Share a review and help other customers find their perfect look!</p>
+<!-- Review Request Card -->
+<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
+  <div style="font-size: 48px; margin-bottom: 15px;">⭐</div>
+  <h2 style="color: #92400e; font-size: 22px; margin-top: 0; margin-bottom: 15px; font-weight: 600;">We'd Love to Hear Your Thoughts!</h2>
+  <p style="color: #78350f; font-size: 15px; margin-bottom: 25px; line-height: 1.6;">Your feedback helps other customers find their perfect look and helps us improve. Share your experience and help the community!</p>
   {{#if reviewUrl}}
-  <a href="{{reviewUrl}}" class="button" style="margin-top: 10px; background-color: #059669;">Write a Review</a>
+  <a href="{{reviewUrl}}" style="display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);">Write a Review</a>
   {{/if}}
 </div>
 
-<h3 style="color: #db2777;">Delivered Items:</h3>
-<table class="order-table">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th style="text-align: right;">Quantity</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each orderItems}}
-    <tr>
-      <td>
-        <strong>{{name}}</strong>
-        {{#if variant}}<br><small style="color: #666;">{{variant}}</small>{{/if}}
-      </td>
-      <td style="text-align: right;">{{quantity}}</td>
-    </tr>
-    {{/each}}
-  </tbody>
-</table>
-
-<p>Thank you for choosing {{siteName}}!</p>
-
-<div style="text-align: center; margin-top: 30px;">
-  <a href="{{siteUrl}}/categories/shop-all" class="button">Shop More</a>
+<!-- Delivered Items -->
+<div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 30px; margin: 30px 0;">
+  <h3 style="color: #db2777; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 25px;">Delivered Items</h3>
+  
+  <table style="width: 100%; border-collapse: collapse;">
+    <tbody>
+      {{#each orderItems}}
+      <tr style="border-bottom: 1px solid #f3f4f6;">
+        <td style="padding: 20px 0; vertical-align: top;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              {{#if image}}
+              <td style="width: 80px; padding-right: 15px; vertical-align: top;">
+                <img src="{{image}}" alt="{{name}}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; background-color: #f9fafb;" />
+              </td>
+              {{/if}}
+              <td style="vertical-align: top;">
+                <div style="font-weight: 600; font-size: 15px; color: #111827; margin-bottom: 5px;">{{name}}</div>
+                {{#if variant}}
+                <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">{{variant}}</div>
+                {{/if}}
+                <div style="font-size: 14px; color: #6b7280; margin-top: 8px;">Quantity: <strong style="color: #111827;">{{quantity}}</strong></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
 </div>
+
+<p style="font-size: 15px; line-height: 1.6; color: #6b7280; margin-top: 30px;">If you have any questions or concerns about your order, please don't hesitate to <a href="mailto:support@juellehairgh.com" style="color: #db2777; text-decoration: none;">contact our support team</a>. We're always here to help!</p>
+
+<!-- Call to Action Buttons -->
+<div style="text-align: center; margin: 35px 0;">
+  <a href="{{orderUrl}}" style="display: inline-block; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3); margin: 0 10px 10px 10px;">View Order Details</a>
+  <a href="{{siteUrl}}/categories/shop-all" style="display: inline-block; background-color: #ffffff; color: #db2777; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; border: 2px solid #db2777; margin: 0 10px 10px 10px;">Shop More</a>
+</div>
+
+<p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-top: 20px;">Thank you for choosing {{siteName}}. We hope to see you again soon!</p>
 
 {{> footer}}

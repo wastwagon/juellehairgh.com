@@ -1,25 +1,68 @@
 {{> header}}
 
-<h1 style="color: #059669;">Payment Received for Order #{{orderNumber}}</h1>
+<h1 style="color: #059669; font-size: 28px; margin-bottom: 10px;">Payment Received! 💰</h1>
 
-<p>Great news! A payment has been successfully processed for order <strong>#{{orderNumber}}</strong>.</p>
+<p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Great news! A payment has been successfully processed for order <strong style="color: #059669;">#{{orderNumber}}</strong> on {{siteName}}.</p>
 
-<div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; margin: 25px 0; border: 1px solid #dcfce7;">
-  <h2 style="margin-top: 0; font-size: 18px; color: #059669;">Payment Details</h2>
-  <p><strong>Amount:</strong> {{currency}} {{total}}</p>
-  <p><strong>Method:</strong> {{paymentMethod}}</p>
-  <p><strong>Transaction Reference:</strong> {{transactionReference}}</p>
-  <p><strong>Date:</strong> {{orderDate}}</p>
+<!-- Payment Confirmation Card -->
+<div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);">
+  <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+  <h2 style="color: #059669; font-size: 22px; margin-top: 0; margin-bottom: 25px; font-weight: 600;">Payment Details</h2>
+  
+  <div style="background-color: #ffffff; border-radius: 8px; padding: 25px; margin-bottom: 20px; border: 1px solid #d1fae5;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Amount:</td>
+        <td style="padding: 12px 0; font-size: 18px; color: #059669; font-weight: 700; text-align: right;">{{currency}} {{total}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Payment Method:</td>
+        <td style="padding: 12px 0; font-size: 14px; color: #111827; font-weight: 600; text-align: right;">{{paymentMethod}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Transaction Reference:</td>
+        <td style="padding: 12px 0; font-size: 13px; color: #4b5563; font-family: 'Courier New', monospace; text-align: right;">{{transactionReference}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Order Date:</td>
+        <td style="padding: 12px 0; font-size: 14px; color: #111827; text-align: right;">{{orderDate}}</td>
+      </tr>
+    </table>
+  </div>
 </div>
 
-<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-  <p><strong>Customer:</strong> {{customerName}} ({{customerEmail}})</p>
-  <p><strong>Items:</strong> {{itemCount}} item(s)</p>
-  <p><strong>Shipping:</strong> {{shippingMethod}}</p>
+<!-- Order Summary -->
+<div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; margin: 30px 0;">
+  <h3 style="color: #db2777; font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 20px;">Order Information</h3>
+  
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 10px 0; font-size: 14px; color: #6b7280; font-weight: 500; width: 40%;">Customer:</td>
+      <td style="padding: 10px 0; font-size: 14px; color: #111827; font-weight: 600;">{{customerName}} ({{customerEmail}})</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Items:</td>
+      <td style="padding: 10px 0; font-size: 14px; color: #111827; font-weight: 600;">{{itemCount}} item(s)</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Shipping Method:</td>
+      <td style="padding: 10px 0; font-size: 14px; color: #111827; font-weight: 600;">{{shippingMethod}}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px 0; font-size: 14px; color: #6b7280; font-weight: 500;">Order Total:</td>
+      <td style="padding: 10px 0; font-size: 16px; color: #db2777; font-weight: 700;">{{currency}} {{total}}</td>
+    </tr>
+  </table>
 </div>
 
-<div style="text-align: center; margin-top: 30px;">
-  <a href="{{adminOrderUrl}}" class="button" style="background-color: #059669;">Manage Order</a>
+<!-- Action Required Notice -->
+<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
+  <p style="margin: 0; font-size: 15px; color: #92400e; font-weight: 600;">Payment confirmed. Please proceed with order fulfillment.</p>
+</div>
+
+<!-- Call to Action -->
+<div style="text-align: center; margin: 35px 0;">
+  <a href="{{adminOrderUrl}}" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">Manage Order in Admin Panel</a>
 </div>
 
 {{> footer}}

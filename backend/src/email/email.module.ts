@@ -57,6 +57,8 @@ import * as path from "path";
             const smtpPort = parseInt(await getSetting("SMTP_PORT", "587"));
             const smtpUser = await getSetting("SMTP_USER", "");
             const smtpPassword = await getSetting("SMTP_PASSWORD", "");
+            const emailFrom = await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || "noreply@juellehairgh.com");
+            const emailFromName = await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana");
 
             return {
               transport: {
@@ -67,9 +69,12 @@ import * as path from "path";
                   user: smtpUser,
                   pass: smtpPassword,
                 },
+                tls: {
+                  rejectUnauthorized: false, // Allow self-signed or mismatched certificates
+                },
               },
               defaults: {
-                from: `"${configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana"}" <${configService.get("EMAIL_FROM") || "noreply@juellehairgh.com"}>`,
+                from: `"${emailFromName}" <${emailFrom}>`,
               },
               template: {
                 dir: path.join(__dirname, "templates"),
@@ -109,9 +114,12 @@ import * as path from "path";
                     user: smtpUser,
                     pass: smtpPassword,
                   },
+                  tls: {
+                    rejectUnauthorized: false, // Allow self-signed or mismatched certificates
+                  },
                 },
                 defaults: {
-                  from: `"${configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana"}" <${configService.get("EMAIL_FROM") || "noreply@juellehairgh.com"}>`,
+                  from: `"${await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana")}" <${await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || "noreply@juellehairgh.com")}>`,
                 },
                 template: {
                   dir: path.join(__dirname, "templates"),
@@ -131,6 +139,9 @@ import * as path from "path";
               };
             }
 
+            const emailFrom = await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || "noreply@juellehairgh.com");
+            const emailFromName = await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana");
+
             return {
               transport: {
                 host: "smtp.sendgrid.net",
@@ -142,7 +153,7 @@ import * as path from "path";
                 },
               },
               defaults: {
-                from: `"${configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana"}" <${configService.get("EMAIL_FROM") || "noreply@juellehairgh.com"}>`,
+                from: `"${emailFromName}" <${emailFrom}>`,
               },
               template: {
                 dir: path.join(__dirname, "templates"),
@@ -171,6 +182,9 @@ import * as path from "path";
               );
             }
 
+            const emailFrom = await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || `noreply@${mailgunDomain}`);
+            const emailFromName = await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana");
+
             return {
               transport: {
                 host: `smtp.mailgun.org`,
@@ -182,7 +196,7 @@ import * as path from "path";
                 },
               },
               defaults: {
-                from: `"${configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana"}" <${configService.get("EMAIL_FROM") || `noreply@${mailgunDomain}`}>`,
+                from: `"${emailFromName}" <${emailFrom}>`,
               },
               template: {
                 dir: path.join(__dirname, "templates"),
@@ -210,6 +224,10 @@ import * as path from "path";
             "❌ Email module initialization failed, using fallback config:",
             error?.message || "Unknown error",
           );
+          // Fallback: use environment variables directly (database might not be available)
+          const emailFrom = configService.get("EMAIL_FROM") || "noreply@juellehairgh.com";
+          const emailFromName = configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana";
+
           return {
             transport: {
               host: configService.get("SMTP_HOST") || "smtp.gmail.com",
@@ -219,9 +237,12 @@ import * as path from "path";
                 user: configService.get("SMTP_USER") || "",
                 pass: configService.get("SMTP_PASSWORD") || "",
               },
+              tls: {
+                rejectUnauthorized: false, // Allow self-signed or mismatched certificates
+              },
             },
             defaults: {
-              from: `"${configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana"}" <${configService.get("EMAIL_FROM") || "noreply@juellehairgh.com"}>`,
+              from: `"${emailFromName}" <${emailFrom}>`,
             },
             template: {
               dir: path.join(__dirname, "templates"),

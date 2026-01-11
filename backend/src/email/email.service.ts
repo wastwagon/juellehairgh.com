@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class EmailService {
@@ -8,19 +9,57 @@ export class EmailService {
   private readonly siteName = "Juelle Hair Ghana";
   private readonly siteUrl: string;
   private readonly siteEmail: string;
-  private readonly adminEmail: string;
+  private readonly logoUrl: string;
 
   constructor(
     private mailerService: MailerService,
     private configService: ConfigService,
+    private prisma: PrismaService,
   ) {
     this.siteUrl =
-      this.configService.get<string>("FRONTEND_URL") || "http://localhost:8002";
+      this.configService.get<string>("FRONTEND_URL") || "http://localhost:9002";
     this.siteEmail =
       this.configService.get<string>("EMAIL_FROM") ||
       "noreply@juellehairgh.com";
-    this.adminEmail =
-      this.configService.get<string>("ADMIN_EMAIL") || "admin@juellehairgh.com";
+    this.logoUrl = `${this.siteUrl}/logo.png`;
+  }
+
+  /**
+   * Get admin email from database settings or environment variable
+   */
+  private async getAdminEmail(): Promise<string> {
+    try {
+      const setting = await this.prisma.setting.findUnique({
+        where: { key: "ADMIN_EMAIL" },
+      });
+      if (setting?.value) {
+        return setting.value;
+      }
+    } catch (error) {
+      this.logger.warn("Failed to fetch ADMIN_EMAIL from database, using environment variable");
+    }
+    return this.configService.get<string>("ADMIN_EMAIL") || "admin@juellehairgh.com";
+  }
+
+  /**
+   * Helper function to get product image URL for emails
+   */
+  private getProductImageUrl(imagePath: string | null | undefined): string | null {
+    if (!imagePath) return null;
+
+    // Handle absolute URLs
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+
+    // Handle media library paths
+    if (imagePath.startsWith("/media/products/")) {
+      return `${this.siteUrl}${imagePath}`;
+    }
+
+    // Extract filename from any path format
+    const filename = imagePath.split("/").pop() || imagePath;
+    return `${this.siteUrl}/media/products/${filename}`;
   }
 
   /**
@@ -28,15 +67,19 @@ export class EmailService {
    */
   async sendWelcomeEmail(user: { email: string; name?: string | null }) {
     try {
+      const subject = `Welcome to ${this.siteName}!`;
       await this.mailerService.sendMail({
         to: user.email,
-        subject: `Welcome to ${this.siteName}!`,
+        subject,
         template: "customer/welcome",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           customerName: user.name || "there",
           accountUrl: `${this.siteUrl}/account`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Welcome email sent to ${user.email}`);
@@ -77,12 +120,21 @@ export class EmailService {
             variantText = `${item.variant.name}: ${item.variant.value}`;
           }
 
+          // Get product image (first image from product or variant)
+          let productImage = null;
+          if (item.product?.images && item.product.images.length > 0) {
+            productImage = this.getProductImageUrl(item.product.images[0]);
+          } else if (item.variant?.image) {
+            productImage = this.getProductImageUrl(item.variant.image);
+          }
+
           return {
             name: item.product?.title || "Product",
             variant: variantText,
             quantity: item.quantity,
             price: Number(item.priceGhs).toFixed(2),
             total: (Number(item.priceGhs) * item.quantity).toFixed(2),
+            image: productImage,
           };
         }) || [];
 
@@ -95,13 +147,16 @@ export class EmailService {
         2,
       );
 
+      const subject = `Order Confirmation - Order #${order.id.slice(0, 8).toUpperCase()}`;
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
-        subject: `Order Confirmation - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        subject,
         template: "customer/order-confirmation",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           orderDate: new Date(order.createdAt).toLocaleDateString("en-US", {
             year: "numeric",
@@ -124,6 +179,7 @@ export class EmailService {
             order.paymentStatus === "PENDING"
               ? `${this.siteUrl}/checkout/payment/${order.id}`
               : null,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Order confirmation email sent for order ${order.id}`);
@@ -137,19 +193,23 @@ export class EmailService {
    */
   async sendPaymentConfirmation(order: any) {
     try {
+      const subject = `Payment Received - Order #${order.id.slice(0, 8).toUpperCase()}`;
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
-        subject: `Payment Received - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        subject,
         template: "customer/payment-confirmation",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           customerName:
             order.user?.name || order.shippingAddress?.firstName || "Customer",
           total: Number(order.totalGhs).toFixed(2),
           currency: order.displayCurrency || "GHS",
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Payment confirmation email sent for order ${order.id}`);
@@ -164,24 +224,38 @@ export class EmailService {
   async sendOrderShipped(order: any, trackingNumber?: string) {
     try {
       const orderItems =
-        order.items?.map((item: any) => ({
-          name: item.product?.title || "Product",
-          variant: item.variant
-            ? `${item.variant.name}: ${item.variant.value}`
-            : null,
-          quantity: item.quantity,
-        })) || [];
+        order.items?.map((item: any) => {
+          // Get product image (first image from product or variant)
+          let productImage = null;
+          if (item.product?.images && item.product.images.length > 0) {
+            productImage = this.getProductImageUrl(item.product.images[0]);
+          } else if (item.variant?.image) {
+            productImage = this.getProductImageUrl(item.variant.image);
+          }
+
+          return {
+            name: item.product?.title || "Product",
+            variant: item.variant
+              ? `${item.variant.name}: ${item.variant.value}`
+              : null,
+            quantity: item.quantity,
+            image: productImage,
+          };
+        }) || [];
 
       const finalTrackingNumber =
         trackingNumber || order.trackingNumber || "N/A";
+      const subject = `Your Order Has Been Shipped - Order #${order.id.slice(0, 8).toUpperCase()}`;
 
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
-        subject: `Your Order Has Been Shipped - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        subject,
         template: "customer/order-shipped",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           customerName:
             order.user?.name || order.shippingAddress?.firstName || "Customer",
@@ -193,6 +267,7 @@ export class EmailService {
             finalTrackingNumber !== "N/A"
               ? `${this.siteUrl}/orders/track?orderId=${order.id}`
               : null,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Order shipped email sent for order ${order.id}`);
@@ -207,21 +282,35 @@ export class EmailService {
   async sendOrderDelivered(order: any) {
     try {
       const orderItems =
-        order.items?.map((item: any) => ({
-          name: item.product?.title || "Product",
-          variant: item.variant
-            ? `${item.variant.name}: ${item.variant.value}`
-            : null,
-          quantity: item.quantity,
-        })) || [];
+        order.items?.map((item: any) => {
+          // Get product image (first image from product or variant)
+          let productImage = null;
+          if (item.product?.images && item.product.images.length > 0) {
+            productImage = this.getProductImageUrl(item.product.images[0]);
+          } else if (item.variant?.image) {
+            productImage = this.getProductImageUrl(item.variant.image);
+          }
+
+          return {
+            name: item.product?.title || "Product",
+            variant: item.variant
+              ? `${item.variant.name}: ${item.variant.value}`
+              : null,
+            quantity: item.quantity,
+            image: productImage,
+          };
+        }) || [];
+      const subject = `Your Order Has Been Delivered - Order #${order.id.slice(0, 8).toUpperCase()}`;
 
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
-        subject: `Your Order Has Been Delivered - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        subject,
         template: "customer/order-delivered",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           customerName:
             order.user?.name || order.shippingAddress?.firstName || "Customer",
@@ -234,6 +323,7 @@ export class EmailService {
           trackingNumber: order.trackingNumber || null,
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
           reviewUrl: `${this.siteUrl}/products/${order.items?.[0]?.productId}/review`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Order delivered email sent for order ${order.id}`);
@@ -247,13 +337,16 @@ export class EmailService {
    */
   async sendOrderCancelled(order: any, reason?: string) {
     try {
+      const subject = `Order Cancelled - Order #${order.id.slice(0, 8).toUpperCase()}`;
       await this.mailerService.sendMail({
         to: order.user?.email || order.shippingAddress?.email,
-        subject: `Order Cancelled - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        subject,
         template: "customer/order-cancelled",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           customerName:
             order.user?.name || order.shippingAddress?.firstName || "Customer",
@@ -263,6 +356,7 @@ export class EmailService {
               ? "A refund will be processed within 5-7 business days."
               : null,
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Order cancelled email sent for order ${order.id}`);
@@ -300,22 +394,35 @@ export class EmailService {
             variantText = `${item.variant.name}: ${item.variant.value}`;
           }
 
+          // Get product image (first image from product or variant)
+          let productImage = null;
+          if (item.product?.images && item.product.images.length > 0) {
+            productImage = this.getProductImageUrl(item.product.images[0]);
+          } else if (item.variant?.image) {
+            productImage = this.getProductImageUrl(item.variant.image);
+          }
+
           return {
             name: item.product?.title || "Product",
             variant: variantText,
             quantity: item.quantity,
             price: Number(item.priceGhs).toFixed(2),
             total: (Number(item.priceGhs) * item.quantity).toFixed(2),
+            image: productImage,
           };
         }) || [];
 
+      const adminEmail = await this.getAdminEmail();
+      const subject = `New Order Received - Order #${order.id.slice(0, 8).toUpperCase()}`;
       await this.mailerService.sendMail({
-        to: this.adminEmail,
-        subject: `New Order Received - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        to: adminEmail,
+        subject,
         template: "admin/new-order",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           orderDate: new Date(order.createdAt).toLocaleDateString("en-US", {
             year: "numeric",
@@ -335,6 +442,7 @@ export class EmailService {
           shippingAddress: order.shippingAddress,
           billingAddress: order.billingAddress,
           adminOrderUrl: `${this.siteUrl}/admin/orders/${order.id}`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(
@@ -352,13 +460,17 @@ export class EmailService {
     try {
       const transaction = order.paymentReference || "N/A";
 
+      const adminEmail = await this.getAdminEmail();
+      const subject = `Payment Received - Order #${order.id.slice(0, 8).toUpperCase()}`;
       await this.mailerService.sendMail({
-        to: this.adminEmail,
-        subject: `Payment Received - Order #${order.id.slice(0, 8).toUpperCase()}`,
+        to: adminEmail,
+        subject,
         template: "admin/payment-received",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           orderNumber: order.id.slice(0, 8).toUpperCase(),
           orderDate: new Date(order.createdAt).toLocaleDateString("en-US", {
             year: "numeric",
@@ -376,6 +488,7 @@ export class EmailService {
           itemCount: order.items?.length || 0,
           shippingMethod: order.shippingMethod || "N/A",
           adminOrderUrl: `${this.siteUrl}/admin/orders/${order.id}`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(
@@ -395,13 +508,17 @@ export class EmailService {
     createdAt: Date;
   }) {
     try {
+      const adminEmail = await this.getAdminEmail();
+      const subject = `New Customer Registration - ${user.email}`;
       await this.mailerService.sendMail({
-        to: this.adminEmail,
-        subject: `New Customer Registration - ${user.email}`,
+        to: adminEmail,
+        subject,
         template: "admin/new-customer",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           customerName: user.name || "N/A",
           customerEmail: user.email,
           registrationDate: new Date(user.createdAt).toLocaleDateString(
@@ -415,6 +532,7 @@ export class EmailService {
             },
           ),
           adminUsersUrl: `${this.siteUrl}/admin/users`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(
@@ -429,19 +547,55 @@ export class EmailService {
   }
 
   /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(
+    email: string,
+    name: string | null,
+    resetToken: string,
+  ) {
+    try {
+      const subject = `Reset Your Password - ${this.siteName}`;
+      const resetUrl = `${this.siteUrl}/auth/reset-password?token=${resetToken}`;
+      await this.mailerService.sendMail({
+        to: email,
+        subject,
+        template: "customer/password-reset",
+        context: {
+          subject,
+          siteName: this.siteName,
+          siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
+          customerName: name || "there",
+          resetUrl,
+          year: new Date().getFullYear(),
+        },
+      });
+      this.logger.log(`Password reset email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email to ${email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Send test email to verify email configuration
    */
   async sendTestEmail(to: string) {
     try {
+      const subject = `Test Email from ${this.siteName}`;
       await this.mailerService.sendMail({
         to,
-        subject: `Test Email from ${this.siteName}`,
+        subject,
         template: "customer/welcome",
         context: {
+          subject,
           siteName: this.siteName,
           siteUrl: this.siteUrl,
+          logoUrl: this.logoUrl,
           customerName: "Test User",
           accountUrl: `${this.siteUrl}/account`,
+          year: new Date().getFullYear(),
         },
       });
       this.logger.log(`Test email sent successfully to ${to}`);

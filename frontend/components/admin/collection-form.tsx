@@ -168,7 +168,7 @@ export function CollectionForm({ collection, onClose, onSuccess }: CollectionFor
                         if (!img.src.includes("http") && !img.src.startsWith("/media/")) {
                           const filename = (imagePreview || formData.image).split("/").pop();
                           if (filename) {
-                            img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api'}/admin/upload/media/collections/${filename}`;
+                            img.src = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api'}/admin/upload/media/collections/${filename}`;
                           }
                         }
                       }}

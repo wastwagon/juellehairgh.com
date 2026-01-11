@@ -2,33 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Get API base URL - same logic as api.ts
 function getApiBaseUrl(): string {
-  // Priority 1: NEXT_PUBLIC_API_BASE_URL environment variable (explicitly set)
-  let url = process.env.NEXT_PUBLIC_API_BASE_URL;
-  
-  // If NEXT_PUBLIC_API_BASE_URL is set and not localhost:8001, use it
-  if (url && !url.includes('localhost:8001')) {
-    return url.endsWith('/api') ? url : `${url}/api`;
+  // Priority 1: Check if we're in Docker (for local Docker Compose)
+  // Server-side API routes in Docker should use service name, not localhost
+  // If NEXT_PUBLIC_API_BASE_URL includes localhost:9001 or localhost:8001, we're in local Docker
+  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (url?.includes('localhost:9001') || url?.includes('localhost:8001')) {
+    // Server-side API route in Docker - use service name for internal requests
+    return 'http://backend:3001/api';
   }
   
-  // Priority 2: Check if we're in Docker (for local Docker Compose)
-  // If NEXT_PUBLIC_API_BASE_URL includes localhost:8001, we're in local Docker
-  if (url?.includes('localhost:8001')) {
-    return 'http://backend:3001/api'; // Docker service name for internal requests
+  // Priority 2: Use NEXT_PUBLIC_API_BASE_URL if set
+  if (url && url.trim() !== '') {
+    return url.endsWith('/api') ? url : `${url}/api`;
   }
   
   // Priority 3: Check for explicit BACKEND_URL environment variable
   if (process.env.BACKEND_URL) {
-    url = process.env.BACKEND_URL.endsWith('/api') 
+    const backendUrl = process.env.BACKEND_URL.endsWith('/api') 
       ? process.env.BACKEND_URL 
       : `${process.env.BACKEND_URL}/api`;
-    return url;
+    return backendUrl;
   }
   
   // Final fallback
-  url = 'http://localhost:3001/api';
-  console.warn('⚠️ Media proxy: API Base URL not configured, using fallback:', url);
+  const fallbackUrl = 'http://localhost:3001/api';
+  console.warn('⚠️ Media proxy: API Base URL not configured, using fallback:', fallbackUrl);
   
-  return url;
+  return fallbackUrl;
 }
 
 // Proxy media requests to backend

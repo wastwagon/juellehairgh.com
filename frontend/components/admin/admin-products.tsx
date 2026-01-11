@@ -153,7 +153,7 @@ export function AdminProducts() {
                 {productsData?.products?.map((product) => {
                   // Helper function to get image URLs (primary and fallback)
                   const getImageUrls = (imagePath: string) => {
-                    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
+                    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9001/api';
                     
                     // Handle absolute URLs
                     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {

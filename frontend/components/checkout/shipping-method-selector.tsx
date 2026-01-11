@@ -20,14 +20,18 @@ interface ShippingMethod {
 }
 
 interface ShippingMethodSelectorProps {
-  region: string;
+  country: string;
+  region?: string;
+  city?: string;
   orderTotal: number;
   selectedMethodId?: string;
   onSelect: (method: ShippingMethod) => void;
 }
 
 export function ShippingMethodSelector({
-  region,
+  country,
+  region = "",
+  city = "",
   orderTotal,
   selectedMethodId,
   onSelect,
@@ -36,19 +40,24 @@ export function ShippingMethodSelector({
   const [selectedId, setSelectedId] = useState<string | undefined>(selectedMethodId);
 
   const { data: methods, isLoading } = useQuery<ShippingMethod[]>({
-    queryKey: ["shipping-methods", region, orderTotal],
+    queryKey: ["shipping-methods", country, region, city, orderTotal],
     queryFn: async () => {
       try {
-        const response = await api.get(
-          `/shipping/methods?region=${encodeURIComponent(region)}&orderTotal=${orderTotal}`
-        );
+        const params = new URLSearchParams({
+          country: country || "Ghana",
+          orderTotal: orderTotal.toString(),
+        });
+        if (region) params.append("region", region);
+        if (city) params.append("city", city);
+        
+        const response = await api.get(`/shipping/methods?${params.toString()}`);
         return response.data;
       } catch (error) {
         console.error("Error fetching shipping methods:", error);
         return [];
       }
     },
-    enabled: !!region,
+    enabled: !!country,
     staleTime: 60000,
   });
 

@@ -37,12 +37,51 @@ export class ShippingService {
     });
   }
 
-  // Get available shipping methods for a region
-  async getMethodsForRegion(region: string, orderTotal?: number) {
+  // Get available shipping methods for a location (country/region/city)
+  async getMethodsForLocation(
+    country: string,
+    region?: string,
+    city?: string,
+    orderTotal?: number,
+  ) {
+    // Determine which zone to use based on location
+    let zoneNames: string[];
+    let regionMatches: string[] = [];
+
+    if (country !== "Ghana") {
+      // International shipping - look for "International" zone
+      zoneNames = ["International Shipping", "International"];
+      regionMatches = ["Everywhere"];
+    } else if (city && city.toLowerCase().trim() === "tema") {
+      // Tema has special pricing (even though it's in Greater Accra region)
+      zoneNames = ["Tema", "Greater Accra & Tema"];
+      regionMatches = ["Greater Accra"];
+    } else if (region === "Greater Accra") {
+      // Greater Accra region (excluding Tema)
+      zoneNames = ["Greater Accra", "Greater Accra & Tema"];
+      regionMatches = ["Greater Accra"];
+    } else {
+      // Other Ghana regions - look for zones that include this region or "All Ghana Regions"
+      zoneNames = ["Other Ghana Regions", "All Ghana Regions"];
+      regionMatches = region ? [region] : [];
+    }
+
+    // Find zones that match
     const zones = await this.prisma.shippingZone.findMany({
       where: {
         isActive: true,
-        OR: [{ regions: { has: region } }, { regions: { has: "Everywhere" } }],
+        OR: [
+          // Match by zone name
+          ...zoneNames.map((name) => ({ name: { contains: name } })),
+          // Match by region if country is Ghana
+          ...(country === "Ghana" && regionMatches.length > 0
+            ? regionMatches.map((reg) => ({ regions: { has: reg } }))
+            : []),
+          // For Ghana, also match zones that have "Ghana" in regions array (catch-all for all Ghana regions)
+          ...(country === "Ghana" ? [{ regions: { has: "Ghana" } }] : []),
+          // Match "Everywhere" for international
+          ...(country !== "Ghana" ? [{ regions: { has: "Everywhere" } }] : []),
+        ],
       },
       include: {
         methods: {
@@ -71,6 +110,11 @@ export class ShippingService {
       });
 
     return methods;
+  }
+
+  // Legacy method for backwards compatibility
+  async getMethodsForRegion(region: string, orderTotal?: number) {
+    return this.getMethodsForLocation("Ghana", region, undefined, orderTotal);
   }
 
   // Calculate shipping cost based on method and order total
