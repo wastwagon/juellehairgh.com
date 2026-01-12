@@ -167,7 +167,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
     if (availableStock !== undefined && quantity > availableStock) {
       toast.error("Insufficient Stock", {
-        description: `Only ${availableStock} items available in stock.`,
+        description: "Not enough items available.",
         duration: 3000,
       });
       return;

@@ -331,20 +331,7 @@ export function ProductVariantSelector({
               </div>
             )}
 
-            {/* Show stock info */}
-            {selectedId && (
-              <p className="text-xs text-gray-500 mt-2">
-                {(() => {
-                  const selected = variantList.find((v) => v.id === selectedId);
-                  if (selected) {
-                    return selected.stock > 0
-                      ? `${selected.stock} in stock`
-                      : "Out of stock";
-                  }
-                  return "";
-                })()}
-              </p>
-            )}
+            {/* Stock info removed - stock management works silently in background */}
           </div>
         );
       })}
