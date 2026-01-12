@@ -76,7 +76,12 @@ export function ProductCard({ product }: ProductCardProps) {
           if (variantWithImage.image.startsWith('http')) {
             return variantWithImage.image;
           }
-          // Try public folder first, API proxy as fallback
+          // Handle media library paths (new products)
+          if (variantWithImage.image.startsWith('/media/library/')) {
+            const filename = variantWithImage.image.replace('/media/library/', '');
+            return `/media/library/${filename}`;
+          }
+          // Handle old product paths
           const filename = variantWithImage.image.split('/').pop() || variantWithImage.image;
           return `/media/products/${filename}`;
         }
@@ -92,7 +97,14 @@ export function ProductCard({ product }: ProductCardProps) {
       return firstImage;
     }
     
-    // Handle media library paths (new format: /media/products/filename.jpg)
+    // Handle media library paths (new format: /media/library/filename.jpg)
+    if (firstImage.startsWith('/media/library/')) {
+      const filename = firstImage.replace('/media/library/', '');
+      // Try public folder first (for images that work)
+      return `/media/library/${filename}`;
+    }
+    
+    // Handle old product paths (legacy: /media/products/filename.jpg)
     if (firstImage.startsWith('/media/products/')) {
       const filename = firstImage.replace('/media/products/', '');
       // Try public folder first (for products that work)
@@ -106,7 +118,7 @@ export function ProductCard({ product }: ProductCardProps) {
       return `/media/products/${filename}`;
     }
     
-    // Extract filename and try public folder first
+    // Extract filename and try public folder first (assume old products format)
     const filename = firstImage.split('/').pop() || firstImage;
     return `/media/products/${filename}`;
   };
@@ -139,8 +151,26 @@ export function ProductCard({ product }: ProductCardProps) {
                 className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300"
                 style={{ objectPosition: 'center center' }}
                 onError={(e) => {
-                  // Fallback to placeholder if image fails to load
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
+                  const img = e.target as HTMLImageElement;
+                  const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+                  
+                  // Try API proxy route as fallback if public folder fails
+                  if (retryCount === 0 && imageUrl) {
+                    const filename = imageUrl.split('/').pop() || '';
+                    if (filename) {
+                      img.setAttribute('data-retry', '1');
+                      // Check if it's a media library image or old product image
+                      if (imageUrl.startsWith('/media/library/')) {
+                        img.src = `/api/media/library/${filename}`;
+                      } else {
+                        img.src = `/api/media/products/${filename}`;
+                      }
+                      return;
+                    }
+                  }
+                  
+                  // Final fallback to placeholder
+                  img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
                 }}
               />
             ) : (

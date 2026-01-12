@@ -103,7 +103,14 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       return image;
     }
     
-    // Handle media library paths (new format: /media/products/filename.jpg)
+    // Handle media library paths (new format: /media/library/filename.jpg)
+    if (image.startsWith('/media/library/')) {
+      const filename = image.replace('/media/library/', '');
+      // Try public folder first (for images that work)
+      return `/media/library/${filename}`;
+    }
+    
+    // Handle old product paths (legacy: /media/products/filename.jpg)
     if (image.startsWith('/media/products/')) {
       const filename = image.replace('/media/products/', '');
       // Try public folder first (for products that work)
@@ -117,7 +124,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       return `/media/products/${filename}`;
     }
     
-    // Extract filename and try public folder first
+    // Extract filename and try public folder first (assume old products format)
     const filename = image.split('/').pop() || image;
     return `/media/products/${filename}`;
   };
@@ -158,6 +165,24 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                       alt={product.title}
                       className="max-w-full max-h-full w-auto h-auto object-contain"
                       style={{ objectPosition: 'center center' }}
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+                        const imageUrl = getImageUrl(product.images[selectedImage]);
+                        
+                        if (retryCount === 0 && imageUrl) {
+                          const filename = imageUrl.split('/').pop() || '';
+                          if (filename) {
+                            img.setAttribute('data-retry', '1');
+                            // Check if it's a media library image or old product image
+                            if (imageUrl.startsWith('/media/library/')) {
+                              img.src = `/api/media/library/${filename}`;
+                            } else {
+                              img.src = `/api/media/products/${filename}`;
+                            }
+                          }
+                        }
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -181,6 +206,24 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                         src={getImageUrl(image)}
                         alt={`${product.title} ${index + 1}`}
                         className="w-full h-full object-contain"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+                          const imageUrl = getImageUrl(image);
+                          
+                          if (retryCount === 0 && imageUrl) {
+                            const filename = imageUrl.split('/').pop() || '';
+                            if (filename) {
+                              img.setAttribute('data-retry', '1');
+                              // Check if it's a media library image or old product image
+                              if (imageUrl.startsWith('/media/library/')) {
+                                img.src = `/api/media/library/${filename}`;
+                              } else {
+                                img.src = `/api/media/products/${filename}`;
+                              }
+                            }
+                          }
+                        }}
                       />
                     </button>
                   ))}

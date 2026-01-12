@@ -49,7 +49,14 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
       return image;
     }
     
-    // Handle media library paths (new format: /media/products/filename.jpg)
+    // Handle media library paths (new format: /media/library/filename.jpg)
+    if (image.startsWith('/media/library/')) {
+      const filename = image.replace('/media/library/', '');
+      // Try public folder first (for images that work)
+      return `/media/library/${filename}`;
+    }
+    
+    // Handle old product paths (legacy: /media/products/filename.jpg)
     if (image.startsWith('/media/products/')) {
       const filename = image.replace('/media/products/', '');
       // Try public folder first (for products that work)
@@ -63,7 +70,7 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
       return `/media/products/${filename}`;
     }
     
-    // Extract filename and try public folder first
+    // Extract filename and try public folder first (assume old products format)
     const filename = image.split('/').pop() || image;
     return `/media/products/${filename}`;
   };
@@ -135,6 +142,24 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
                   src={getImageUrl(image)}
                   alt={`${title} thumbnail ${index + 1}`}
                   className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+                    const imageUrl = getImageUrl(image);
+                    
+                    if (retryCount === 0 && imageUrl) {
+                      const filename = imageUrl.split('/').pop() || '';
+                      if (filename) {
+                        img.setAttribute('data-retry', '1');
+                        // Check if it's a media library image or old product image
+                        if (imageUrl.startsWith('/media/library/')) {
+                          img.src = `/api/media/library/${filename}`;
+                        } else {
+                          img.src = `/api/media/products/${filename}`;
+                        }
+                      }
+                    }
+                  }}
                 />
               </button>
             ))}
@@ -162,6 +187,24 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
               src={getImageUrl(images[selectedIndex])}
               alt={`${title} - Image ${selectedIndex + 1}`}
               className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+                const imageUrl = getImageUrl(images[selectedIndex]);
+                
+                if (retryCount === 0 && imageUrl) {
+                  const filename = imageUrl.split('/').pop() || '';
+                  if (filename) {
+                    img.setAttribute('data-retry', '1');
+                    // Check if it's a media library image or old product image
+                    if (imageUrl.startsWith('/media/library/')) {
+                      img.src = `/api/media/library/${filename}`;
+                    } else {
+                      img.src = `/api/media/products/${filename}`;
+                    }
+                  }
+                }
+              }}
             />
             
             {/* Navigation Arrows */}
@@ -212,6 +255,24 @@ export function ProductGallery({ images, title, selectedIndex: controlledIndex, 
                       src={getImageUrl(image)}
                       alt={`${title} thumbnail ${index + 1}`}
                       className="w-full h-full object-contain"
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+                        const imageUrl = getImageUrl(image);
+                        
+                        if (retryCount === 0 && imageUrl) {
+                          const filename = imageUrl.split('/').pop() || '';
+                          if (filename) {
+                            img.setAttribute('data-retry', '1');
+                            // Check if it's a media library image or old product image
+                            if (imageUrl.startsWith('/media/library/')) {
+                              img.src = `/api/media/library/${filename}`;
+                            } else {
+                              img.src = `/api/media/products/${filename}`;
+                            }
+                          }
+                        }
+                      }}
                     />
                   </button>
                 ))}
