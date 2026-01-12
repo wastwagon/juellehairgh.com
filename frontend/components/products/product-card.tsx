@@ -73,9 +73,12 @@ export function ProductCard({ product }: ProductCardProps) {
       if (hasVariants && product.variants) {
         const variantWithImage = product.variants.find(v => v.image);
         if (variantWithImage?.image) {
-          return variantWithImage.image.startsWith('http') 
-            ? variantWithImage.image 
-            : `/media/products/${variantWithImage.image.split('/').pop()}`;
+          if (variantWithImage.image.startsWith('http')) {
+            return variantWithImage.image;
+          }
+          // Try public folder first, API proxy as fallback
+          const filename = variantWithImage.image.split('/').pop() || variantWithImage.image;
+          return `/media/products/${filename}`;
         }
       }
       return null;
@@ -83,8 +86,6 @@ export function ProductCard({ product }: ProductCardProps) {
     
     const firstImage = product.images[0];
     if (!firstImage) return null;
-    
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
     
     // Handle absolute URLs
     if (firstImage.startsWith('http://') || firstImage.startsWith('https://')) {
@@ -94,20 +95,19 @@ export function ProductCard({ product }: ProductCardProps) {
     // Handle media library paths (new format: /media/products/filename.jpg)
     if (firstImage.startsWith('/media/products/')) {
       const filename = firstImage.replace('/media/products/', '');
-      // Try Next.js public path first, then fallback to API
+      // Try public folder first (for products that work)
       return `/media/products/${filename}`;
     }
     
     // Handle old product paths (legacy: /products/filename.jpg or products/filename.jpg)
     if (firstImage.includes('/products/') || firstImage.startsWith('products/')) {
       const filename = firstImage.split('/').pop() || firstImage;
-      // Try Next.js public path first, then fallback to API
+      // Try public folder first (for products that work)
       return `/media/products/${filename}`;
     }
     
-    // Extract filename and use backend API as fallback
+    // Extract filename and try public folder first
     const filename = firstImage.split('/').pop() || firstImage;
-    // Try Next.js public path first
     return `/media/products/${filename}`;
   };
 

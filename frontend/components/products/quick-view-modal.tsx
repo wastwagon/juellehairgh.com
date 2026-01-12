@@ -98,8 +98,6 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
   };
 
   const getImageUrl = (image: string) => {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api';
-    
     // Handle absolute URLs
     if (image.startsWith('http://') || image.startsWith('https://')) {
       return image;
@@ -108,20 +106,20 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
     // Handle media library paths (new format: /media/products/filename.jpg)
     if (image.startsWith('/media/products/')) {
       const filename = image.replace('/media/products/', '');
-      // Try Next.js public path first, then fallback to API
+      // Try public folder first (for products that work)
       return `/media/products/${filename}`;
     }
     
     // Handle old product paths (legacy: /products/filename.jpg or products/filename.jpg)
     if (image.includes('/products/') || image.startsWith('products/')) {
       const filename = image.split('/').pop() || image;
-      // Try Next.js public path first, then fallback to API
+      // Try public folder first (for products that work)
       return `/media/products/${filename}`;
     }
     
-    // Extract filename and use backend API as fallback
+    // Extract filename and try public folder first
     const filename = image.split('/').pop() || image;
-    return `${apiBaseUrl}/admin/upload/media/products/${filename}`;
+    return `/media/products/${filename}`;
   };
 
   // Calculate review stats
