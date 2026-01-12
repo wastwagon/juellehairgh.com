@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   NotFoundException,
+  BadRequestException,
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { ProductsService } from "../products/products.service";
@@ -556,15 +557,23 @@ export class AdminController {
   @Post("settings/test-email")
   async testEmail(@Body() body: { email: string }) {
     if (!body.email || !body.email.includes("@")) {
-      throw new Error("Valid email address is required");
+      throw new BadRequestException("Valid email address is required");
     }
     try {
       return await this.emailService.sendTestEmail(body.email);
     } catch (error: any) {
       console.error("Test email error:", error);
-      throw new Error(
-        error?.message || "Failed to send test email. Please check your SMTP configuration.",
-      );
+      const errorMessage =
+        error?.response?.body?.errors?.[0]?.message ||
+        error?.message ||
+        error?.code ||
+        "Failed to send test email. Please check your SMTP configuration.";
+      
+      throw new BadRequestException({
+        message: "Failed to send test email",
+        error: errorMessage,
+        details: error?.response?.body || error?.stack || null,
+      });
     }
   }
 
