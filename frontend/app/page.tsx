@@ -14,6 +14,9 @@ import { FlashSalesSection } from "@/components/home/flash-sales-section";
 import { BlogSection } from "@/components/home/blog-section";
 import { HashScrollHandler } from "@/components/home/hash-scroll-handler";
 
+// Force dynamic rendering to prevent caching stale content
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
