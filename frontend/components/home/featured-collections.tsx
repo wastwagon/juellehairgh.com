@@ -41,7 +41,9 @@ export function FeaturedCollections() {
         return [];
       }
     },
-    staleTime: 60000,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
 

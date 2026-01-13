@@ -94,12 +94,29 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", {
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.message,
-      data: error.response?.data,
-    });
+    // List of SEO endpoints that may not be implemented yet - don't log 404 errors for these
+    const silent404Endpoints = [
+      '/seo/redirects',
+      '/seo/404s',
+      '/backlinks/stats',
+      '/keywords/tracking/list',
+      '/keywords/analysis',
+      '/admin/seo/settings',
+    ];
+    
+    const isSilent404 = error.response?.status === 404 && 
+      silent404Endpoints.some(endpoint => error.config?.url?.includes(endpoint));
+    
+    // Only log errors that aren't silent 404s
+    if (!isSilent404) {
+      console.error("API Error:", {
+        url: error.config?.url,
+        status: error.response?.status,
+        message: error.message,
+        data: error.response?.data,
+      });
+    }
+    
     if (error.response?.status === 401) {
       // Handle unauthorized - clear auth and redirect to login
       if (typeof window !== "undefined") {

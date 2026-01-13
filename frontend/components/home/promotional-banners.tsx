@@ -50,7 +50,9 @@ export function PromotionalBanners() {
         return [];
       }
     },
-    staleTime: 60000, // Cache for 1 minute
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   // Banners are already filtered and sorted in the query
@@ -140,8 +142,12 @@ export function PromotionalBanners() {
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity"
                     onError={(e) => {
                       // Hide image if it fails to load, gradient will show
-                      (e.target as HTMLImageElement).style.display = 'none';
+                      const img = e.target as HTMLImageElement;
+                      img.style.display = 'none';
+                      // Also try to prevent console errors by stopping further attempts
+                      img.onerror = null;
                     }}
+                    loading="lazy"
                   />
                   {/* Dark overlay for text readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />

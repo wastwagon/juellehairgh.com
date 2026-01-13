@@ -155,7 +155,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     },
     enabled: (!slug || products.length === 0) && !isLoading,
     retry: 2,
-    staleTime: 60000, // Cache for 1 minute
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   // Use products from collection if available, otherwise use fallback

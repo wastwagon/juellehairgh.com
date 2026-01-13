@@ -32,7 +32,9 @@ export function HeroBento() {
         return [];
       }
     },
-    staleTime: 60000,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   if (isLoading) {
@@ -206,20 +208,61 @@ export function HeroBento() {
 
                 {/* Product Image */}
                 <div className="relative aspect-square mb-4 rounded-xl overflow-hidden bg-gray-100">
-                  {product.images && product.images[0] ? (
-                    <img
-                      src={product.images[0].startsWith('/') 
-                        ? product.images[0] 
-                        : product.images[0].startsWith('http')
-                        ? product.images[0]
-                        : `/products/${product.images[0]}`}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                  ) : (
+                  {product.images && product.images[0] ? (() => {
+                    const getImageUrl = (image: string) => {
+                      // Handle absolute URLs
+                      if (image.startsWith('http://') || image.startsWith('https://')) {
+                        return image;
+                      }
+                      
+                      // Handle media library paths (new format: /media/products/filename.jpg or /media/library/filename.jpg)
+                      if (image.startsWith('/media/products/')) {
+                        const filename = image.replace('/media/products/', '');
+                        return `/media/products/${filename}`;
+                      }
+                      if (image.startsWith('/media/library/')) {
+                        const filename = image.replace('/media/library/', '');
+                        return `/media/library/${filename}`;
+                      }
+                      
+                      // Handle old product paths (legacy: /products/filename.jpg or products/filename.jpg)
+                      if (image.includes('/products/') || image.startsWith('products/')) {
+                        const filename = image.split('/').pop() || image;
+                        return `/media/products/${filename}`;
+                      }
+                      
+                      // Handle paths starting with /
+                      if (image.startsWith('/')) {
+                        return image;
+                      }
+                      
+                      // Bare filename - assume it's a product image
+                      return `/media/products/${image}`;
+                    };
+                    
+                    const imageUrl = getImageUrl(product.images[0]);
+                    
+                    return (
+                      <img
+                        src={imageUrl}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          const currentSrc = img.src;
+                          // If currentSrc is already an API proxy, or an absolute URL, don't retry
+                          if (currentSrc.startsWith('/api/media/') || currentSrc.startsWith('http')) {
+                            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
+                            return;
+                          }
+                          // Fallback to API proxy route
+                          const filename = product.images[0].split('/').pop() || product.images[0];
+                          const category = product.images[0].includes('/media/library/') ? 'library' : 'products';
+                          img.src = `/api/media/${category}/${filename}`;
+                        }}
+                      />
+                    );
+                  })() : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                       <Sparkles className="h-8 w-8 text-gray-400" />
                     </div>

@@ -23,24 +23,42 @@ export function SeoDashboard() {
     queryKey: ["seo", "redirects"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await api.get("/seo/redirects", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      try {
+        const response = await api.get("/seo/redirects", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+      } catch (error: any) {
+        // Gracefully handle 404 - endpoint not implemented yet
+        if (error?.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
     },
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
+    retry: false, // Don't retry on 404
   });
 
   const { data: errors404 } = useQuery({
     queryKey: ["seo", "404s"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await api.get("/seo/404s?resolved=false", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      try {
+        const response = await api.get("/seo/404s?resolved=false", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+      } catch (error: any) {
+        // Gracefully handle 404 - endpoint not implemented yet
+        if (error?.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
     },
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
+    retry: false, // Don't retry on 404
   });
 
   return (

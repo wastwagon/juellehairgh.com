@@ -18,12 +18,21 @@ export function Error404Monitor() {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const resolved = filter === "resolved" ? true : filter === "unresolved" ? false : undefined;
-      const response = await api.get(`/seo/404s?resolved=${resolved !== undefined ? resolved : ""}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      try {
+        const response = await api.get(`/seo/404s?resolved=${resolved !== undefined ? resolved : ""}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+      } catch (error: any) {
+        // Gracefully handle 404 - endpoint not implemented yet
+        if (error?.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
     },
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
+    retry: false, // Don't retry on 404
   });
 
   const resolveMutation = useMutation({

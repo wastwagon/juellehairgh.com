@@ -31,6 +31,9 @@ export function PopularProductsWidget({
         return [];
       }
     },
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   if (isLoading) {

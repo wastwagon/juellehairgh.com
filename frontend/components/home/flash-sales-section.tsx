@@ -29,7 +29,9 @@ export function FlashSalesSection() {
       const response = await api.get("/flash-sales/active");
       return response.data;
     },
-    staleTime: 60000, // Consider flash sale data stale after 1 minute
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   useEffect(() => {

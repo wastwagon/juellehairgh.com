@@ -243,6 +243,7 @@ export function AdminMediaLibrary({ onSelect, standalone = true }: MediaLibraryP
               className="hidden"
             />
             <Button 
+              type="button"
               size="lg"
               disabled={uploading} 
               className="px-12 font-bold shadow-lg"

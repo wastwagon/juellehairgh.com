@@ -31,7 +31,9 @@ export function HeroBentoGrid() {
         return [];
       }
     },
-    staleTime: 30000, // Refresh every 30 seconds for randomness
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   if (isLoading) {
@@ -53,9 +55,34 @@ export function HeroBentoGrid() {
 
   const getImageUrl = (image: string) => {
     if (!image) return null;
-    if (image.startsWith('/')) return image;
-    if (image.startsWith('http://') || image.startsWith('https://')) return image;
-    if (image.startsWith('products/')) return `/${image}`;
+    
+    // Handle absolute URLs
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+      return image;
+    }
+    
+    // Handle media library paths (new format: /media/products/filename.jpg or /media/library/filename.jpg)
+    if (image.startsWith('/media/products/')) {
+      const filename = image.replace('/media/products/', '');
+      return `/media/products/${filename}`;
+    }
+    if (image.startsWith('/media/library/')) {
+      const filename = image.replace('/media/library/', '');
+      return `/media/library/${filename}`;
+    }
+    
+    // Handle old product paths (legacy: /products/filename.jpg or products/filename.jpg)
+    if (image.includes('/products/') || image.startsWith('products/')) {
+      const filename = image.split('/').pop() || image;
+      return `/media/products/${filename}`;
+    }
+    
+    // Handle paths starting with /
+    if (image.startsWith('/')) {
+      return image;
+    }
+    
+    // Bare filename - assume it's a product image
     return `/media/products/${image}`;
   };
 
@@ -83,7 +110,17 @@ export function HeroBentoGrid() {
                 className="w-full h-full object-contain"
                 style={{ objectPosition: 'center' }}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                  const img = e.target as HTMLImageElement;
+                  const currentSrc = img.src;
+                  // If currentSrc is already an API proxy, or an absolute URL, don't retry
+                  if (currentSrc.startsWith('/api/media/') || currentSrc.startsWith('http')) {
+                    img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                    return;
+                  }
+                  // Fallback to API proxy route
+                  const filename = largeProduct.images[0].split('/').pop() || largeProduct.images[0];
+                  const category = largeProduct.images[0].includes('/media/library/') ? 'library' : 'products';
+                  img.src = `/api/media/${category}/${filename}`;
                 }}
               />
             ) : (
@@ -132,7 +169,17 @@ export function HeroBentoGrid() {
                   className="w-full h-full object-contain"
                   style={{ objectPosition: 'center' }}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                    const img = e.target as HTMLImageElement;
+                    const currentSrc = img.src;
+                    // If currentSrc is already an API proxy, or an absolute URL, don't retry
+                    if (currentSrc.startsWith('/api/media/') || currentSrc.startsWith('http')) {
+                      img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                      return;
+                    }
+                    // Fallback to API proxy route
+                    const filename = topRightProduct.images[0].split('/').pop() || topRightProduct.images[0];
+                    const category = topRightProduct.images[0].includes('/media/library/') ? 'library' : 'products';
+                    img.src = `/api/media/${category}/${filename}`;
                   }}
                 />
               ) : (
@@ -182,7 +229,17 @@ export function HeroBentoGrid() {
                   className="w-full h-full object-contain"
                   style={{ objectPosition: 'center' }}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                    const img = e.target as HTMLImageElement;
+                    const currentSrc = img.src;
+                    // If currentSrc is already an API proxy, or an absolute URL, don't retry
+                    if (currentSrc.startsWith('/api/media/') || currentSrc.startsWith('http')) {
+                      img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                      return;
+                    }
+                    // Fallback to API proxy route
+                    const filename = bottomLeftProduct.images[0].split('/').pop() || bottomLeftProduct.images[0];
+                    const category = bottomLeftProduct.images[0].includes('/media/library/') ? 'library' : 'products';
+                    img.src = `/api/media/${category}/${filename}`;
                   }}
                 />
               ) : (
@@ -232,7 +289,17 @@ export function HeroBentoGrid() {
                   className="w-full h-full object-contain"
                   style={{ objectPosition: 'center' }}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                    const img = e.target as HTMLImageElement;
+                    const currentSrc = img.src;
+                    // If currentSrc is already an API proxy, or an absolute URL, don't retry
+                    if (currentSrc.startsWith('/api/media/') || currentSrc.startsWith('http')) {
+                      img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16"%3ENo Image%3C/text%3E%3C/svg%3E';
+                      return;
+                    }
+                    // Fallback to API proxy route
+                    const filename = bottomRightProduct.images[0].split('/').pop() || bottomRightProduct.images[0];
+                    const category = bottomRightProduct.images[0].includes('/media/library/') ? 'library' : 'products';
+                    img.src = `/api/media/${category}/${filename}`;
                   }}
                 />
               ) : (

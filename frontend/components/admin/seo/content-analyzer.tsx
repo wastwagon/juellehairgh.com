@@ -37,24 +37,42 @@ export function ContentAnalyzer() {
     queryFn: async () => {
       if (!productId) return null;
       const token = localStorage.getItem("token");
-      const response = await api.get(`/keywords/analysis/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      try {
+        const response = await api.get(`/keywords/analysis/${productId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+      } catch (error: any) {
+        // Gracefully handle 404 - endpoint not implemented yet
+        if (error?.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
     },
     enabled: !!productId,
+    retry: false, // Don't retry on 404
   });
 
   const { data: allAnalyses } = useQuery({
     queryKey: ["content-analyses", "all"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await api.get("/keywords/analysis", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      try {
+        const response = await api.get("/keywords/analysis", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+      } catch (error: any) {
+        // Gracefully handle 404 - endpoint not implemented yet
+        if (error?.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
     },
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
+    retry: false, // Don't retry on 404
   });
 
   const handleAnalyze = (e: React.FormEvent) => {

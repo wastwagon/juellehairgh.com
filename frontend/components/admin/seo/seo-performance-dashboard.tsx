@@ -27,19 +27,39 @@ export function SeoPerformanceDashboard() {
         }).then(r => r.data.products || []).catch(() => []),
         api.get("/seo/redirects", {
           headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.data || []).catch(() => []),
+        }).then(r => r.data || []).catch((e: any) => {
+          // Silently handle 404 - endpoint not implemented yet
+          if (e?.response?.status === 404) return [];
+          return [];
+        }),
         api.get("/seo/404s?resolved=false", {
           headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.data || []).catch(() => []),
+        }).then(r => r.data || []).catch((e: any) => {
+          // Silently handle 404 - endpoint not implemented yet
+          if (e?.response?.status === 404) return [];
+          return [];
+        }),
         api.get("/backlinks/stats", {
           headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.data || {}).catch(() => ({})),
+        }).then(r => r.data || {}).catch((e: any) => {
+          // Silently handle 404 - endpoint not implemented yet
+          if (e?.response?.status === 404) return {};
+          return {};
+        }),
         api.get("/keywords/tracking/list", {
           headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.data || []).catch(() => []),
+        }).then(r => r.data || []).catch((e: any) => {
+          // Silently handle 404 - endpoint not implemented yet
+          if (e?.response?.status === 404) return [];
+          return [];
+        }),
         api.get("/keywords/analysis", {
           headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.data || []).catch(() => []),
+        }).then(r => r.data || []).catch((e: any) => {
+          // Silently handle 404 - endpoint not implemented yet
+          if (e?.response?.status === 404) return [];
+          return [];
+        }),
       ]);
 
       // Calculate stats

@@ -68,7 +68,9 @@ export function ProductBentoSlider({
         return [];
       }
     },
-    staleTime: 60000,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   // Auto-play slider
@@ -131,13 +133,18 @@ export function ProductBentoSlider({
       return imagePath;
     }
     
-    // Handle media library paths (new format: /media/products/filename.jpg)
+    // Handle media library paths (new format: /media/products/filename.jpg or /media/library/filename.jpg)
     if (imagePath.startsWith('/media/products/')) {
-      return imagePath;
+      const filename = imagePath.replace('/media/products/', '');
+      return `/media/products/${filename}`;
+    }
+    if (imagePath.startsWith('/media/library/')) {
+      const filename = imagePath.replace('/media/library/', '');
+      return `/media/library/${filename}`;
     }
     
     // Handle old product paths (legacy: /products/filename.jpg or products/filename.jpg)
-    if (imagePath.startsWith('/products/') || imagePath.startsWith('products/')) {
+    if (imagePath.includes('/products/') || imagePath.startsWith('products/')) {
       const filename = imagePath.split('/').pop() || imagePath;
       return `/media/products/${filename}`;
     }
@@ -236,7 +243,17 @@ export function ProductBentoSlider({
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
+                              const img = e.target as HTMLImageElement;
+                              const currentSrc = img.src;
+                              // If currentSrc is already an API proxy, or an absolute URL, don't retry
+                              if (currentSrc.startsWith('/api/media/') || currentSrc.startsWith('http')) {
+                                img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e5e7eb" width="400" height="400"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="16" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
+                                return;
+                              }
+                              // Fallback to API proxy route
+                              const filename = product.images[0].split('/').pop() || product.images[0];
+                              const category = product.images[0].includes('/media/library/') ? 'library' : 'products';
+                              img.src = `/api/media/${category}/${filename}`;
                             }}
                           />
                         ) : (

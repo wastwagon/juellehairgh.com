@@ -24,7 +24,9 @@ export function ShopAllSection() {
       }
     },
     retry: 2,
-    staleTime: 60000,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   const products = productsData?.products || [];
