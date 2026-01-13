@@ -15,6 +15,42 @@ interface CollectionPageProps {
 export function CollectionPage({ slug }: CollectionPageProps) {
   const [sort, setSort] = useState("newest");
 
+  // Helper function to get image URL (similar to promotional banners)
+  const getImageUrl = (url?: string) => {
+    if (!url) return null;
+    
+    // Handle absolute URLs
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    
+    // Handle media library paths - use Next.js API proxy route
+    if (url.startsWith("/media/banners/") || url.startsWith("/media/collections/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle /media/ paths (general case) - use Next.js API proxy route
+    if (url.startsWith("/media/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle paths containing "banners" or "collections" (extract filename)
+    if (url.includes("banners") || url.includes("collections")) {
+      const filename = url.split("/").pop() || url;
+      const category = url.includes("banners") ? "banners" : "collections";
+      return `/api/media/${category}/${filename}`;
+    }
+    
+    // For other absolute paths starting with /
+    if (url.startsWith("/")) {
+      if (url.includes("/media/")) {
+        return `/api${url}`;
+      }
+      return url;
+    }
+    
+    // Bare filename - assume it's a collection image
+    return `/api/media/collections/${url}`;
+  };
+
   const { data: collection, isLoading } = useQuery<Collection>({
     queryKey: ["collection", slug],
     queryFn: async () => {
@@ -62,11 +98,16 @@ export function CollectionPage({ slug }: CollectionPageProps) {
       />
       <div className="mb-6 md:mb-8">
         {collection.image && (
-          <div className="aspect-video w-full rounded-lg overflow-hidden mb-6">
+          <div className="w-full rounded-lg overflow-hidden mb-6">
             <img
-              src={collection.image}
+              src={getImageUrl(collection.image)}
               alt={collection.name}
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-contain"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = 'none';
+                img.onerror = null;
+              }}
             />
           </div>
         )}

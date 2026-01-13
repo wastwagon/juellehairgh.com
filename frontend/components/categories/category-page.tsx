@@ -24,6 +24,44 @@ export function CategoryPage({ slug }: CategoryPageProps) {
     page: 1,
   });
 
+  // Helper function to get image URL
+  const getImageUrl = (url?: string) => {
+    if (!url) return null;
+    
+    // Handle absolute URLs
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    
+    // Handle media library paths - use Next.js API proxy route
+    if (url.startsWith("/media/categories/") || url.startsWith("/media/collections/") || url.startsWith("/media/banners/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle /media/ paths (general case) - use Next.js API proxy route
+    if (url.startsWith("/media/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle paths containing category/collection/banner keywords
+    if (url.includes("categories") || url.includes("collections") || url.includes("banners")) {
+      const filename = url.split("/").pop() || url;
+      let category = "categories";
+      if (url.includes("collections")) category = "collections";
+      if (url.includes("banners")) category = "banners";
+      return `/api/media/${category}/${filename}`;
+    }
+    
+    // For other absolute paths starting with /
+    if (url.startsWith("/")) {
+      if (url.includes("/media/")) {
+        return `/api${url}`;
+      }
+      return url;
+    }
+    
+    // Bare filename - assume it's a category image
+    return `/api/media/categories/${url}`;
+  };
+
   // For "shop-all", we don't need to fetch category - show all products
   const isShopAll = slug === "shop-all";
 
@@ -100,6 +138,20 @@ export function CategoryPage({ slug }: CategoryPageProps) {
         </aside>
 
         <div className="lg:col-span-3">
+          {category?.image && (
+            <div className="w-full rounded-lg overflow-hidden mb-6">
+              <img
+                src={getImageUrl(category.image)}
+                alt={category.name}
+                className="w-full h-auto object-contain"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                  img.onerror = null;
+                }}
+              />
+            </div>
+          )}
           {category?.description && (
             <div className="mb-4 md:mb-6">
               <p className="text-sm md:text-base text-gray-600">{category.description}</p>
