@@ -25,8 +25,12 @@ export function HeroBento() {
     queryKey: ["hero-products"],
     queryFn: async () => {
       try {
-        const response = await api.get("/products?limit=8&sort=newest");
-        return response.data.products || [];
+        // Add cache-busting timestamp to force fresh fetch
+        const timestamp = Date.now();
+        const response = await api.get(`/products?limit=8&sort=newest&t=${timestamp}`);
+        const fetchedProducts = response.data.products || [];
+        // Filter out inactive/deleted products
+        return fetchedProducts.filter((p: Product) => p && p.id && p.isActive !== false);
       } catch (error) {
         console.error("Error fetching hero products:", error);
         return [];

@@ -32,7 +32,9 @@ export function FeaturedCollections() {
     queryKey: ["collections", "featured"],
     queryFn: async () => {
       try {
-        const response = await api.get("/collections");
+        // Add cache-busting timestamp to force fresh fetch
+        const timestamp = Date.now();
+        const response = await api.get(`/collections?t=${timestamp}`);
         const collections = response.data || [];
         // Return up to 4 active collections
         return collections.filter((c: Collection) => c.isActive !== false).slice(0, 4);

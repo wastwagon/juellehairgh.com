@@ -47,18 +47,22 @@ export function ProductBentoSlider({
         let fetchedProducts: Product[] = [];
         
         if (collectionSlug) {
-          const response = await api.get(`/collections/${collectionSlug}`);
+          // Add cache-busting timestamp to force fresh fetch
+          const timestamp = Date.now();
+          const response = await api.get(`/collections/${collectionSlug}?t=${timestamp}`);
           const collection = response.data;
           if (collection?.products) {
             fetchedProducts = collection.products
               .map((cp: any) => cp.product || cp)
-              .filter((p: any) => p && p.images && p.images.length > 0)
+              .filter((p: any) => p && p.images && p.images.length > 0 && p.id && p.isActive !== false)
               .slice(0, limit);
           }
         } else {
-          const response = await api.get(`/products?limit=${limit * 2}&sort=newest`);
+          // Add cache-busting timestamp to force fresh fetch
+          const timestamp = Date.now();
+          const response = await api.get(`/products?limit=${limit * 2}&sort=newest&t=${timestamp}`);
           fetchedProducts = (response.data.products || [])
-            .filter((p: any) => p.images && p.images.length > 0)
+            .filter((p: any) => p.images && p.images.length > 0 && p.id && p.isActive !== false)
             .slice(0, limit);
         }
         

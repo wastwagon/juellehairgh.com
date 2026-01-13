@@ -45,7 +45,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     queryFn: async () => {
       if (!slug) return null;
       try {
-        const response = await api.get(`/collections/${slug}`);
+        // Add cache-busting timestamp to force fresh fetch
+        const timestamp = Date.now();
+        const response = await api.get(`/collections/${slug}?t=${timestamp}`);
         if (process.env.NODE_ENV === 'development') {
           console.log(`✅ Fetched collection ${slug}:`, response.data);
         }
@@ -59,6 +61,9 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
     },
     enabled: !!slug,
     retry: 1,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
+    refetchOnMount: true, // Refetch on mount
   });
 
   // Get products from collection - handle nested structure
@@ -87,8 +92,8 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
           };
         })
         .filter((p: any) => {
-          // Filter out any null/undefined products and ensure product has required fields
-          return p && p.id && p.title && (p.priceGhs || p.priceGhs === 0);
+          // Filter out any null/undefined products, deleted products, and ensure product has required fields
+          return p && p.id && p.title && (p.priceGhs || p.priceGhs === 0) && p.isActive !== false;
         })
     : [];
 
@@ -107,9 +112,12 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
       try {
         let fetchedProducts: any[] = [];
         
+        // Add cache-busting timestamp to force fresh fetch
+        const timestamp = Date.now();
+        
         if (title === "New Arrivals") {
           // For New Arrivals, fetch products with "New Arrival" badge or recently created
-          const response = await api.get(`/products?limit=20&sort=newest`);
+          const response = await api.get(`/products?limit=20&sort=newest&t=${timestamp}`);
           fetchedProducts = response.data.products || [];
           // Filter for products with "New Arrival" badge or created in last 30 days
           fetchedProducts = fetchedProducts.filter((p: any) => 
@@ -123,17 +131,20 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
         } else if (title === "Best Sellers") {
           // For Best Sellers, use popular sort or just fetch products
           try {
-            const response = await api.get(`/products?limit=20&sort=popular`);
+            const response = await api.get(`/products?limit=20&sort=popular&t=${timestamp}`);
             fetchedProducts = response.data.products || [];
           } catch {
             // Fallback to newest if popular sort doesn't work
-            const response = await api.get(`/products?limit=20&sort=newest`);
+            const response = await api.get(`/products?limit=20&sort=newest&t=${timestamp}`);
             fetchedProducts = response.data.products || [];
           }
         } else {
-          const response = await api.get(`/products?limit=20&sort=newest`);
+          const response = await api.get(`/products?limit=20&sort=newest&t=${timestamp}`);
           fetchedProducts = response.data.products || [];
         }
+        
+        // Filter out deleted/inactive products
+        fetchedProducts = fetchedProducts.filter((p: any) => p && p.id && p.isActive !== false);
         
         if (process.env.NODE_ENV === 'development') {
           console.log(`✅ Fetched fallback products for ${title}:`, fetchedProducts.length);

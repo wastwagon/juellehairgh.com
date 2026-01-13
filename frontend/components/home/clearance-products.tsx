@@ -11,7 +11,9 @@ export function ClearanceProducts() {
     queryKey: ["collection", "clearance"],
     queryFn: async () => {
       try {
-        const response = await api.get(`/collections/clearance`);
+        // Add cache-busting timestamp to force fresh fetch
+        const timestamp = Date.now();
+        const response = await api.get(`/collections/clearance?t=${timestamp}`);
         return response.data;
       } catch (err: any) {
         console.error("Error fetching clearance collection:", err);
@@ -49,8 +51,8 @@ export function ClearanceProducts() {
           };
         })
         .filter((p: any) => {
-          // Filter out any null/undefined products and ensure product has required fields
-          return p && p.id && p.title && (p.priceGhs || p.priceGhs === 0);
+          // Filter out any null/undefined products, deleted products, and ensure product has required fields
+          return p && p.id && p.title && (p.priceGhs || p.priceGhs === 0) && p.isActive !== false;
         })
     : [];
 

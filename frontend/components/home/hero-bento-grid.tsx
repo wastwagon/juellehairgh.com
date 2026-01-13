@@ -14,10 +14,12 @@ export function HeroBentoGrid() {
     queryKey: ["hero-bento-products"],
     queryFn: async () => {
       try {
+        // Add cache-busting timestamp to force fresh fetch
+        const timestamp = Date.now();
         // Fetch more products to ensure we get 4 unique random ones
-        const response = await api.get("/products?limit=20&sort=newest");
+        const response = await api.get(`/products?limit=20&sort=newest&t=${timestamp}`);
         const fetchedProducts = (response.data.products || [])
-          .filter((p: Product) => p && p.images && p.images.length > 0 && p.isActive !== false)
+          .filter((p: Product) => p && p.images && p.images.length > 0 && p.isActive !== false && p.id)
           .map((p: Product) => ({
             ...p,
             variants: p.variants || [],
