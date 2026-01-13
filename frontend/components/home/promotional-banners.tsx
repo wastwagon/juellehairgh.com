@@ -97,7 +97,7 @@ export function PromotionalBanners() {
   if (isLoading) {
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
@@ -116,7 +116,7 @@ export function PromotionalBanners() {
 
   return (
     <section className="py-8 md:py-12 container mx-auto px-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
         {activeBanners.map((banner, index) => {
           const imageUrl = getImageUrl(banner.image);
           const icon = fallbackIcons[index % fallbackIcons.length];
