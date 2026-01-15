@@ -1,41 +1,85 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { ProductCard } from "@/components/products/product-card";
 import { Product } from "@/types";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ShoppingBag } from "lucide-react";
 
 export function ShopAllSection() {
-  const { data: productsData, isLoading } = useQuery<{
+  const {
+    data: infiniteProductsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingInfinite,
+  } = useInfiniteQuery<{
     products: Product[];
     pagination: any;
   }>({
-    queryKey: ["products", "all"],
-    queryFn: async () => {
+    queryKey: ["products-infinite", "homepage", "shop-all"],
+    queryFn: async ({ pageParam = 1 }) => {
       try {
-        // Fetch all products - use a high limit to get all products
-        const response = await api.get("/products?limit=1000&sort=newest");
+        const params = new URLSearchParams({
+          sort: "newest",
+          page: String(pageParam),
+        });
+        const response = await api.get(`/products?${params}`);
         return response.data;
       } catch (err: any) {
         console.error("Error fetching products:", err);
         return { products: [], pagination: null };
       }
     },
-    retry: 2,
-    staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache
-    refetchOnMount: true, // Refetch on mount
+    getNextPageParam: (lastPage) => {
+      const totalPages = lastPage.pagination?.totalPages || 1;
+      const currentPage = lastPage.pagination?.page || 1;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 
-  const products = productsData?.products || [];
+  // Flatten all products from infinite query
+  const allProducts = infiniteProductsData?.pages.flatMap((page) => page.products) || [];
 
-  if (isLoading) {
+  // Intersection Observer for infinite scroll
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isLoadingInfinite && allProducts.length === 0) {
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-gray-800 text-center tracking-tight">Shop All</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="flex items-center justify-center mb-6 md:mb-8 gap-2">
+          <ShoppingBag className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
+            Shop All
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
@@ -48,22 +92,27 @@ export function ShopAllSection() {
     );
   }
 
-  if (products.length === 0) {
+  if (allProducts.length === 0) {
     return null;
   }
 
   return (
     <section className="py-8 md:py-12 container mx-auto px-4">
       <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 text-center tracking-tight">Shop All</h2>
-        {productsData?.pagination && (
+        <div className="flex items-center justify-center gap-2">
+          <ShoppingBag className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
+            Shop All
+          </span>
+        </div>
+        {infiniteProductsData?.pages[0]?.pagination?.total && (
           <p className="text-sm text-gray-600">
-            Showing {products.length} of {productsData.pagination.total} products
+            {allProducts.length} of {infiniteProductsData.pages[0].pagination.total} products
           </p>
         )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-        {products.map((product: Product) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        {allProducts.map((product: Product) => {
           if (!product || !product.id || !product.title) {
             return null;
           }
@@ -76,6 +125,21 @@ export function ShopAllSection() {
           };
           return <ProductCard key={product.id} product={productWithPrice} />;
         })}
+      </div>
+
+      {/* Infinite scroll trigger */}
+      <div ref={loadMoreRef} className="mt-8">
+        {isFetchingNextPage && (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <span className="ml-3 text-sm text-gray-600">Loading more products...</span>
+          </div>
+        )}
+        {!hasNextPage && allProducts.length > 0 && (
+          <div className="text-center py-8 text-sm text-gray-500">
+            All products loaded
+          </div>
+        )}
       </div>
     </section>
   );
