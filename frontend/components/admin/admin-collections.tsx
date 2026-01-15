@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Layers } from "lucide-react";
+import { Plus, Edit, Trash2, Layers, Package } from "lucide-react";
 import { CollectionForm } from "./collection-form";
 
 interface Collection {
@@ -19,6 +20,7 @@ interface Collection {
 }
 
 export function AdminCollections() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
@@ -127,10 +129,19 @@ export function AdminCollections() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => router.push(`/admin/collections/${collection.id}/products`)}
+                    title="Manage Products"
+                  >
+                    <Package className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       setEditingCollection(collection);
                       setShowForm(true);
                     }}
+                    title="Edit Collection"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -139,6 +150,7 @@ export function AdminCollections() {
                     size="sm"
                     onClick={() => handleDelete(collection.id)}
                     className="text-red-600 hover:text-red-700"
+                    title="Delete Collection"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

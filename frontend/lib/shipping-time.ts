@@ -66,9 +66,9 @@ export function getShippingMessage(): string {
   const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   
   if (status === "Ship Today") {
-    return `Order ${status} Item(s) by 2PM GMT — Ships Today!`;
+    return `Order Before 2PM GMT for Same Day Delivery within Accra.`;
   } else {
-    return `Orders Placed After 2PM GMT Ship Next Business Day.`;
+    return `Orders Placed After 2PM GMT Will Be Delivered Next Business Day.`;
   }
 }
 
@@ -83,9 +83,9 @@ export function getShippingBannerText(): string {
   const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   
   if (status === "Ship Today") {
-    return `Order ${status} Item(s) by 2PM GMT — Ships Today!`;
+    return `Order Before 2PM GMT for Same Day Delivery within Accra.`;
   } else {
-    return `Orders Placed After 2PM GMT Ship Next Business Day.`;
+    return `Orders Placed After 2PM GMT Will Be Delivered Next Business Day.`;
   }
 }
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Product } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, calculateProductSalePrice } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
 import { useCartStore } from "@/store/cart-store";
 import { Star, Eye, ShoppingCart } from "lucide-react";
@@ -30,16 +30,10 @@ export function ProductCard({ product }: ProductCardProps) {
     ? !product.variants?.some(v => v.stock > 0) // Out of stock if no variants have stock
     : (product.stock !== undefined && product.stock <= 0); // Simple product: check product stock
   
-  // WooCommerce-style: If sale price is set and lower than regular price, show sale price prominently
-  const regularPrice = Number(product.priceGhs);
-  const salePrice = product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : null;
-  const isOnSale = salePrice && salePrice < regularPrice;
-  const displayPrice = isOnSale ? convert(salePrice) : convert(regularPrice);
-  const displayComparePrice = isOnSale ? convert(regularPrice) : null;
-
-  const discountPercent = isOnSale
-    ? Math.round(((regularPrice - salePrice!) / regularPrice) * 100)
-    : 0;
+  // Calculate sale price (handles both simple and variation products)
+  const { regularPrice, salePrice, isOnSale, discountPercent } = calculateProductSalePrice(product);
+  const displayPrice = isOnSale && salePrice ? convert(salePrice) : convert(regularPrice);
+  const displayComparePrice = isOnSale && salePrice ? convert(regularPrice) : null;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -252,19 +246,17 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* Price - Only show for simple products (no variants) */}
-        {!hasVariants && (
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-base md:text-lg font-bold text-gray-900">
-              {formatCurrency(displayPrice, displayCurrency)}
+        {/* Price - Show for both simple and variation products */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base md:text-lg font-bold text-gray-900">
+            {formatCurrency(displayPrice, displayCurrency)}
+          </span>
+          {displayComparePrice && (
+            <span className="text-sm text-gray-400 line-through">
+              {formatCurrency(displayComparePrice, displayCurrency)}
             </span>
-            {displayComparePrice && (
-              <span className="text-sm text-gray-400 line-through">
-                {formatCurrency(displayComparePrice, displayCurrency)}
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Action Button */}
         <div className="mt-auto">

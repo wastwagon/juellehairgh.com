@@ -247,10 +247,10 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                   <span className="text-xs font-semibold text-gray-700">
                     {isBeforeCutoff() ? (
                       <>
-                        Order <span className="bg-green-600 text-white px-2 py-0.5 rounded">Ship Today</span> Item(s) by <strong>2PM GMT</strong> — <strong className="text-red-600">Ships Today!</strong>
+                        Order Before <strong>2PM GMT</strong> for <span className="bg-green-600 text-white px-2 py-0.5 rounded">Same Day Delivery</span> within <strong className="text-red-600">Accra</strong>.
                       </>
                     ) : (
-                      <strong className="text-gray-800">Orders Placed After 2PM GMT Ship Next Business Day.</strong>
+                      <strong className="text-gray-800">Orders Placed After 2PM GMT Will Be Delivered Next Business Day.</strong>
                     )}
                   </span>
                 </div>

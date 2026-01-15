@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, calculateProductSalePrice } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Sparkles, Zap } from "lucide-react";
@@ -20,6 +20,10 @@ interface Product {
   brand?: {
     name: string;
   } | null;
+  variants?: Array<{
+    priceGhs?: number | null;
+    compareAtPriceGhs?: number | null;
+  }>;
 }
 
 interface ProductBentoSliderProps {
@@ -107,7 +111,7 @@ export function ProductBentoSlider({
     return null;
   }
 
-  // Calculate discount percentage
+  // Calculate discount percentage (kept for backward compatibility, but we'll use calculateProductSalePrice)
   const getDiscount = (regularPrice: number, salePrice?: number | null) => {
     // WooCommerce-style: sale price should be lower than regular price
     if (!salePrice || salePrice >= regularPrice) return null;
@@ -212,11 +216,9 @@ export function ProductBentoSlider({
               className="min-w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
             >
               {slideProducts.map((product) => {
-                // WooCommerce-style: sale price is compareAtPriceGhs, regular price is priceGhs
-                const discount = getDiscount(
-                  Number(product.priceGhs),
-                  product.compareAtPriceGhs
-                );
+                // Calculate sale price (handles both simple and variation products)
+                const { discountPercent } = calculateProductSalePrice(product);
+                const discount = discountPercent > 0 ? discountPercent : null;
 
                 return (
                   <Link
@@ -284,21 +286,19 @@ export function ProductBentoSlider({
                         {/* Price */}
                         <div className="flex items-center gap-2 mt-auto">
                           {(() => {
-                            // WooCommerce-style: If sale price is set and lower than regular price, show sale price prominently
-                            const regularPrice = Number(product.priceGhs);
-                            const salePrice = product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : null;
-                            const isOnSale = salePrice && salePrice < regularPrice;
-                            const displayPrice = isOnSale ? salePrice : regularPrice;
-                            const displayComparePrice = isOnSale ? regularPrice : null;
+                            // Calculate sale price (handles both simple and variation products)
+                            const { regularPrice, salePrice, isOnSale } = calculateProductSalePrice(product);
+                            const displayPrice = isOnSale && salePrice ? convert(salePrice) : convert(regularPrice);
+                            const displayComparePrice = isOnSale && salePrice ? convert(regularPrice) : null;
                             
                             return (
                               <>
                                 <span className="text-base md:text-lg font-bold text-gray-900">
-                                  {formatCurrency(convert(displayPrice), displayCurrency)}
+                                  {formatCurrency(displayPrice, displayCurrency)}
                                 </span>
                                 {displayComparePrice && (
                                   <span className="text-sm text-gray-500 line-through">
-                                    {formatCurrency(convert(displayComparePrice), displayCurrency)}
+                                    {formatCurrency(displayComparePrice, displayCurrency)}
                                   </span>
                                 )}
                               </>

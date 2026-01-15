@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, calculateProductSalePrice } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, TrendingUp, Zap } from "lucide-react";
@@ -16,6 +16,10 @@ interface Product {
   compareAtPriceGhs?: number | null;
   images: string[];
   badges?: string[];
+  variants?: Array<{
+    priceGhs?: number | null;
+    compareAtPriceGhs?: number | null;
+  }>;
 }
 
 export function HeroBento() {
@@ -65,10 +69,8 @@ export function HeroBento() {
 
   // Featured product (largest card)
   const featuredProduct = products[0];
-  const featuredDiscount = getDiscount(
-    Number(featuredProduct.priceGhs),
-    featuredProduct.compareAtPriceGhs
-  );
+  const featuredSaleInfo = calculateProductSalePrice(featuredProduct);
+  const featuredDiscount = featuredSaleInfo.discountPercent > 0 ? featuredSaleInfo.discountPercent : null;
 
   // Other products for grid
   const gridProducts = products.slice(1, 8);
@@ -152,21 +154,19 @@ export function HeroBento() {
               
               <div className="flex items-center gap-3">
                 {(() => {
-                  // WooCommerce-style: If sale price is set and lower than regular price, show sale price prominently
-                  const regularPrice = Number(featuredProduct.priceGhs);
-                  const salePrice = featuredProduct.compareAtPriceGhs ? Number(featuredProduct.compareAtPriceGhs) : null;
-                  const isOnSale = salePrice && salePrice < regularPrice;
-                  const displayPrice = isOnSale ? salePrice : regularPrice;
-                  const displayComparePrice = isOnSale ? regularPrice : null;
+                  // Calculate sale price (handles both simple and variation products)
+                  const { regularPrice, salePrice, isOnSale } = featuredSaleInfo;
+                  const displayPrice = isOnSale && salePrice ? convert(salePrice) : convert(regularPrice);
+                  const displayComparePrice = isOnSale && salePrice ? convert(regularPrice) : null;
                   
                   return (
                     <>
                       <span className="text-xl md:text-2xl font-bold text-gray-900">
-                        {formatCurrency(convert(displayPrice), displayCurrency)}
+                        {formatCurrency(displayPrice, displayCurrency)}
                       </span>
                       {displayComparePrice && (
                         <span className="text-lg text-gray-500 line-through">
-                          {formatCurrency(convert(displayComparePrice), displayCurrency)}
+                          {formatCurrency(displayComparePrice, displayCurrency)}
                         </span>
                       )}
                     </>
@@ -184,7 +184,8 @@ export function HeroBento() {
 
         {/* Grid Products - Smaller Cards */}
         {gridProducts.map((product, index) => {
-          const discount = getDiscount(Number(product.priceGhs), product.compareAtPriceGhs);
+          const saleInfo = calculateProductSalePrice(product);
+          const discount = saleInfo.discountPercent > 0 ? saleInfo.discountPercent : null;
           const isLarge = index === 0; // First grid item is larger
 
           return (
@@ -281,21 +282,19 @@ export function HeroBento() {
                   
                   <div className="flex items-center gap-2 mt-auto">
                     {(() => {
-                      // WooCommerce-style: If sale price is set and lower than regular price, show sale price prominently
-                      const regularPrice = Number(product.priceGhs);
-                      const salePrice = product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : null;
-                      const isOnSale = salePrice && salePrice < regularPrice;
-                      const displayPrice = isOnSale ? salePrice : regularPrice;
-                      const displayComparePrice = isOnSale ? regularPrice : null;
+                      // Calculate sale price (handles both simple and variation products)
+                      const { regularPrice, salePrice, isOnSale } = saleInfo;
+                      const displayPrice = isOnSale && salePrice ? convert(salePrice) : convert(regularPrice);
+                      const displayComparePrice = isOnSale && salePrice ? convert(regularPrice) : null;
                       
                       return (
                         <>
                           <span className="text-lg md:text-xl font-bold text-gray-900">
-                            {formatCurrency(convert(displayPrice), displayCurrency)}
+                            {formatCurrency(displayPrice, displayCurrency)}
                           </span>
                           {displayComparePrice && (
                             <span className="text-sm text-gray-500 line-through">
-                              {formatCurrency(convert(displayComparePrice), displayCurrency)}
+                              {formatCurrency(displayComparePrice, displayCurrency)}
                             </span>
                           )}
                         </>
