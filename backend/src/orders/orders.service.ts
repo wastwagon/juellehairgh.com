@@ -198,6 +198,11 @@ export class OrdersService {
     // Send new order notification to admin (non-blocking)
     this.emailService.sendAdminNewOrder(order).catch((error) => {
       console.error("Failed to send admin new order notification:", error);
+      console.error("Error details:", JSON.stringify({
+        message: error?.message,
+        stack: error?.stack,
+        orderId: order?.id,
+      }));
       // Don't throw - email failure shouldn't block order creation
     });
 

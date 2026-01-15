@@ -52,12 +52,23 @@ export class EmailService {
       return imagePath;
     }
 
-    // Handle media library paths
+    // Handle media library paths (new format)
+    if (imagePath.startsWith("/media/library/")) {
+      return `${this.siteUrl}${imagePath}`;
+    }
+
+    // Handle old product paths
     if (imagePath.startsWith("/media/products/")) {
       return `${this.siteUrl}${imagePath}`;
     }
 
-    // Extract filename from any path format
+    // Handle paths that include /products/ or start with products/
+    if (imagePath.includes("/products/") || imagePath.startsWith("products/")) {
+      const filename = imagePath.split("/").pop() || imagePath;
+      return `${this.siteUrl}/media/products/${filename}`;
+    }
+
+    // Extract filename from any path format and assume it's a product image
     const filename = imagePath.split("/").pop() || imagePath;
     return `${this.siteUrl}/media/products/${filename}`;
   }
@@ -370,6 +381,8 @@ export class EmailService {
    */
   async sendAdminNewOrder(order: any) {
     try {
+      this.logger.log(`Attempting to send admin new order notification for order ${order.id}`);
+      
       const orderItems =
         order.items?.map((item: any) => {
           // Handle multiple variants (variantIds) or single variant (variantId)
@@ -413,7 +426,15 @@ export class EmailService {
         }) || [];
 
       const adminEmail = await this.getAdminEmail();
+      this.logger.log(`Admin email retrieved: ${adminEmail}`);
+      
+      if (!adminEmail || adminEmail === "admin@juellehairgh.com") {
+        this.logger.warn(`Admin email may not be configured correctly: ${adminEmail}`);
+      }
+      
       const subject = `New Order Received - Order #${order.id.slice(0, 8).toUpperCase()}`;
+      this.logger.log(`Sending email to ${adminEmail} with subject: ${subject}`);
+      
       await this.mailerService.sendMail({
         to: adminEmail,
         subject,
@@ -449,7 +470,12 @@ export class EmailService {
         `New order notification sent to admin for order ${order.id}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to send admin new order notification:`, error);
+      this.logger.error(`Failed to send admin new order notification for order ${order?.id}:`, error);
+      this.logger.error(`Error details: ${JSON.stringify({
+        message: error?.message,
+        stack: error?.stack,
+        orderId: order?.id,
+      })}`);
     }
   }
 
