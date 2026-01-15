@@ -180,9 +180,30 @@ export class CartService {
     });
 
     return items.reduce((total, item) => {
-      const price = item.variant?.priceGhs
-        ? Number(item.variant.priceGhs)
-        : Number(item.product.priceGhs);
+      let price: number;
+      
+      // Use variant price if available, considering sale price
+      if (item.variant?.priceGhs) {
+        const regularPrice = Number(item.variant.priceGhs);
+        const salePrice = item.variant.compareAtPriceGhs
+          ? Number(item.variant.compareAtPriceGhs)
+          : null;
+        // Use sale price if available and lower than regular price
+        price = salePrice && salePrice < regularPrice
+          ? salePrice
+          : regularPrice;
+      } else {
+        // For products without variants, check product sale price
+        const regularPrice = Number(item.product.priceGhs);
+        const salePrice = item.product.compareAtPriceGhs
+          ? Number(item.product.compareAtPriceGhs)
+          : null;
+        // Use sale price if available and lower than regular price
+        price = salePrice && salePrice < regularPrice
+          ? salePrice
+          : regularPrice;
+      }
+      
       return total + price * item.quantity;
     }, 0);
   }

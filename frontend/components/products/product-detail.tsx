@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Product } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, calculateProductSalePrice } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
 import { useCartStore } from "@/store/cart-store";
 import { ShoppingCart, Heart, Star, Share2 } from "lucide-react";
@@ -101,19 +101,34 @@ export function ProductDetail({ slug }: ProductDetailProps) {
     return <div>Product not found</div>;
   }
 
-  // Calculate price based on selected variant
+  // Calculate price based on selected variant or product
   const selectedVariant = Object.values(selectedVariants).find((v) => v.priceGhs);
-  const variantPrice = selectedVariant?.priceGhs;
-  const variantSalePrice = selectedVariant?.compareAtPriceGhs;
+  const hasVariants = product.variants && product.variants.length > 0;
   
-  // Use variant prices if variant is selected, otherwise use product prices
-  const basePrice = variantPrice ? Number(variantPrice) : Number(product.priceGhs);
-  const salePrice = variantSalePrice ? Number(variantSalePrice) : (product.compareAtPriceGhs ? Number(product.compareAtPriceGhs) : null);
+  let regularPrice: number;
+  let salePrice: number | null;
+  let isOnSale: boolean;
+  let discountPercent: number;
   
-  // WooCommerce-style: If sale price is set and lower than regular price, show sale price prominently
-  const isOnSale = salePrice && salePrice < basePrice;
-  const displayPrice = isOnSale ? convert(salePrice) : convert(basePrice);
-  const displayComparePrice = isOnSale ? convert(basePrice) : null;
+  if (hasVariants && selectedVariant) {
+    // For variation products with selected variant, use variant prices
+    regularPrice = Number(selectedVariant.priceGhs);
+    salePrice = selectedVariant.compareAtPriceGhs ? Number(selectedVariant.compareAtPriceGhs) : null;
+    isOnSale = salePrice !== null && salePrice < regularPrice;
+    discountPercent = isOnSale && salePrice
+      ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
+      : 0;
+  } else {
+    // For simple products or variation products without selection, use calculateProductSalePrice helper
+    const saleInfo = calculateProductSalePrice(product);
+    regularPrice = saleInfo.regularPrice;
+    salePrice = saleInfo.salePrice;
+    isOnSale = saleInfo.isOnSale;
+    discountPercent = saleInfo.discountPercent;
+  }
+  
+  const displayPrice = isOnSale && salePrice ? convert(salePrice) : convert(regularPrice);
+  const displayComparePrice = isOnSale && salePrice ? convert(regularPrice) : null;
 
   const handleAddToCart = () => {
     // Check if product has variants and if at least one variant is selected
@@ -183,7 +198,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
     const selectedVariantObjects = Object.values(selectedVariants).filter(Boolean);
     
     // Track add to cart (already tracked in cart store, but also track here for product detail page)
-    const effectivePrice = isOnSale ? salePrice! : basePrice;
+    const effectivePrice = isOnSale && salePrice ? salePrice : regularPrice;
     if (typeof window !== "undefined") {
       import("@/lib/analytics").then(({ analytics }) => {
         analytics.addToCart(product.id, quantity, effectivePrice);
@@ -346,15 +361,22 @@ export function ProductDetail({ slug }: ProductDetailProps) {
           )}
 
           <div className="mb-6">
-            <div className="flex items-center gap-4 mb-2">
-              <span className="text-base md:text-lg font-bold text-gray-900">
-                {formatCurrency(displayPrice, displayCurrency)}
-              </span>
-              {displayComparePrice && (
-                <span className="text-xs md:text-sm text-gray-400 line-through">
-                  {formatCurrency(displayComparePrice, displayCurrency)}
-                </span>
+            <div className="flex items-center gap-4 mb-2 flex-wrap">
+              {isOnSale && discountPercent > 0 && (
+                <Badge className="bg-pink-600 text-white text-xs font-bold px-2 py-1">
+                  Save {discountPercent}%
+                </Badge>
               )}
+              <div className="flex items-center gap-3">
+                <span className="text-base md:text-lg font-bold text-gray-900">
+                  {formatCurrency(displayPrice, displayCurrency)}
+                </span>
+                {displayComparePrice && (
+                  <span className="text-xs md:text-sm text-gray-400 line-through">
+                    {formatCurrency(displayComparePrice, displayCurrency)}
+                  </span>
+                )}
+              </div>
             </div>
             {displayCurrency !== "GHS" && (
               <p className="text-sm text-gray-600">

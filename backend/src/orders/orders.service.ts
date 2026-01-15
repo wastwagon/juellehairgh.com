@@ -129,8 +129,15 @@ export class OrdersService {
                   ? salePrice
                   : regularPrice;
               }
-              // Fall back to product price
-              return Number(item.product.priceGhs);
+              // For products without variants, check product sale price
+              const regularPrice = Number(item.product.priceGhs);
+              const salePrice = item.product.compareAtPriceGhs
+                ? Number(item.product.compareAtPriceGhs)
+                : null;
+              // Use sale price if available and lower than regular price
+              return salePrice && salePrice < regularPrice
+                ? salePrice
+                : regularPrice;
             })(),
           })),
         },

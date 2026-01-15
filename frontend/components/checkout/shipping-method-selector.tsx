@@ -63,9 +63,15 @@ export function ShippingMethodSelector({
 
   useEffect(() => {
     if (methods && methods.length > 0 && !selectedId) {
-      // Auto-select first method
-      setSelectedId(methods[0].id);
-      onSelect(methods[0]);
+      // Prioritize "Pay to Rider on Arrival" as default, otherwise select first method
+      const payToRiderMethod = methods.find((m) => 
+        m.name.toUpperCase().includes("PAY TO RIDER") || 
+        m.name.toUpperCase().includes("PAY TO RIDER ON ARRIVAL")
+      );
+      
+      const defaultMethod = payToRiderMethod || methods[0];
+      setSelectedId(defaultMethod.id);
+      onSelect(defaultMethod);
     }
   }, [methods, selectedId, onSelect]);
 
@@ -148,11 +154,18 @@ export function ShippingMethodSelector({
       >
         {methods.map((method) => {
           const cost = method.calculatedCost;
-          const isFree = cost === 0;
-          // Don't show "FREE" for LOCAL PICK-UP and PAY TO RIDER methods
-          const shouldShowFree = isFree && 
-            !method.name.includes("LOCAL PICK-UP") && 
-            !method.name.includes("PAY TO RIDER");
+          const isLocalPickup = method.name.toUpperCase().includes("LOCAL PICK-UP") || 
+                                method.name.toUpperCase().includes("PICK-UP");
+          const isPayToRider = method.name.toUpperCase().includes("PAY TO RIDER") ||
+                               method.name.toUpperCase().includes("PAY TO RIDER");
+          
+          // Show "FREE" only for:
+          // 1. Local pick-up methods
+          // 2. Methods that qualify for free shipping (has threshold AND order meets threshold)
+          const qualifiesForFreeShipping = method.freeShippingThreshold && 
+                                           orderTotal >= Number(method.freeShippingThreshold);
+          const shouldShowFree = (isLocalPickup && cost === 0) || 
+                                 (cost === 0 && qualifiesForFreeShipping && !isPayToRider);
           
           const costDisplay = shouldShowFree 
             ? "FREE" 
@@ -179,14 +192,34 @@ export function ShippingMethodSelector({
             {selectedMethod.estimatedDays && (
               <p className="text-xs text-gray-500">Estimated: {selectedMethod.estimatedDays}</p>
             )}
-            {selectedMethod.calculatedCost > 0 && (
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900">Shipping Cost:</span>
-                <span className="text-base font-bold text-gray-900">
-                  {formatCurrency(convert(selectedMethod.calculatedCost), displayCurrency)}
-                </span>
-              </div>
-            )}
+            {(() => {
+              const isLocalPickup = selectedMethod.name.toUpperCase().includes("LOCAL PICK-UP") || 
+                                    selectedMethod.name.toUpperCase().includes("PICK-UP");
+              const isPayToRider = selectedMethod.name.toUpperCase().includes("PAY TO RIDER");
+              const qualifiesForFreeShipping = selectedMethod.freeShippingThreshold && 
+                                               orderTotal >= Number(selectedMethod.freeShippingThreshold);
+              const shouldShowFree = (isLocalPickup && selectedMethod.calculatedCost === 0) || 
+                                     (selectedMethod.calculatedCost === 0 && qualifiesForFreeShipping && !isPayToRider);
+              
+              if (shouldShowFree) {
+                return (
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-900">Shipping Cost:</span>
+                    <span className="text-base font-bold text-green-600">FREE</span>
+                  </div>
+                );
+              } else if (selectedMethod.calculatedCost > 0) {
+                return (
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-900">Shipping Cost:</span>
+                    <span className="text-base font-bold text-gray-900">
+                      {formatCurrency(convert(selectedMethod.calculatedCost), displayCurrency)}
+                    </span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
             {selectedMethod.freeShippingThreshold && orderTotal < selectedMethod.freeShippingThreshold && (
               <p className="text-xs text-purple-600 mt-2 font-medium">
                 Free shipping available for orders over {formatCurrency(convert(Number(selectedMethod.freeShippingThreshold)), displayCurrency)}

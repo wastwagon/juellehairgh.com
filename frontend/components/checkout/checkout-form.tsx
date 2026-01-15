@@ -738,18 +738,30 @@ export function CheckoutForm() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(displaySubtotal, displayCurrency)}</span>
               </div>
-              {formData.shippingMethod && (
-                <div className="flex justify-between text-sm text-gray-700">
-                  <span>Shipping</span>
-                  <span>
-                    {shippingCost === 0 ? (
-                      <span className="text-green-600 font-semibold">FREE</span>
-                    ) : (
-                      formatCurrency(displayShipping, displayCurrency)
-                    )}
-                  </span>
-                </div>
-              )}
+              {formData.shippingMethod && (() => {
+                const methodName = formData.shippingMethod.name || "";
+                const isLocalPickup = methodName.toUpperCase().includes("LOCAL PICK-UP") || 
+                                      methodName.toUpperCase().includes("PICK-UP");
+                const isPayToRider = methodName.toUpperCase().includes("PAY TO RIDER");
+                const freeShippingThreshold = formData.shippingMethod.freeShippingThreshold;
+                const qualifiesForFreeShipping = freeShippingThreshold && 
+                                                 subtotalGhs >= Number(freeShippingThreshold);
+                const shouldShowFree = (isLocalPickup && shippingCost === 0) || 
+                                      (shippingCost === 0 && qualifiesForFreeShipping && !isPayToRider);
+                
+                return (
+                  <div className="flex justify-between text-sm text-gray-700">
+                    <span>Shipping</span>
+                    <span>
+                      {shouldShowFree ? (
+                        <span className="text-green-600 font-semibold">FREE</span>
+                      ) : (
+                        formatCurrency(displayShipping, displayCurrency)
+                      )}
+                    </span>
+                  </div>
+                );
+              })()}
               <div className="flex justify-between text-base font-bold text-gray-900 pt-3 border-t">
                 <span>Total</span>
                 <span>{formatCurrency(displayTotal, displayCurrency)}</span>

@@ -144,8 +144,8 @@ export default function ThankYouPage() {
                 <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
               </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-pink-600 animate-fade-in">
-              🎉 Order Confirmed! 🎉
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-4 bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 bg-clip-text text-transparent animate-fade-in tracking-tight">
+              Order Confirmed!
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-2">
               Thank you for your purchase!
