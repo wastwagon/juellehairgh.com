@@ -136,14 +136,14 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-2xl hover:border-purple-200 transition-all duration-300 flex flex-col h-full">
       <Link href={`/products/${product.slug}`} className="flex-shrink-0">
-        <div className="aspect-square relative overflow-hidden bg-gray-100">
-          <div className="absolute inset-0 flex items-center justify-center p-2">
+        <div className="aspect-square relative bg-gray-100 overflow-hidden">
+          <div className="absolute inset-0 flex items-start justify-center pt-2 px-2 pb-2">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={product.title}
-                className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                style={{ objectPosition: 'center center' }}
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                style={{ objectPosition: 'center top' }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   const retryCount = parseInt(img.getAttribute('data-retry') || '0');
