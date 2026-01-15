@@ -680,12 +680,12 @@ export function CheckoutForm() {
                 
                 return (
                 <div key={`${item.productId}-${variantKey}`} className="flex gap-3">
-                  <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                  <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center">
                     {item.product?.images?.[0] && (
                       <img
                         src={item.product.images[0]}
                         alt={item.product.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     )}
                   </div>

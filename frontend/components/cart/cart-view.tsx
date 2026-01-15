@@ -69,12 +69,12 @@ export function CartView() {
                 key={`${item.productId}-${variantKey}`}
                 className="flex gap-3 md:gap-4 border border-gray-200 rounded-lg p-3 md:p-4 bg-white hover:shadow-md transition-shadow"
               >
-              <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
                 {item.product?.images && item.product.images.length > 0 ? (
                   <img
                     src={item.product.images[0]}
                     alt={item.product.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300" />
