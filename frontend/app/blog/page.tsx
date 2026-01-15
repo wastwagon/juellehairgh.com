@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { FileText, Calendar, User, ArrowRight, Search } from "lucide-react";
+import { FileText, User, ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
@@ -70,8 +70,33 @@ export default function BlogPage() {
 
   const getImageUrl = (url?: string) => {
     if (!url) return null;
-    if (url.startsWith("/")) return url;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    
+    // Handle media library paths
+    if (url.includes("library/") || url.includes("/media/library/")) {
+      let filename = url;
+      if (url.includes("library/")) {
+        filename = url.split("library/").pop() || url;
+      } else if (url.includes("/media/library/")) {
+        filename = url.split("/media/library/").pop() || url;
+      }
+      // Use Next.js API proxy route
+      return `/api/media/library/${filename}`;
+    }
+    
+    // Handle /media/ paths (general case)
+    if (url.startsWith("/media/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle paths that contain "media"
+    if (url.includes("/media/")) {
+      const filename = url.split("/media/").pop() || url;
+      return `/api/media/library/${filename}`;
+    }
+    
+    // Handle regular paths
+    if (url.startsWith("/")) return url;
     return `/${url}`;
   };
 
@@ -134,43 +159,54 @@ export default function BlogPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {filteredPosts.map((post) => (
                 <Link key={post.id} href={`/blog/${post.slug}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                    {post.featuredImage && (
-                      <div className="relative w-full h-48 md:h-64 overflow-hidden rounded-t-lg">
+                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group overflow-hidden border border-gray-200 hover:border-primary/50">
+                    <div className="relative w-full h-48 md:h-64 overflow-hidden bg-pink-100">
+                      {post.featuredImage ? (
                         <Image
-                          src={getImageUrl(post.featuredImage) || ""}
+                          src={getImageUrl(post.featuredImage) || "/placeholder-product.jpg"}
                           alt={post.title}
                           fill
-                          className="object-cover"
+                          className="object-cover group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            // Try alternative paths if image fails
+                            if (post.featuredImage) {
+                              const filename = post.featuredImage.split('/').pop();
+                              if (filename) {
+                                img.src = `/api/media/library/${filename}`;
+                              }
+                            }
+                          }}
                         />
-                      </div>
-                    )}
-                    <CardContent className="p-6">
-                      {post.category && (
-                        <span className="inline-block bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded mb-3">
-                          {post.category}
-                        </span>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FileText className="h-12 w-12 md:h-16 md:w-16 text-gray-300" />
+                        </div>
                       )}
-                      <h2 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{post.title}</h2>
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {/* Category Badge */}
+                      {post.category && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <span className="inline-block bg-white/90 backdrop-blur-sm text-primary text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">
+                            {post.category}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-6">
+                      <h2 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors">{post.title}</h2>
                       {post.excerpt && (
                         <p className="text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
                       )}
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex items-center gap-4">
-                          {post.authorName && (
-                            <span className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              {post.authorName}
-                            </span>
-                          )}
-                          {post.publishedAt && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(post.publishedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                        <span className="flex items-center gap-1 text-primary">
+                      <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
+                        {post.authorName && (
+                          <span className="flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            {post.authorName}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                           Read More
                           <ArrowRight className="h-4 w-4" />
                         </span>

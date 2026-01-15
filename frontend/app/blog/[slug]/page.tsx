@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { Calendar, User, ArrowLeft, Tag } from "lucide-react";
+import { User, ArrowLeft, Tag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -122,16 +122,6 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <span className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   {post.authorName}
-                </span>
-              )}
-              {post.publishedAt && (
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
                 </span>
               )}
               <span>{post.views} views</span>

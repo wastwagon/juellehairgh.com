@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { FileText, ArrowRight, Calendar } from "lucide-react";
+import { FileText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,20 +41,26 @@ export function BlogSection() {
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     
     // Handle media library paths
-    if (url.includes("library/") || url.includes("/media/")) {
+    if (url.includes("library/") || url.includes("/media/library/")) {
       let filename = url;
       if (url.includes("library/")) {
         filename = url.split("library/").pop() || url;
-      } else if (url.includes("/media/")) {
-        filename = url.split("/media/").pop() || url;
+      } else if (url.includes("/media/library/")) {
+        filename = url.split("/media/library/").pop() || url;
       }
-      
-      // Construct backend media URL
-      const apiBaseUrl = typeof window !== "undefined" 
-        ? ((window as any).__ENV__?.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api")
-        : (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api");
-      const baseUrl = apiBaseUrl.endsWith("/api") ? apiBaseUrl : `${apiBaseUrl}/api`;
-      return `${baseUrl}/admin/upload/media/library/${filename}`;
+      // Use Next.js API proxy route (same as blog listing page)
+      return `/api/media/library/${filename}`;
+    }
+    
+    // Handle /media/ paths (general case)
+    if (url.startsWith("/media/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle paths that contain "media"
+    if (url.includes("/media/")) {
+      const filename = url.split("/media/").pop() || url;
+      return `/api/media/library/${filename}`;
     }
     
     // Handle regular paths
@@ -89,6 +95,16 @@ export function BlogSection() {
                       alt={post.title}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        // Try alternative paths if image fails
+                        if (post.featuredImage) {
+                          const filename = post.featuredImage.split('/').pop();
+                          if (filename) {
+                            img.src = `/api/media/library/${filename}`;
+                          }
+                        }
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -115,25 +131,7 @@ export function BlogSection() {
                       {post.excerpt}
                     </p>
                   )}
-                  <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100">
-                    {post.publishedAt && (
-                      <p className="text-[10px] sm:text-xs text-gray-500 flex items-center gap-1 sm:gap-1.5">
-                        <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                        <span className="hidden sm:inline">
-                          {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <span className="sm:hidden">
-                          {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </p>
-                    )}
+                  <div className="flex items-center justify-end pt-2 sm:pt-3 border-t border-gray-100">
                     <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                   </div>
                 </CardContent>

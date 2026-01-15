@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileText, Plus, Edit, Trash2, X, Save, Eye, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { MediaPicker } from "./media-picker";
 
 interface BlogPost {
   id: string;
@@ -333,13 +334,39 @@ export function AdminBlog() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Featured Image URL</label>
-                  <Input
-                    type="url"
-                    value={formData.featuredImage}
-                    onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
+                  <label className="block text-sm font-medium mb-2">Featured Image</label>
+                  <MediaPicker
+                    onSelect={(url) => setFormData({ ...formData, featuredImage: url })}
+                    title="Select Featured Image"
                   />
+                  {formData.featuredImage && (
+                    <div className="mt-3">
+                      <div className="relative inline-block">
+                        <img
+                          src={formData.featuredImage}
+                          alt="Featured image preview"
+                          className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            // Try API proxy if it's a media library path
+                            if (formData.featuredImage.includes('/media/library/') || formData.featuredImage.includes('/media/')) {
+                              const filename = formData.featuredImage.split('/').pop();
+                              if (filename) {
+                                img.src = `/api/media/library/${filename}`;
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, featuredImage: "" })}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
