@@ -24,7 +24,7 @@ export default function HomePage() {
       <Header />
       <main className="flex-1 w-full overflow-x-hidden">
         <HeroBanner />
-        <div className="h-4 md:h-0 bg-white"></div>
+        <div className="h-4 md:h-16 bg-white"></div>
         <div className="bg-white w-full">
           <FeaturedCollections />
         </div>
