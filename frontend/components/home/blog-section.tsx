@@ -88,13 +88,13 @@ export function BlogSection() {
           {postsData.posts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`}>
               <Card className="h-full hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-200 hover:border-primary/50">
-                <div className="relative w-full h-40 sm:h-48 md:h-56 overflow-hidden bg-pink-100">
+                <div className="relative w-full h-40 sm:h-48 md:h-56 overflow-hidden bg-pink-100 flex items-center justify-center">
                   {post.featuredImage ? (
                     <Image
                       src={getImageUrl(post.featuredImage) || "/placeholder-product.jpg"}
                       alt={post.title}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="object-contain group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
                         // Try alternative paths if image fails

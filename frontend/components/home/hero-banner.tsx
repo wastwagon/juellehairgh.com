@@ -4,11 +4,11 @@ import Image from "next/image";
 
 export function HeroBanner() {
   return (
-    <section className="hero-banner-section relative w-full overflow-hidden">
+    <section className="hero-banner-section relative w-full overflow-hidden mb-0 pb-8 md:pb-0">
       {/* Mobile Hero Image - Fixed height with object-top to cut bottom spacing */}
-      <div className="md:hidden w-full h-[220px]">
+      <div className="md:hidden w-full h-[220px] mb-0 pb-0">
         <img 
-          src="/bannerhero.jpeg" 
+          src="/bannerhero-mobile.jpeg" 
           alt="Hero Banner" 
           className="w-full h-full object-cover object-top"
         />

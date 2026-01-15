@@ -115,9 +115,9 @@ export function FeaturedCollections() {
 
   if (collectionsLoading) {
     return (
-      <section className="pt-12 pb-8 md:py-16 container mx-auto px-4">
+      <section className="mt-0 pt-16 pb-8 md:mt-0 md:pt-12 md:pb-16 container mx-auto px-4">
         <div className="flex justify-center mb-6 md:mb-8">
-          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
+          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg relative z-0">
             Shop by Collection
           </span>
         </div>
@@ -139,9 +139,9 @@ export function FeaturedCollections() {
   }
 
   return (
-    <section className="pt-12 pb-8 md:py-16 container mx-auto px-4">
-      <div className="flex justify-center mb-6 md:mb-8">
-        <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
+    <section className="pt-0 pb-8 md:pt-12 md:pb-16 container mx-auto px-4" style={{ marginTop: '8px', paddingTop: '0' }}>
+      <div className="flex justify-center mb-6 md:mb-8" style={{ marginTop: '0' }}>
+        <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg relative z-0" style={{ position: 'relative', top: '0', marginTop: '0' }}>
           Shop by Collection
         </span>
       </div>

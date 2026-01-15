@@ -38,8 +38,33 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
   const getImageUrl = (url?: string) => {
     if (!url) return null;
-    if (url.startsWith("/")) return url;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    
+    // Handle media library paths
+    if (url.includes("library/") || url.includes("/media/library/")) {
+      let filename = url;
+      if (url.includes("library/")) {
+        filename = url.split("library/").pop() || url;
+      } else if (url.includes("/media/library/")) {
+        filename = url.split("/media/library/").pop() || url;
+      }
+      // Use Next.js API proxy route
+      return `/api/media/library/${filename}`;
+    }
+    
+    // Handle /media/ paths (general case)
+    if (url.startsWith("/media/")) {
+      return `/api${url}`;
+    }
+    
+    // Handle paths that contain "media"
+    if (url.includes("/media/")) {
+      const filename = url.split("/media/").pop() || url;
+      return `/api/media/library/${filename}`;
+    }
+    
+    // Handle regular paths
+    if (url.startsWith("/")) return url;
     return `/${url}`;
   };
 
@@ -94,12 +119,22 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </Link>
 
           {post.featuredImage && (
-            <div className="relative w-full h-64 md:h-96 mb-8 rounded-lg overflow-hidden">
+            <div className="relative w-full h-64 md:h-96 mb-8 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
               <Image
                 src={getImageUrl(post.featuredImage) || ""}
                 alt={post.title}
                 fill
-                className="object-cover"
+                className="object-contain"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  // Try alternative paths if image fails
+                  if (post.featuredImage) {
+                    const filename = post.featuredImage.split('/').pop();
+                    if (filename) {
+                      img.src = `/api/media/library/${filename}`;
+                    }
+                  }
+                }}
               />
             </div>
           )}
