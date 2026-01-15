@@ -6,12 +6,12 @@ import { FeaturedCollections } from "@/components/home/featured-collections";
 import { ProductCarousel } from "@/components/home/product-carousel";
 import { ClearanceProducts } from "@/components/home/clearance-products";
 import { RecentlyViewed } from "@/components/home/recently-viewed";
-import { PromotionalBanners } from "@/components/home/promotional-banners";
+// import { PromotionalBanners } from "@/components/home/promotional-banners";
 import { FeaturesShowcase } from "@/components/home/features-showcase";
 import { PopularProductsWidget } from "@/components/products/popular-products-widget";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { FlashSalesSection } from "@/components/home/flash-sales-section";
-import { BlogSection } from "@/components/home/blog-section";
+// import { BlogSection } from "@/components/home/blog-section";
 import { HashScrollHandler } from "@/components/home/hash-scroll-handler";
 
 // Force dynamic rendering to prevent caching stale content
@@ -40,9 +40,10 @@ export default function HomePage() {
         <div className="bg-gray-50 w-full">
           <ProductCarousel title="Best Sellers" />
         </div>
-        <div className="bg-white w-full">
+        {/* Promotional Banners - Hidden until content is ready */}
+        {/* <div className="bg-white w-full">
           <PromotionalBanners />
-        </div>
+        </div> */}
         <div className="bg-gray-50 w-full">
           <RecentlyViewed />
         </div>
@@ -55,9 +56,10 @@ export default function HomePage() {
         <div className="bg-white w-full">
           <TestimonialsSection />
         </div>
-        <div className="bg-white w-full">
+        {/* Blog Section - Hidden until content is ready */}
+        {/* <div className="bg-white w-full">
           <BlogSection />
-        </div>
+        </div> */}
       </main>
       <Footer />
       <MobileBottomNav />
