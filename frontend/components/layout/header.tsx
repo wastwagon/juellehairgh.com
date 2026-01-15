@@ -389,12 +389,12 @@ export function Header() {
               )}
               
               {/* Separator */}
-              <span className="text-white/30 hidden md:inline mx-1">|</span>
+              {/* <span className="text-white/30 hidden md:inline mx-1">|</span> */}
               
-              {/* Currency Selector */}
-              <div className="hidden md:block">
+              {/* Currency Selector - Hidden until enabled */}
+              {/* <div className="hidden md:block">
                 <CurrencySelector />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -562,9 +562,10 @@ export function Header() {
                 <Search className="h-5 w-5" />
                 <span>Search</span>
               </button>
-              <div className="md:hidden px-4 py-2">
+              {/* Currency Selector - Hidden until enabled */}
+              {/* <div className="md:hidden px-4 py-2">
                 <CurrencySelector />
-              </div>
+              </div> */}
             </div>
           </div>
         )}
