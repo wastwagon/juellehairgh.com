@@ -62,7 +62,7 @@ export function ClearanceProducts() {
         <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 text-center mb-6 md:mb-8 tracking-tight">
           Clearance Sale
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-square bg-gray-200 rounded-lg mb-4" />

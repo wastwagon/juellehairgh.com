@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { HeroBanner } from "@/components/home/hero-banner";
 import { FeaturedCollections } from "@/components/home/featured-collections";
-import { ProductCarousel } from "@/components/home/product-carousel";
+import { ProductGrid } from "@/components/home/product-grid";
 import { ClearanceProducts } from "@/components/home/clearance-products";
 import { RecentlyViewed } from "@/components/home/recently-viewed";
 // import { PromotionalBanners } from "@/components/home/promotional-banners";
@@ -36,10 +36,10 @@ export default function HomePage() {
           <ClearanceProducts />
         </div>
         <div className="bg-white w-full">
-          <ProductCarousel title="New Arrivals" />
+          <ProductGrid title="New Arrivals" limit={8} />
         </div>
         <div className="bg-gray-50 w-full">
-          <ProductCarousel title="Best Sellers" />
+          <ProductGrid title="Best Sellers" limit={8} />
         </div>
         {/* Promotional Banners - Hidden until content is ready */}
         {/* <div className="bg-white w-full">
