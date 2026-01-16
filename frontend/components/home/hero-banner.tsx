@@ -22,13 +22,13 @@ export function HeroBanner() {
         </div>
 
         {/* Desktop Hero Image - Shows on screens 768px and larger (md breakpoint and up) */}
-        <div className="hidden md:block relative w-full h-[600px] lg:h-[650px] xl:h-[700px]">
+        <div className="hidden md:block relative w-full aspect-[2/1] min-h-[400px] max-h-[800px]">
           <Image
-            src="/New-desktop-Hero-Banner.jpeg"
+            src="/New-desktop-Hero-Banner.webp"
             alt="Hero Banner"
             fill
             priority
-            className="object-cover object-center"
+            className="object-contain object-center"
             sizes="100vw"
             quality={100}
           />
