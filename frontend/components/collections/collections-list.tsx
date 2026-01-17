@@ -89,7 +89,7 @@ export function CollectionsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
       {collections.map((collection) => {
         const collectionImage = getCollectionImage(collection);
         const productCount = (collection as any).products?.length || (collection as any)._count?.products || 0;
@@ -97,7 +97,7 @@ export function CollectionsList() {
         return (
           <Link
             key={collection.id || collection.slug}
-            href={`/collections/${collection.slug}`}
+            href={`/collections/${encodeURIComponent(collection.slug)}`}
             className="group relative overflow-hidden rounded-xl bg-white border border-gray-200 hover:shadow-2xl hover:border-purple-200 transition-all duration-300"
           >
             <div className="aspect-square relative overflow-hidden bg-gray-100">

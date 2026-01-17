@@ -145,7 +145,7 @@ export function FeaturedCollections() {
           Shop by Collection
         </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {backendCollections.map((collection) => {
           const IconComponent = getCollectionIcon(collection.name, collection.slug);
           const collectionImage = getCollectionImage(collection);
@@ -153,7 +153,7 @@ export function FeaturedCollections() {
           return (
             <div key={collection.id || collection.slug} className="flex flex-col">
               <Link
-                href={`/collections/${collection.slug}`}
+                href={`/collections/${encodeURIComponent(collection.slug)}`}
                 className="group relative overflow-hidden rounded-lg aspect-square bg-gray-200 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-105"
               >
                 {/* Collection Image Background */}
