@@ -266,7 +266,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <Button
                 variant="default"
                 size="sm"
-                className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium px-2 py-1"
+                className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium px-1 py-1"
                 disabled={isOutOfStock}
               >
                 Select Options
@@ -278,7 +278,7 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleAddToCart}
               variant="default"
               size="sm"
-              className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium flex items-center justify-center gap-1 px-2 py-1"
+              className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium flex items-center justify-center gap-1 px-1 py-1"
               disabled={isOutOfStock}
             >
               <ShoppingCart className="h-3 w-3" />
