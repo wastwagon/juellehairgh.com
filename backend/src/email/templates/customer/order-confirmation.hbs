@@ -85,7 +85,7 @@
     <p style="margin: 5px 0; font-size: 14px; color: #4b5563; line-height: 1.6;">
       <strong>Order ID:</strong> #{{orderNumber}}<br>
       <strong>Order Date:</strong> {{orderDate}}<br>
-      <strong>Payment Status:</strong> <span style="color: {{#if paymentStatus}}{{#if (is paymentStatus 'PAID')}}#059669{{else}}#dc2626{{/if}}{{else}}#dc2626{{/if}}; font-weight: 600;">{{paymentStatus}}</span><br>
+      <strong>Payment Status:</strong> <span style="color: {{#if isPaid}}#059669{{else}}#dc2626{{/if}}; font-weight: 600;">{{paymentStatus}}</span><br>
       <strong>Shipping Method:</strong> {{shippingMethod}}
     </p>
   </div>

@@ -1,13 +1,36 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { ProductCard } from "@/components/products/product-card";
-import { Product } from "@/types";
-import { ShoppingBag } from "lucide-react";
+import { Product, Collection } from "@/types";
+import { TrendingUp } from "lucide-react";
 
-export function ShopAllSection() {
+export function TrendingProductsSection() {
+  // First, try to fetch from "trending" collection
+  const { data: collection, isLoading: isLoadingCollection } = useQuery<Collection>({
+    queryKey: ["collection", "trending"],
+    queryFn: async () => {
+      try {
+        const timestamp = Date.now();
+        const response = await api.get(`/collections/trending?t=${timestamp}`);
+        return response.data;
+      } catch (err: any) {
+        return null;
+      }
+    },
+    retry: 1,
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnMount: true,
+  });
+
+  // Get products from collection if available
+  const collectionProducts = collection?.products?.map((cp: any) => cp.product || cp).filter((p: any) => p && p.images && p.images.length > 0 && p.id && p.isActive !== false) || [];
+  const hasCollectionProducts = collectionProducts.length > 0;
+
+  // Use infinite query for products - either from collection or fallback to all products
   const {
     data: infiniteProductsData,
     fetchNextPage,
@@ -18,11 +41,31 @@ export function ShopAllSection() {
     products: Product[];
     pagination: any;
   }>({
-    queryKey: ["products-infinite", "homepage", "shop-all"],
+    queryKey: ["products-infinite", "homepage", "trending", hasCollectionProducts, collection?.id],
     queryFn: async ({ pageParam = 1 }) => {
       try {
+        // If we have collection products, use them directly (access collection from query context)
+        if (hasCollectionProducts && collectionProducts.length > 0) {
+          const pageSize = 12;
+          const startIndex = (pageParam - 1) * pageSize;
+          const endIndex = startIndex + pageSize;
+          const pageProducts = collectionProducts.slice(startIndex, endIndex);
+          const totalProducts = collectionProducts.length;
+          const totalPages = Math.ceil(totalProducts / pageSize);
+          
+          return {
+            products: pageProducts,
+            pagination: {
+              page: pageParam,
+              totalPages,
+              total: totalProducts,
+            },
+          };
+        }
+        
+        // Fallback: fetch from API sorted by popular/trending
         const params = new URLSearchParams({
-          sort: "newest",
+          sort: "popular",
           page: String(pageParam),
         });
         const response = await api.get(`/products?${params}`);
@@ -38,6 +81,7 @@ export function ShopAllSection() {
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     initialPageParam: 1,
+    enabled: !isLoadingCollection,
   });
 
   // Flatten all products from infinite query
@@ -74,9 +118,9 @@ export function ShopAllSection() {
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
         <div className="flex items-center justify-center mb-6 md:mb-8 gap-2">
-          <ShoppingBag className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+          <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
           <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
-            Shop All
+            Trending Products
           </span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -98,20 +142,13 @@ export function ShopAllSection() {
 
   return (
     <section className="py-8 md:py-12 container mx-auto px-4">
-      <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
-        <div className="flex items-center justify-center gap-2">
-          <ShoppingBag className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
-          <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
-            Shop All
-          </span>
-        </div>
-        {infiniteProductsData?.pages[0]?.pagination?.total && (
-          <p className="text-sm text-gray-600">
-            {allProducts.length} of {infiniteProductsData.pages[0].pagination.total} products
-          </p>
-        )}
+      <div className="flex items-center justify-center mb-6 md:mb-8 gap-2">
+        <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+        <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
+          Trending Products
+        </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {allProducts.map((product: Product) => {
           if (!product || !product.id || !product.title) {
             return null;

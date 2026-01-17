@@ -106,6 +106,7 @@ export class EmailService {
    * Send order confirmation email to customer
    */
   async sendOrderConfirmation(order: any) {
+    let customerEmail: string | undefined;
     try {
       const orderItems =
         order.items?.map((item: any) => {
@@ -159,8 +160,32 @@ export class EmailService {
       );
 
       const subject = `Order Confirmation - Order #${order.id.slice(0, 8).toUpperCase()}`;
+      
+      // Get customer email - prioritize user email, fallback to checking user from database if not included
+      customerEmail = order.user?.email;
+      
+      // If user email is not in the order object, fetch it from database
+      if (!customerEmail && order.userId) {
+        try {
+          const user = await this.prisma.user.findUnique({
+            where: { id: order.userId },
+            select: { email: true },
+          });
+          customerEmail = user?.email;
+        } catch (error) {
+          this.logger.warn(`Could not fetch user email for order ${order.id}:`, error);
+        }
+      }
+      
+      if (!customerEmail) {
+        this.logger.error(`No email found for order ${order.id}. User ID: ${order.userId}, User object: ${JSON.stringify(order.user)}`);
+        throw new Error(`Cannot send order confirmation: No email address found for order ${order.id}`);
+      }
+      
+      this.logger.log(`Sending order confirmation email to: ${customerEmail} for order ${order.id}`);
+      
       await this.mailerService.sendMail({
-        to: order.user?.email || order.shippingAddress?.email,
+        to: customerEmail,
         subject,
         template: "customer/order-confirmation",
         context: {
@@ -184,6 +209,7 @@ export class EmailService {
           shippingAddress: order.shippingAddress,
           billingAddress: order.billingAddress,
           paymentStatus: order.paymentStatus,
+          isPaid: order.paymentStatus === "PAID",
           shippingMethod: order.shippingMethod || "Standard Shipping",
           orderUrl: `${this.siteUrl}/account/orders/${order.id}`,
           paymentUrl:
@@ -193,9 +219,19 @@ export class EmailService {
           year: new Date().getFullYear(),
         },
       });
-      this.logger.log(`Order confirmation email sent for order ${order.id}`);
+      this.logger.log(`Order confirmation email sent for order ${order.id} to ${customerEmail}`);
     } catch (error) {
-      this.logger.error(`Failed to send order confirmation email:`, error);
+      this.logger.error(`Failed to send order confirmation email for order ${order.id}:`, error);
+      this.logger.error(`Error details:`, JSON.stringify({
+        message: error?.message,
+        stack: error?.stack,
+        orderId: order?.id,
+        userId: order?.userId,
+        userEmail: order?.user?.email,
+        customerEmail: customerEmail,
+      }));
+      // Re-throw to ensure it's caught by the caller
+      throw error;
     }
   }
 

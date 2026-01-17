@@ -8,7 +8,7 @@ import { ClearanceProducts } from "@/components/home/clearance-products";
 import { RecentlyViewed } from "@/components/home/recently-viewed";
 // import { PromotionalBanners } from "@/components/home/promotional-banners";
 import { FeaturesShowcase } from "@/components/home/features-showcase";
-import { ShopAllSection } from "@/components/home/shop-all-section";
+import { TrendingProductsSection } from "@/components/home/shop-all-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { FlashSalesSection } from "@/components/home/flash-sales-section";
 // import { BlogSection } from "@/components/home/blog-section";
@@ -48,7 +48,7 @@ export default function HomePage() {
           <RecentlyViewed />
         </div>
         <div className="bg-gray-50 w-full">
-          <ShopAllSection />
+          <TrendingProductsSection />
         </div>
         <div className="bg-white w-full">
           <FeaturesShowcase />
