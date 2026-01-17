@@ -189,21 +189,21 @@ export function ProductCard({ product }: ProductCardProps) {
           
           {/* Sale Badge - Hide if out of stock */}
           {!isOutOfStock && displayComparePrice && discountPercent > 0 && (
-            <div className="absolute top-2 left-2 bg-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
+            <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-pink-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg">
               Save {discountPercent}%
             </div>
           )}
           
           {/* NEW Badge */}
           {product.badges?.includes("NEW") && (
-            <div className="absolute top-2 left-2 bg-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
+            <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-pink-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg">
               NEW
             </div>
           )}
 
           {/* Out of Stock Badge */}
           {isOutOfStock && (
-            <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10 shadow-lg">
+            <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-red-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg">
               Out of Stock
             </div>
           )}
@@ -247,12 +247,12 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Price - Show for both simple and variation products */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base md:text-lg font-bold text-gray-900">
+        <div className="flex items-center gap-1 md:gap-2 mb-3">
+          <span className="text-xs md:text-base lg:text-lg font-bold text-gray-900">
             {formatCurrency(displayPrice, displayCurrency)}
           </span>
           {displayComparePrice && (
-            <span className="text-sm text-gray-400 line-through">
+            <span className="text-[10px] md:text-sm text-gray-400 line-through">
               {formatCurrency(displayComparePrice, displayCurrency)}
             </span>
           )}

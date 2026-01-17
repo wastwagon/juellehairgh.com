@@ -98,27 +98,11 @@ export function CollectionPage({ slug }: CollectionPageProps) {
           { label: collection?.name || "Collection" },
         ]}
       />
-      <div className="mb-6 md:mb-8">
-        {collection.image && (
-          <div className="flex justify-center mb-6">
-            <div className="max-w-2xl w-full rounded-lg overflow-hidden">
-              <img
-                src={getImageUrl(collection.image)}
-                alt={collection.name}
-                className="w-full h-auto object-contain max-h-64 md:max-h-80"
-                onError={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  img.style.display = 'none';
-                  img.onerror = null;
-                }}
-              />
-            </div>
-          </div>
-        )}
-        {collection.description && (
+      {collection.description && (
+        <div className="mb-6 md:mb-8">
           <p className="text-base md:text-lg text-gray-600">{collection.description}</p>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <p className="text-sm text-gray-600">
