@@ -54,7 +54,9 @@ export function CollectionPage({ slug }: CollectionPageProps) {
   const { data: collection, isLoading } = useQuery<Collection>({
     queryKey: ["collection", slug],
     queryFn: async () => {
-      const response = await api.get(`/collections/${slug}`);
+      // Properly encode the slug to handle special characters like %
+      const encodedSlug = encodeURIComponent(slug);
+      const response = await api.get(`/collections/${encodedSlug}`);
       return response.data;
     },
   });
@@ -98,17 +100,19 @@ export function CollectionPage({ slug }: CollectionPageProps) {
       />
       <div className="mb-6 md:mb-8">
         {collection.image && (
-          <div className="w-full rounded-lg overflow-hidden mb-6">
-            <img
-              src={getImageUrl(collection.image)}
-              alt={collection.name}
-              className="w-full h-auto object-contain"
-              onError={(e) => {
-                const img = e.target as HTMLImageElement;
-                img.style.display = 'none';
-                img.onerror = null;
-              }}
-            />
+          <div className="flex justify-center mb-6">
+            <div className="max-w-2xl w-full rounded-lg overflow-hidden">
+              <img
+                src={getImageUrl(collection.image)}
+                alt={collection.name}
+                className="w-full h-auto object-contain max-h-64 md:max-h-80"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                  img.onerror = null;
+                }}
+              />
+            </div>
           </div>
         )}
         {collection.description && (
