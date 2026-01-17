@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Truck, Gift, CreditCard, Headphones, Wallet, Globe, Zap } from "lucide-react";
+import { Shield, Truck, CreditCard, Headphones, Wallet, Zap } from "lucide-react";
 
 interface Feature {
   icon: React.ReactNode;
@@ -20,11 +20,6 @@ const features: Feature[] = [
     description: "On all orders GHS 950+ within Ghana",
   },
   {
-    icon: <Gift className="h-6 w-6" />,
-    title: "Rewards System",
-    description: "Earn points on every purchase & redeem rewards",
-  },
-  {
     icon: <CreditCard className="h-6 w-6" />,
     title: "Multiple Payment Options",
     description: "Pay with card, mobile money & more",
@@ -38,11 +33,6 @@ const features: Feature[] = [
     icon: <Wallet className="h-6 w-6" />,
     title: "Quick Checkout",
     description: "Wallet integration for instant payments",
-  },
-  {
-    icon: <Globe className="h-6 w-6" />,
-    title: "Multi-Currency",
-    description: "Shop in 170+ currencies",
   },
   {
     icon: <Zap className="h-6 w-6" />,
