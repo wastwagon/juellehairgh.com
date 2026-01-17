@@ -5,7 +5,6 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Category, Product } from "@/types";
 import { ProductCard } from "@/components/products/product-card";
-import { CategoryFilters } from "@/components/categories/category-filters";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -203,17 +202,8 @@ export function CategoryPage({ slug }: CategoryPageProps) {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
-        <aside className="lg:col-span-1">
-          <CategoryFilters
-            category={category}
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-        </aside>
-
-        <div className="lg:col-span-3">
-          {category?.image && (
+      <div className="w-full">
+        {category?.image && (
             <div className="w-full rounded-lg overflow-hidden mb-6">
               <img
                 src={getImageUrl(category.image)}
@@ -320,7 +310,6 @@ export function CategoryPage({ slug }: CategoryPageProps) {
               )}
             </>
           )}
-        </div>
       </div>
     </div>
   );
