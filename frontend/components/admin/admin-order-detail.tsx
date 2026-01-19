@@ -299,6 +299,15 @@ export function AdminOrderDetail({ orderId }: AdminOrderDetailProps) {
                 </span>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-600">Payment Method:</span>
+                <span className="font-semibold text-gray-900">
+                  {order.paymentMethod === "cash_on_delivery" ? "Cash on Delivery" :
+                   order.paymentMethod === "wallet" ? "Wallet Balance" :
+                   order.paymentMethod === "paystack" ? "Paystack" :
+                   order.paymentMethod || "Paystack"}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-600">Order Status:</span>
                 <span className={`px-2 py-1 rounded text-xs font-semibold border ${getStatusColor(order.status)}`}>
                   {formatOrderStatus(order.status)}

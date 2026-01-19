@@ -89,23 +89,42 @@ export class OrdersService {
     }
     // For paystack, payment status remains PENDING until payment is verified
 
-    // Create addresses
-    const shippingAddress = await this.prisma.address.create({
-      data: {
-        userId,
-        ...orderData.shippingAddress,
-      },
-    });
+    // Validate addresses
+    if (!orderData.shippingAddress) {
+      throw new BadRequestException("Shipping address is required");
+    }
+    if (!orderData.billingAddress) {
+      throw new BadRequestException("Billing address is required");
+    }
 
-    const billingAddress = await this.prisma.address.create({
-      data: {
-        userId,
-        ...orderData.billingAddress,
-      },
-    });
+    // Create addresses
+    let shippingAddress;
+    let billingAddress;
+    try {
+      shippingAddress = await this.prisma.address.create({
+        data: {
+          userId,
+          ...orderData.shippingAddress,
+        },
+      });
+
+      billingAddress = await this.prisma.address.create({
+        data: {
+          userId,
+          ...orderData.billingAddress,
+        },
+      });
+    } catch (error: any) {
+      console.error("Error creating addresses:", error);
+      throw new BadRequestException(
+        `Failed to create addresses: ${error.message || "Invalid address data"}`
+      );
+    }
 
     // Create order (shipping cost is included in totalGhs)
-    const order = await this.prisma.order.create({
+    let order;
+    try {
+      order = await this.prisma.order.create({
       data: {
         userId,
         totalGhs, // This includes subtotal + shipping cost
@@ -169,6 +188,23 @@ export class OrdersService {
         },
       },
     });
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      // Clean up addresses if order creation fails
+      try {
+        if (shippingAddress?.id) {
+          await this.prisma.address.delete({ where: { id: shippingAddress.id } });
+        }
+        if (billingAddress?.id) {
+          await this.prisma.address.delete({ where: { id: billingAddress.id } });
+        }
+      } catch (cleanupError) {
+        console.error("Error cleaning up addresses:", cleanupError);
+      }
+      throw new BadRequestException(
+        `Failed to create order: ${error.message || "Unknown error"}`
+      );
+    }
 
     // If wallet payment was used, update the wallet transaction with actual order ID
     if (orderData.paymentMethod === "wallet" && paymentStatus === "PAID") {

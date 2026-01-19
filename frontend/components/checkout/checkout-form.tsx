@@ -314,6 +314,7 @@ export function CheckoutForm() {
         // Cash on Delivery - no payment processing needed
         // Clear cart and redirect to thank you page
         clearCart();
+        // Use window.location.href for full page navigation to ensure redirect works
         window.location.href = `/checkout/thank-you?orderId=${order.id}`;
         return; // Exit early to prevent further execution
       } else {
@@ -336,7 +337,13 @@ export function CheckoutForm() {
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
-      alert(error.response?.data?.message || "Checkout failed");
+      const errorMessage = error.response?.data?.message || error.message || "Checkout failed";
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: errorMessage,
+      });
+      alert(`Checkout failed: ${errorMessage}`);
       setLoading(false);
     }
   };
