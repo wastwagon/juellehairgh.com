@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Truck, CreditCard, Headphones, Wallet, Zap } from "lucide-react";
+import { Shield, Truck, CreditCard, Headphones } from "lucide-react";
 
 interface Feature {
   icon: React.ReactNode;
@@ -28,16 +28,6 @@ const features: Feature[] = [
     icon: <Headphones className="h-6 w-6" />,
     title: "24/7 Support",
     description: "We're here to help anytime",
-  },
-  {
-    icon: <Wallet className="h-6 w-6" />,
-    title: "Quick Checkout",
-    description: "Wallet integration for instant payments",
-  },
-  {
-    icon: <Zap className="h-6 w-6" />,
-    title: "Fast Delivery",
-    description: "Same day (Accra), Next day, or standard delivery",
   },
 ];
 
