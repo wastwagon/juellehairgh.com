@@ -69,7 +69,8 @@ if (!pass) {
 
 // Encode password for safe URL
 const encodedPass = encodeURIComponent(pass);
-const safeUrl = `postgresql://${user}:${encodedPass}@${host}:${port}/${db}?schema=public`;
+// Add connection pool parameters to prevent connection exhaustion and timeouts
+const safeUrl = `postgresql://${user}:${encodedPass}@${host}:${port}/${db}?schema=public&connection_limit=10&pool_timeout=20&connect_timeout=10`;
 
 // Output exports with safe escaping
 console.log(safeExport('DATABASE_URL', safeUrl));

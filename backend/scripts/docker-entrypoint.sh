@@ -59,7 +59,7 @@ else
         # Fallback: basic encoding (no special characters to encode)
         ENCODED_PASS="$DB_PASS"
     fi
-    DATABASE_URL="postgresql://${DB_USER}:${ENCODED_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public"
+    DATABASE_URL="postgresql://${DB_USER}:${ENCODED_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public&connection_limit=10&pool_timeout=20&connect_timeout=10"
     export DATABASE_URL
 fi
 
