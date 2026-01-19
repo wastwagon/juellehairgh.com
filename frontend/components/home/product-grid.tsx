@@ -46,6 +46,7 @@ export function ProductGrid({ title, collectionSlug, limit = 8 }: ProductGridPro
   }
 
   // If no collection or products, fetch recent products instead
+  // NOTE: Best Sellers uses collection only - no fallback for full control
   const { data: fallbackProducts, isLoading: isLoadingFallback } = useQuery<Product[]>({
     queryKey: ["products", "recent", title],
     queryFn: async () => {
@@ -63,15 +64,8 @@ export function ProductGrid({ title, collectionSlug, limit = 8 }: ProductGridPro
           if (fetchedProducts.length === 0) {
             fetchedProducts = response.data.products || [];
           }
-        } else if (title === "Best Sellers") {
-          try {
-            const response = await api.get(`/products?limit=${limit}&sort=popular&t=${timestamp}`);
-            fetchedProducts = response.data.products || [];
-          } catch {
-            const response = await api.get(`/products?limit=${limit}&sort=newest&t=${timestamp}`);
-            fetchedProducts = response.data.products || [];
-          }
         } else {
+          // For other titles (not Best Sellers), use newest as fallback
           const response = await api.get(`/products?limit=${limit}&sort=newest&t=${timestamp}`);
           fetchedProducts = response.data.products || [];
         }
@@ -84,15 +78,20 @@ export function ProductGrid({ title, collectionSlug, limit = 8 }: ProductGridPro
         return [];
       }
     },
-    enabled: products.length === 0,
+    // Disable fallback for Best Sellers - collection only for full control
+    enabled: products.length === 0 && title !== "Best Sellers",
     staleTime: 0,
     cacheTime: 0,
     refetchOnMount: true,
   });
 
-  const displayProducts = products.length > 0 ? products : (fallbackProducts || []);
+  // For Best Sellers, only use collection products (no fallback)
+  // For other sections, use collection or fallback to API
+  const displayProducts = products.length > 0 ? products : (title === "Best Sellers" ? [] : (fallbackProducts || []));
 
-  if (isLoading || isLoadingFallback) {
+  // Only show loading for fallback if it's enabled (not Best Sellers)
+  const showFallbackLoading = title !== "Best Sellers" && isLoadingFallback;
+  if (isLoading || showFallbackLoading) {
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
         <div className="flex flex-col items-center mb-6 md:mb-8 gap-4">
