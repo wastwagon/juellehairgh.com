@@ -36,8 +36,8 @@ export function FeaturedCollections() {
         const timestamp = Date.now();
         const response = await api.get(`/collections?t=${timestamp}`);
         const collections = response.data || [];
-        // Return up to 4 active collections
-        return collections.filter((c: Collection) => c.isActive !== false).slice(0, 4);
+        // Return all active collections
+        return collections.filter((c: Collection) => c.isActive !== false);
       } catch (error) {
         console.error("Error fetching collections:", error);
         return [];
@@ -121,8 +121,8 @@ export function FeaturedCollections() {
             Shop by Collection
           </span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-square bg-gray-200 rounded-lg mb-3" />
               <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2" />
@@ -145,7 +145,7 @@ export function FeaturedCollections() {
           Shop by Collection
         </span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
         {backendCollections.map((collection) => {
           const IconComponent = getCollectionIcon(collection.name, collection.slug);
           const collectionImage = getCollectionImage(collection);
