@@ -273,8 +273,8 @@ export function Footer() {
                 <Image 
                   src="/paystack.png" 
                   alt="Paystack" 
-                  width={160} 
-                  height={80}
+                  width={240} 
+                  height={120}
                   className="object-contain"
                 />
               </div>
