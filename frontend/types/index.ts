@@ -112,6 +112,7 @@ export interface Order {
   billingAddress: Address;
   paymentReference?: string;
   paymentStatus: PaymentStatus;
+  paymentMethod?: string;
   trackingNumber?: string;
   createdAt: string;
   updatedAt: string;

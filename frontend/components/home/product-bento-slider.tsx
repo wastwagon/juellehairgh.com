@@ -53,7 +53,8 @@ export function ProductBentoSlider({
         if (collectionSlug) {
           // Add cache-busting timestamp to force fresh fetch
           const timestamp = Date.now();
-          const response = await api.get(`/collections/${collectionSlug}?t=${timestamp}`);
+          const encodedSlug = encodeURIComponent(collectionSlug);
+          const response = await api.get(`/collections/${encodedSlug}?t=${timestamp}`);
           const collection = response.data;
           if (collection?.products) {
             fetchedProducts = collection.products

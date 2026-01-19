@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Facebook, Youtube, Instagram, Twitter, Mail, Phone, MapPin, CreditCard, Shield, Truck, Gift } from "lucide-react";
+import { Facebook, Youtube, Instagram, Twitter, Mail, Phone, MapPin, Shield, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Category, Collection } from "@/types";
@@ -93,10 +94,10 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="hidden md:block bg-gray-50 border-t border-gray-200">
+    <footer className="bg-gray-50 border-t border-gray-200">
       <div className="container mx-auto px-4 py-12 md:py-16">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 mb-12">
           {/* Company Info */}
           <div className="lg:col-span-1">
             <div className="mb-6">
@@ -189,7 +190,7 @@ export function Footer() {
               {footerCollections.map((collection) => (
                 <li key={collection.slug || collection.id}>
                   <Link 
-                    href={`/collections/${collection.slug}`} 
+                    href={`/collections/${encodeURIComponent(collection.slug)}`} 
                     className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
                   >
                     {collection.name}
@@ -211,8 +212,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/shipping" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
-                  Shipping Policy
+                <Link href="/delivery" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">
+                  Delivery Policy
                 </Link>
               </li>
               <li>
@@ -265,67 +266,39 @@ export function Footer() {
               </Button>
             </form>
 
-            {/* Trust Badges */}
-            <div className="mt-8 space-y-3">
-              <div className="flex items-center gap-2 text-xs text-gray-600">
-                <Shield className="h-4 w-4 text-gray-400" />
-                <span>Secure Payments</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-600">
-                <Truck className="h-4 w-4 text-gray-400" />
-                <span>Free Shipping on Orders GHS 950+</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-600">
-                <Gift className="h-4 w-4 text-gray-400" />
-                <span>Rewards Program</span>
+            {/* Payment Methods */}
+            <div className="mt-8">
+              <p className="text-sm font-semibold text-gray-700 mb-3">We Accept:</p>
+              <div className="flex items-start">
+                <Image 
+                  src="/paystack.png" 
+                  alt="Paystack" 
+                  width={160} 
+                  height={80}
+                  className="object-contain"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Payment Methods */}
-        <div className="border-t border-gray-200 pt-8 mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <p className="text-sm text-gray-600 mb-4">We Accept:</p>
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                  <CreditCard className="h-5 w-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">Visa</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                  <CreditCard className="h-5 w-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">Mastercard</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                  <CreditCard className="h-5 w-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">Paystack</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                  <CreditCard className="h-5 w-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">Mobile Money</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Footer Bottom */}
       <div className="border-t border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <p className="text-sm text-gray-500">
               &copy; {currentYear} Juelle Hair Ghana. All rights reserved.
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
               <Link
                 href="/terms"
                 className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
               >
                 Terms of Service
               </Link>
-              <span className="text-gray-300">•</span>
+              <span className="text-gray-300 hidden sm:inline">•</span>
               <Link
                 href="/privacy"
                 className="text-sm text-gray-500 hover:text-gray-900 transition-colors"

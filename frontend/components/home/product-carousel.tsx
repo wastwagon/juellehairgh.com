@@ -47,7 +47,8 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
       try {
         // Add cache-busting timestamp to force fresh fetch
         const timestamp = Date.now();
-        const response = await api.get(`/collections/${slug}?t=${timestamp}`);
+        const encodedSlug = encodeURIComponent(slug);
+        const response = await api.get(`/collections/${encodedSlug}?t=${timestamp}`);
         if (process.env.NODE_ENV === 'development') {
           console.log(`✅ Fetched collection ${slug}:`, response.data);
         }
@@ -268,7 +269,7 @@ export function ProductCarousel({ title, collectionSlug }: ProductCarouselProps)
         </div>
         {slug && (
           <Link
-            href={`/collections/${slug}`}
+            href={`/collections/${encodeURIComponent(slug)}`}
             className="text-sm text-primary hover:underline font-medium whitespace-nowrap"
           >
             View all →

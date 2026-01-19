@@ -22,7 +22,8 @@ export function ProductGrid({ title, collectionSlug, limit = 8 }: ProductGridPro
       if (!slug) return null;
       try {
         const timestamp = Date.now();
-        const response = await api.get(`/collections/${slug}?t=${timestamp}`);
+        const encodedSlug = encodeURIComponent(slug);
+        const response = await api.get(`/collections/${encodedSlug}?t=${timestamp}`);
         return response.data;
       } catch (err: any) {
         return null;
@@ -126,7 +127,7 @@ export function ProductGrid({ title, collectionSlug, limit = 8 }: ProductGridPro
         </div>
         {slug && (
           <Link
-            href={`/collections/${slug}`}
+            href={`/collections/${encodeURIComponent(slug)}`}
             className="text-sm text-primary hover:underline font-medium whitespace-nowrap"
           >
             View all →

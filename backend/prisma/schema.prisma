@@ -242,6 +242,7 @@ model Order {
   billingAddressId  String
   paymentReference  String?       @unique
   paymentStatus     PaymentStatus @default(PENDING)
+  paymentMethod     String?       @default("paystack")
   shippingMethod    String?
   trackingNumber    String?
   notes             String?

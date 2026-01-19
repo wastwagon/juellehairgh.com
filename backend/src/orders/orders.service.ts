@@ -65,10 +65,12 @@ export class OrdersService {
     // Calculate total including shipping and discount
     const totalGhs = subtotalGhs - discountAmount + shippingCost;
 
-    // Handle wallet payment if selected
+    // Handle payment method
     let paymentStatus: PaymentStatus = PaymentStatus.PENDING;
     let orderStatus: OrderStatus = OrderStatus.AWAITING_PAYMENT;
-    if (orderData.paymentMethod === "wallet") {
+    const paymentMethod = orderData.paymentMethod || "paystack";
+    
+    if (paymentMethod === "wallet") {
       try {
         // Deduct from wallet without orderId first (will update after order creation)
         await this.walletService.useWalletForPayment(userId, totalGhs, null);
@@ -79,7 +81,13 @@ export class OrdersService {
           error.message || "Insufficient wallet balance",
         );
       }
+    } else if (paymentMethod === "cash_on_delivery") {
+      // Cash on Delivery - payment status remains PENDING, order status AWAITING_PAYMENT
+      // Payment will be collected upon delivery
+      paymentStatus = PaymentStatus.PENDING;
+      orderStatus = OrderStatus.AWAITING_PAYMENT;
     }
+    // For paystack, payment status remains PENDING until payment is verified
 
     // Create addresses
     const shippingAddress = await this.prisma.address.create({
@@ -108,6 +116,7 @@ export class OrdersService {
         shippingMethod: orderData.shippingMethod || null,
         status: orderStatus,
         paymentStatus: paymentStatus,
+        paymentMethod: paymentMethod,
         items: {
           create: cart.items.map((item) => ({
             productId: item.productId,

@@ -1,78 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
-import { RefreshCw, Package, Mail, Clock } from "lucide-react";
+import { RefreshCw, Package, Mail, XCircle, CheckCircle } from "lucide-react";
 
 export function ReturnsPage() {
-  const { data: siteSettings, isLoading: siteLoading } = useQuery({
-    queryKey: ["settings", "site"],
-    queryFn: async () => {
-      const response = await api.get("/settings/site");
-      return response.data;
-    },
-  });
-
-  const { data: returnsContent, isLoading: contentLoading } = useQuery<{ content: string }>({
-    queryKey: ["settings", "returns"],
-    queryFn: async () => {
-      const response = await api.get("/settings/returns");
-      return response.data;
-    },
-  });
-
-  const isLoading = siteLoading || contentLoading;
-
-  if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
-  }
-
-  const returnDays = 14; // Default, can be fetched from settings
-
-  // If content exists from API, render it as HTML
-  if (returnsContent?.content) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Return & Refund Policy</h1>
-          <p className="text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
-        </div>
-        <Card>
-          <CardContent className="p-6 md:p-8">
-            <div
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: returnsContent.content }}
-            />
-          </CardContent>
-        </Card>
-        {/* Contact section */}
-        <Card className="mt-6">
-          <CardContent className="p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help with Returns?</h2>
-            <p className="text-gray-600 mb-4">
-              If you have any questions about returns or need assistance, please contact us:
-            </p>
-            <div className="space-y-2 text-gray-600">
-              <p>
-                <strong>Email:</strong> {siteSettings?.email || "sales@juellehairgh.com"}
-              </p>
-              <p>
-                <strong>Phone:</strong> {siteSettings?.phone || "+233 539506949"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Fallback to structured content if no API content
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
@@ -81,46 +12,63 @@ export function ReturnsPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Return Period */}
+        {/* Introduction */}
         <Card>
           <CardContent className="p-6 md:p-8">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Clock className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Return Period</h2>
-                <p className="text-gray-600">
-                  You have <strong className="text-gray-900">{returnDays} days</strong> from the date of delivery to return items for a refund or exchange.
-                </p>
-              </div>
-            </div>
+            <p className="text-gray-600">
+              If for any reason you are not satisfied with any purchased item from juellehair.com, we are pleased to accept your returns.
+            </p>
+            <p className="text-gray-600 mt-4">
+              Make sure to include your order number and return number with the returned package. Clearance items do not qualify for a return.
+            </p>
           </CardContent>
         </Card>
 
-        {/* Return Conditions */}
+        {/* Eligible Returns */}
         <Card>
           <CardContent className="p-6 md:p-8">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-pink-100 rounded-lg">
-                <Package className="h-6 w-6 text-pink-600" />
+              <div className="p-3 bg-green-100 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Return Conditions</h2>
-                <p className="text-gray-600 mb-4">To be eligible for a return, items must meet the following conditions:</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Eligible Returns</h2>
                 <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Items must be unused and in their original condition</li>
-                  <li>Items must be in original packaging with tags attached</li>
-                  <li>Items must not be damaged, worn, or altered</li>
-                  <li>Proof of purchase (order number or receipt) is required</li>
-                  <li>Hygiene products and personalized items are not eligible for return</li>
+                  <li>Brand new, unopened and unused items in original packaging</li>
+                  <li>Items that match up with customer's order invoice (color, quantity, or style)</li>
+                  <li>Non-Sale, full priced items</li>
+                  <li>Items that are within 7 days from delivery date in Ghana (14 days for deliveries outside Ghana)</li>
+                  <li>Damaged items</li>
                 </ul>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Return Process */}
+        {/* Ineligible Returns */}
+        <Card>
+          <CardContent className="p-6 md:p-8">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="p-3 bg-red-100 rounded-lg">
+                <XCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Ineligible Returns</h2>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  <li>Sale or Final Sale items cannot be returned for any reason</li>
+                  <li>Orders with the incorrect shipping address and sent back to sender</li>
+                  <li>Wigs of any kind due to sanitation guidelines</li>
+                  <li>Used items</li>
+                  <li>Items that are opened</li>
+                  <li>Items with opened or damaged packaging</li>
+                  <li>Items that are past 7 days from delivery within Ghana (14 days for deliveries outside Ghana)</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Exchanges */}
         <Card>
           <CardContent className="p-6 md:p-8">
             <div className="flex items-start gap-4 mb-4">
@@ -128,33 +76,16 @@ export function ReturnsPage() {
                 <RefreshCw className="h-6 w-6 text-blue-600" />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Return</h2>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Step 1: Contact Us</h3>
-                    <p className="text-gray-600">
-                      Contact our customer service team to initiate a return. Provide your order number and reason for return.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Step 2: Package the Item</h3>
-                    <p className="text-gray-600">
-                      Package the item securely in its original packaging. Include all original tags, labels, and accessories.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Step 3: Ship the Item</h3>
-                    <p className="text-gray-600">
-                      Ship the item to the return address provided by our customer service team. We recommend using a trackable shipping method.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Step 4: Receive Refund</h3>
-                    <p className="text-gray-600">
-                      Once we receive and inspect the returned item, we'll process your refund within 5-7 business days.
-                    </p>
-                  </div>
-                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Exchanges</h2>
+                <p className="text-gray-600 mb-4">
+                  Exchanges are accepted for damaged item or shipping error. Shipping error is defined as shipping out the wrong product or wrong quantity. If you would like to exchange for color or brand type is accepted.
+                </p>
+                <p className="text-gray-600 mb-4">
+                  The fastest way to ensure you get what you want is to return the item you have, and once the return is accepted, make a separate purchase for the new item.
+                </p>
+                <p className="text-gray-600">
+                  <strong className="text-gray-900">Customer is responsible for shipping cost for processing exchange.</strong> Fee will only be waived if error was made by Juelle.com
+                </p>
               </div>
             </div>
           </CardContent>
@@ -164,22 +95,20 @@ export function ReturnsPage() {
         <Card>
           <CardContent className="p-6 md:p-8">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Mail className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Mail className="h-6 w-6 text-purple-600" />
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Refunds</h2>
-                <div className="space-y-3 text-gray-600">
-                  <p>
-                    <strong className="text-gray-900">Processing Time:</strong> Refunds are processed within 5-7 business days after we receive and inspect the returned item.
-                  </p>
-                  <p>
-                    <strong className="text-gray-900">Refund Method:</strong> Refunds will be issued to the original payment method used for the purchase.
-                  </p>
-                  <p>
-                    <strong className="text-gray-900">Shipping Costs:</strong> Original shipping costs are non-refundable unless the item was defective or we made an error.
-                  </p>
-                </div>
+                <p className="text-gray-600 mb-4">
+                  The fastest way to ensure you get what you want is to return the item you have, and once the return is accepted, make a separate purchase for the new item.
+                </p>
+                <p className="text-gray-600 mb-4">
+                  We will notify you once we've received and inspected your return, and let you know if the refund was approved or not. If approved, you will be automatically refunded on your original payment method.
+                </p>
+                <p className="text-gray-600">
+                  Please remember it can take some time for your bank or credit card company to process and post the refund too.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -190,16 +119,8 @@ export function ReturnsPage() {
           <CardContent className="p-6 md:p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help with Returns?</h2>
             <p className="text-gray-600 mb-4">
-              If you have any questions about returns or need assistance, please contact us:
+              Email at <a href="mailto:info@juellehair.com" className="text-purple-600 hover:text-purple-700 underline">info@juellehair.com</a> for any questions or suggestions.
             </p>
-            <div className="space-y-2 text-gray-600">
-              <p>
-                <strong>Email:</strong> {siteSettings?.email || "sales@juellehairgh.com"}
-              </p>
-              <p>
-                <strong>Phone:</strong> {siteSettings?.phone || "+233 539506949"}
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

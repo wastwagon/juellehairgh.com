@@ -42,6 +42,22 @@ export class EmailService {
   }
 
   /**
+   * Helper function to format payment method name for display
+   */
+  private formatPaymentMethod(paymentMethod: string | null | undefined): string {
+    if (!paymentMethod) return "Paystack";
+    
+    const methodMap: Record<string, string> = {
+      paystack: "Paystack",
+      wallet: "Wallet Balance",
+      cash_on_delivery: "Cash on Delivery",
+      cod: "Cash on Delivery",
+    };
+    
+    return methodMap[paymentMethod.toLowerCase()] || paymentMethod;
+  }
+
+  /**
    * Helper function to get product image URL for emails
    */
   private getProductImageUrl(imagePath: string | null | undefined): string | null {
@@ -545,7 +561,7 @@ export class EmailService {
             order.user?.email || order.shippingAddress?.email || "N/A",
           total: Number(order.totalGhs).toFixed(2),
           currency: order.displayCurrency || "GHS",
-          paymentMethod: "Paystack",
+          paymentMethod: this.formatPaymentMethod(order.paymentMethod || "paystack"),
           transactionReference: transaction,
           itemCount: order.items?.length || 0,
           shippingMethod: order.shippingMethod || "N/A",

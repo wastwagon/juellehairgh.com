@@ -95,7 +95,7 @@ export function CheckoutForm() {
     useShippingForBilling: true,
     shippingMethod: null as any,
     shippingMethodId: null as string | null,
-    paymentMethod: "paystack" as "paystack" | "wallet",
+    paymentMethod: "paystack" as "paystack" | "wallet" | "cash_on_delivery",
   });
 
   // Auto-populate form with saved address and user email when logged in
@@ -277,6 +277,9 @@ export function CheckoutForm() {
         ? formData.shippingAddress
         : formData.billingAddress;
 
+      // Ensure wallet payment is not used (temporarily disabled)
+      const paymentMethod = formData.paymentMethod === "wallet" ? "paystack" : formData.paymentMethod;
+
       // Create order
       const orderResponse = await api.post(
         "/orders",
@@ -289,7 +292,7 @@ export function CheckoutForm() {
           shippingCost: shippingCost,
           displayCurrency,
           displayTotal,
-          paymentMethod: formData.paymentMethod,
+          paymentMethod: paymentMethod,
         },
         {
           headers: {
@@ -307,10 +310,9 @@ export function CheckoutForm() {
       }
 
       // Handle payment based on selected method
-      if (formData.paymentMethod === "wallet") {
-        // Wallet payment is already processed in order creation
+      if (paymentMethod === "cash_on_delivery") {
+        // Cash on Delivery - no payment processing needed
         // Clear cart and redirect to thank you page
-        // Use window.location.href for full page navigation to prevent useEffect interference
         clearCart();
         window.location.href = `/checkout/thank-you?orderId=${order.id}`;
         return; // Exit early to prevent further execution
@@ -626,7 +628,7 @@ export function CheckoutForm() {
                   name="paymentMethod"
                   value="paystack"
                   checked={formData.paymentMethod === "paystack"}
-                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" })}
+                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" | "cash_on_delivery" })}
                   className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                 />
                 <div className="flex-1">
@@ -637,7 +639,8 @@ export function CheckoutForm() {
                   <p className="text-xs text-gray-600 mt-1">Pay with card, bank transfer, or mobile money</p>
                 </div>
               </label>
-              {isLoggedIn && (
+              {/* Wallet payment option - hidden for now, will be reintroduced later */}
+              {false && isLoggedIn && (
                 <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
                   style={{ borderColor: formData.paymentMethod === "wallet" ? "#9333ea" : "#e5e7eb" }}>
                   <input
@@ -645,7 +648,7 @@ export function CheckoutForm() {
                     name="paymentMethod"
                     value="wallet"
                     checked={formData.paymentMethod === "wallet"}
-                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" })}
+                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" | "cash_on_delivery" })}
                     className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                     disabled={walletBalance < totalGhs}
                   />
@@ -664,6 +667,24 @@ export function CheckoutForm() {
                   </div>
                 </label>
               )}
+              <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                style={{ borderColor: formData.paymentMethod === "cash_on_delivery" ? "#9333ea" : "#e5e7eb" }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="cash_on_delivery"
+                  checked={formData.paymentMethod === "cash_on_delivery"}
+                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value as "paystack" | "wallet" | "cash_on_delivery" })}
+                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900">Cash on Delivery</span>
+                    <span className="text-xs text-gray-500">💵 Pay on Arrival</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">Pay with cash when your order arrives</p>
+                </div>
+              </label>
             </div>
           </div>
         </div>
@@ -782,13 +803,16 @@ export function CheckoutForm() {
             </div>
             <Button
               type="submit"
-              disabled={loading || (formData.paymentMethod === "wallet" && walletBalance < totalGhs)}
+              disabled={loading}
               className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none text-sm px-4"
             >
-              {loading ? "Processing..." : formData.paymentMethod === "wallet" ? `Pay with Wallet (${formatCurrency(walletBalance, "GHS")})` : "Pay Securely with Paystack"}
+              {loading ? "Processing..." : 
+               formData.paymentMethod === "cash_on_delivery" ? "Place Order (Cash on Delivery)" :
+               "Pay Securely with Paystack"}
             </Button>
             <p className="text-xs text-center text-gray-500 mt-3">
-              {formData.paymentMethod === "wallet" ? "💳 Payment from your wallet balance" : "🔒 Secure payment powered by Paystack"}
+              {formData.paymentMethod === "cash_on_delivery" ? "💵 Pay with cash when your order arrives" :
+               "🔒 Secure payment powered by Paystack"}
             </p>
           </div>
         </div>
