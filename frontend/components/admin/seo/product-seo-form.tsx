@@ -148,7 +148,7 @@ export function ProductSEOForm({ productId, onClose, embedded = false }: Product
               id="metaTitle"
               name="metaTitle"
               defaultValue={seo?.metaTitle || ""}
-              placeholder="Product Title - Brand | Juelle Hair Ghana"
+              placeholder="Product Title - Brand | Le Juelle Hair"
               maxLength={60}
             />
             <p className="text-xs text-gray-500 mt-1">Recommended: 50-60 characters</p>

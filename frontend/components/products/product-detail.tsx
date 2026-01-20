@@ -22,7 +22,6 @@ import { SchemaMarkup } from "@/components/seo/schema-markup";
 import { MetaTags } from "@/components/seo/meta-tags-app";
 import { ProductReviews } from "./product-reviews";
 import { toast } from "sonner";
-import { getShippingBannerText, isBeforeCutoff } from "@/lib/shipping-time";
 import { processDescription } from "@/lib/process-description";
 
 interface ProductDetailProps {
@@ -70,20 +69,19 @@ export function ProductDetail({ slug }: ProductDetailProps) {
     enabled: !!product?.categoryId,
   });
 
-  // Fetch SEO data - must be called before any returns
-  const { data: seoData } = useQuery({
-    queryKey: ["seo", "product", product?.id],
-    queryFn: async () => {
-      if (!product?.id) return null;
-      try {
-        const response = await api.get(`/seo/products/${product.id}/schema`);
-        return response.data;
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!product?.id,
-  });
+  // Get SEO data from product (already included in product query)
+  const seoData = product?.seo ? {
+    metaTitle: product.seo.metaTitle,
+    metaDescription: product.seo.metaDescription,
+    keywords: product.seo.keywords,
+    ogTitle: product.seo.ogTitle,
+    ogDescription: product.seo.ogDescription,
+    ogImage: product.seo.ogImage,
+    canonicalUrl: product.seo.canonicalUrl,
+    noindex: product.seo.noindex,
+    nofollow: product.seo.nofollow,
+    schemaData: product.seo.schemaData,
+  } : null;
 
   // Add to recently viewed - MUST be called before any returns
   useEffect(() => {
@@ -308,20 +306,6 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
           <h1 className="text-base md:text-lg font-bold mb-4 text-gray-900">{product.title}</h1>
 
-          {/* Shipping Time Banner */}
-          <div className="mb-4 p-3 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-gray-700">
-                {isBeforeCutoff() ? (
-                  <>
-                    Order Before <strong>2PM GMT</strong> for <span className="bg-green-600 text-white px-2 py-0.5 rounded">Same Day Delivery</span> within <strong className="text-red-600">Accra</strong>.
-                  </>
-                ) : (
-                  <strong className="text-gray-800">Orders Placed After 2PM GMT Will Be Delivered Next Business Day.</strong>
-                )}
-              </span>
-            </div>
-          </div>
 
           {product.brand && (
             <p className="text-gray-600 mb-2">

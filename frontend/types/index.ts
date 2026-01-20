@@ -24,6 +24,24 @@ export interface Review {
   };
 }
 
+export interface ProductSEO {
+  id: string;
+  productId: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  focusKeyword?: string;
+  keywords?: string[];
+  schemaType?: string;
+  schemaData?: any;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  twitterCard?: string;
+  canonicalUrl?: string;
+  noindex?: boolean;
+  nofollow?: boolean;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -40,6 +58,7 @@ export interface Product {
   category?: Category;
   variants?: ProductVariant[];
   reviews?: Review[];
+  seo?: ProductSEO;
   sku?: string;
   stock?: number;
   isActive?: boolean;

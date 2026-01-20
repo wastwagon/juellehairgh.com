@@ -31,8 +31,8 @@ export function MetaTags({
   noindex = false,
   nofollow = false,
 }: MetaTagsProps) {
-  const siteName = "Juelle Hair Ghana";
-  const defaultTitle = `${siteName} - Premium Hair Products`;
+  const siteName = "Le Juelle Hair";
+  const defaultTitle = `${siteName} - Crochet Braiding Hair Extensions & Wig Shop`;
   const defaultDescription = "Shop premium wigs, braids, and hair care products in Ghana";
   const defaultImage = "/logo.png";
 

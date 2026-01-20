@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Juelle Hair Ghana - Premium Hair Products",
+  title: "Le Juelle Hair - Crochet Braiding Hair Extensions & Wig Shop",
   description: "Shop premium wigs, braids, and hair care products in Ghana",
 };
 

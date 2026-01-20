@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Instagram, MessageCircle, Sparkles } from "lucide-react";
 
 export const metadata = {
-  title: "Elevating Your Experience | Juelle Hair Ghana",
+  title: "Elevating Your Experience | Le Juelle Hair",
   description: "We are currently refining our digital boutique to bring you something extraordinary.",
 };
 
@@ -19,7 +19,7 @@ export default function MaintenancePage() {
         <div className="flex justify-center transition-transform duration-700 hover:scale-105">
           <Image
             src="/logo.png"
-            alt="Juelle Hair Ghana"
+            alt="Le Juelle Hair"
             width={220}
             height={80}
             priority

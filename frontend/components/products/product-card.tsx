@@ -6,10 +6,12 @@ import { Product } from "@/types";
 import { formatCurrency, calculateProductSalePrice } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
 import { useCartStore } from "@/store/cart-store";
-import { Star, Eye, ShoppingCart } from "lucide-react";
+import { Star, Eye, ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickViewModal } from "./quick-view-modal";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 interface ProductCardProps {
   product: Product;
@@ -19,6 +21,66 @@ export function ProductCard({ product }: ProductCardProps) {
   const { displayCurrency, convert } = useCurrencyStore();
   const { addItem } = useCartStore();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Check if user is authenticated
+  const isAuthenticated = typeof window !== "undefined" && !!localStorage.getItem("token");
+  
+  // Fetch wishlist to check if product is in wishlist
+  const { data: wishlistItems = [] } = useQuery({
+    queryKey: ["wishlist"],
+    queryFn: async () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) return [];
+      try {
+        const response = await api.get("/wishlist", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data || [];
+      } catch {
+        return [];
+      }
+    },
+    enabled: isAuthenticated,
+    retry: false,
+  });
+  
+  const isInWishlist = wishlistItems.some((item: any) => item.productId === product.id);
+  
+  // Add/Remove from wishlist mutation
+  const wishlistMutation = useMutation({
+    mutationFn: async ({ productId, shouldRemove }: { productId: string; shouldRemove: boolean }) => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Please login to add items to wishlist");
+      
+      if (shouldRemove) {
+        return api.delete(`/wishlist/${productId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        return api.post(`/wishlist/${productId}`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      toast.success(variables.shouldRemove ? "Removed from wishlist" : "Added to wishlist");
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 401) {
+        toast.error("Please login to add items to wishlist");
+      } else {
+        toast.error(error.response?.data?.message || "Failed to update wishlist");
+      }
+    },
+  });
+  
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    wishlistMutation.mutate({ productId: product.id, shouldRemove: isInWishlist });
+  };
   
   // Check if product has variants
   const hasVariants = product.variants && product.variants.length > 0;
@@ -174,18 +236,36 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
           
-          {/* Quick View Eye Icon - Top Right (always visible) */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleQuickView(e);
-            }}
-            className="absolute top-2 right-2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200"
-            title="Quick View"
-          >
-            <Eye className="h-4 w-4 text-gray-700 hover:text-purple-600" />
-          </button>
+          {/* Quick View Eye Icon and Wishlist Heart Icon - Top Right */}
+          <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
+            {/* Wishlist Heart Icon */}
+            <button
+              onClick={handleWishlistToggle}
+              className="bg-white/90 hover:bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <Heart 
+                className={`h-4 w-4 transition-all duration-200 ${
+                  isInWishlist 
+                    ? "fill-pink-600 text-pink-600" 
+                    : "text-gray-700 hover:text-pink-600"
+                }`} 
+              />
+            </button>
+            
+            {/* Quick View Eye Icon */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleQuickView(e);
+              }}
+              className="bg-white/90 hover:bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              title="Quick View"
+            >
+              <Eye className="h-4 w-4 text-gray-700 hover:text-purple-600" />
+            </button>
+          </div>
           
           {/* Sale Badge - Hide if out of stock */}
           {!isOutOfStock && displayComparePrice && discountPercent > 0 && (

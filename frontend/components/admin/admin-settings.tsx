@@ -32,7 +32,7 @@ export function AdminSettings() {
     smtpUser: "admin@juellehairgh.com",
     smtpPassword: "",
     emailFrom: "admin@juellehairgh.com",
-    emailFromName: "Juelle Hair Ghana",
+    emailFromName: "Le Juelle Hair",
     adminEmail: "",
     maintenanceMode: false,
   });
@@ -64,7 +64,7 @@ export function AdminSettings() {
         smtpUser: apiSettings.SMTP_USER || "",
         smtpPassword: apiSettings.SMTP_PASSWORD || "",
         emailFrom: apiSettings.EMAIL_FROM || "",
-        emailFromName: apiSettings.EMAIL_FROM_NAME || "Juelle Hair Ghana",
+        emailFromName: apiSettings.EMAIL_FROM_NAME || "Le Juelle Hair",
         adminEmail: apiSettings.ADMIN_EMAIL || "",
         siteName: apiSettings.SITE_NAME || prev.siteName,
         siteEmail: apiSettings.SITE_EMAIL || prev.siteEmail,
@@ -419,10 +419,10 @@ export function AdminSettings() {
                   type="text"
                   value={settings.emailFromName}
                   onChange={(e) => setSettings({ ...settings, emailFromName: e.target.value })}
-                  placeholder="Juelle Hair Ghana"
+                  placeholder="Le Juelle Hair"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Display name that appears as the sender (e.g., "Juelle Hair Ghana")
+                  Display name that appears as the sender (e.g., "Le Juelle Hair")
                 </p>
               </div>
 

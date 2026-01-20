@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { ProductVariantSelector } from "./product-variant-selector";
 import Link from "next/link";
 import { toast } from "sonner";
-import { getShippingBannerText, isBeforeCutoff } from "@/lib/shipping-time";
 
 interface QuickViewModalProps {
   product: Product;
@@ -241,20 +240,6 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
               <h2 className="text-xl md:text-2xl font-bold mb-4 text-gray-900">{product.title}</h2>
 
-              {/* Shipping Time Banner */}
-              <div className="mb-4 p-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-gray-700">
-                    {isBeforeCutoff() ? (
-                      <>
-                        Order Before <strong>2PM GMT</strong> for <span className="bg-green-600 text-white px-2 py-0.5 rounded">Same Day Delivery</span> within <strong className="text-red-600">Accra</strong>.
-                      </>
-                    ) : (
-                      <strong className="text-gray-800">Orders Placed After 2PM GMT Will Be Delivered Next Business Day.</strong>
-                    )}
-                  </span>
-                </div>
-              </div>
 
               {/* Rating - Only show if product has reviews */}
               {hasReviews && (
