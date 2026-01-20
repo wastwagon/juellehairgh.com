@@ -76,8 +76,8 @@ export function PrivacyPage() {
         </Card>
 
         {/* Privacy Change */}
-        <Card>
-          <CardContent className="p-6 md:p-8">
+      <Card>
+        <CardContent className="p-6 md:p-8">
             <div className="flex items-start gap-4 mb-4">
               <div className="p-3 bg-orange-100 rounded-lg">
                 <Lock className="h-6 w-6 text-orange-600" />
@@ -89,8 +89,8 @@ export function PrivacyPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </CardContent>
+      </Card>
       </div>
     </div>
   );

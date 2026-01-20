@@ -169,13 +169,14 @@ export function VariationTermModal({
                 type="number"
                 min="0"
                 required
-                value={formData.stock || ""}
-                onChange={(e) =>
+                value={formData.stock ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : parseInt(e.target.value);
                   setFormData({
                     ...formData,
-                    stock: parseInt(e.target.value) || 0,
-                  })
-                }
+                    stock: isNaN(value) ? 0 : value,
+                  });
+                }}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Stock = 0 means out of stock. Stock &gt; 0 means in stock.

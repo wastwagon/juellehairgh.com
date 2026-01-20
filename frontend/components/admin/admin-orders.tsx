@@ -203,11 +203,11 @@ export function AdminOrders() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
-                          <Link href={`/admin/orders/${order.id}`}>
-                            <Button variant="outline" size="sm">
-                              View
-                            </Button>
-                          </Link>
+                        <Link href={`/admin/orders/${order.id}`}>
+                          <Button variant="outline" size="sm">
+                            View
+                          </Button>
+                        </Link>
                           <Button
                             variant="outline"
                             size="sm"

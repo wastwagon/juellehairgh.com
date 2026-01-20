@@ -83,7 +83,7 @@ export function ReturnsPage() {
                 <p className="text-gray-600 mb-4">
                   The fastest way to ensure you get what you want is to return the item you have, and once the return is accepted, make a separate purchase for the new item.
                 </p>
-                <p className="text-gray-600">
+                    <p className="text-gray-600">
                   <strong className="text-gray-900">Customer is responsible for shipping cost for processing exchange.</strong> Fee will only be waived if error was made by Juelle.com
                 </p>
               </div>
@@ -102,13 +102,13 @@ export function ReturnsPage() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Refunds</h2>
                 <p className="text-gray-600 mb-4">
                   The fastest way to ensure you get what you want is to return the item you have, and once the return is accepted, make a separate purchase for the new item.
-                </p>
+                  </p>
                 <p className="text-gray-600 mb-4">
                   We will notify you once we've received and inspected your return, and let you know if the refund was approved or not. If approved, you will be automatically refunded on your original payment method.
-                </p>
+                  </p>
                 <p className="text-gray-600">
                   Please remember it can take some time for your bank or credit card company to process and post the refund too.
-                </p>
+                  </p>
               </div>
             </div>
           </CardContent>

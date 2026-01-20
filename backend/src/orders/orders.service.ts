@@ -102,18 +102,18 @@ export class OrdersService {
     let billingAddress;
     try {
       shippingAddress = await this.prisma.address.create({
-        data: {
-          userId,
-          ...orderData.shippingAddress,
-        },
-      });
+      data: {
+        userId,
+        ...orderData.shippingAddress,
+      },
+    });
 
       billingAddress = await this.prisma.address.create({
-        data: {
-          userId,
-          ...orderData.billingAddress,
-        },
-      });
+      data: {
+        userId,
+        ...orderData.billingAddress,
+      },
+    });
     } catch (error: any) {
       console.error("Error creating addresses:", error);
       throw new BadRequestException(
