@@ -122,7 +122,7 @@ export function FeaturedCollections() {
           </span>
         </div>
         <div className="flex justify-center">
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 max-w-5xl">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
             {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-square bg-gray-200 rounded-lg mb-3" />
@@ -148,7 +148,7 @@ export function FeaturedCollections() {
         </span>
       </div>
       <div className="flex justify-center">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 max-w-5xl">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
           {backendCollections.map((collection) => {
           const IconComponent = getCollectionIcon(collection.name, collection.slug);
           const collectionImage = getCollectionImage(collection);
