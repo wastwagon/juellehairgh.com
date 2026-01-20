@@ -119,6 +119,43 @@ export class AdminService {
     };
   }
 
+  async deleteOrder(orderId: string) {
+    // First, check if order exists
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException("Order not found");
+    }
+
+    // Use a transaction to ensure atomicity
+    return await this.prisma.$transaction(async (tx) => {
+      // Delete analytics events related to this order
+      // This ensures revenue and order counts in analytics are updated
+      await tx.analyticsEvent.deleteMany({
+        where: { orderId: orderId },
+      });
+
+      // Delete order items (cascade should handle this, but explicit for safety)
+      await tx.orderItem.deleteMany({
+        where: { orderId: orderId },
+      });
+
+      // Delete the order itself
+      // Note: We don't delete addresses as they might be shared or needed for records
+      // Note: We don't restore stock on delete - deletion is a data cleanup action, not a business cancellation
+      const deletedOrder = await tx.order.delete({
+        where: { id: orderId },
+      });
+
+      return deletedOrder;
+    });
+  }
+
   // Product Attributes Management (WooCommerce-style)
   async getAllAttributes() {
     return this.prisma.productAttribute.findMany({

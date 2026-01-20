@@ -168,6 +168,11 @@ export class AdminController {
     });
   }
 
+  @Delete("orders/:id")
+  async deleteOrder(@Param("id") id: string) {
+    return this.adminService.deleteOrder(id);
+  }
+
   // Categories Management
   @Get("categories")
   async getCategories() {
