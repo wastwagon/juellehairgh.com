@@ -16,9 +16,12 @@ export class AdminService {
       const [totalOrders, totalRevenue, todayOrders, todayRevenue] =
         await Promise.all([
           this.prisma.order.count().catch(() => 0),
+          // Include both PAID and PENDING (for Cash on Delivery) orders in revenue
           this.prisma.order
             .aggregate({
-              where: { paymentStatus: "PAID" },
+              where: { 
+                paymentStatus: { in: ["PAID", "PENDING"] }
+              },
               _sum: { totalGhs: true },
             })
             .catch(() => ({ _sum: { totalGhs: null } })),
@@ -31,10 +34,11 @@ export class AdminService {
               },
             })
             .catch(() => 0),
+          // Include both PAID and PENDING (for Cash on Delivery) orders in today's revenue
           this.prisma.order
             .aggregate({
               where: {
-                paymentStatus: "PAID",
+                paymentStatus: { in: ["PAID", "PENDING"] },
                 createdAt: {
                   gte: new Date(new Date().setHours(0, 0, 0, 0)),
                 },
