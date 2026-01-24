@@ -59,36 +59,43 @@ export class ProductsService {
         if (maxPrice) where.priceGhs.lte = parseFloat(maxPrice);
       }
 
+      // Wrap queries with timeout to prevent hanging (20s timeout)
       const [productsData, total] = await Promise.all([
-        this.prisma.product.findMany({
-          where,
-          include: {
-            brand: true,
-            category: true,
-            variants: true,
-            seo: true, // Include SEO data
-            reviews: {
-              where: {
-                isVerified: true, // Only include verified reviews
-              },
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
+        this.prisma.executeWithTimeout(
+          this.prisma.product.findMany({
+            where,
+            include: {
+              brand: true,
+              category: true,
+              variants: true,
+              seo: true, // Include SEO data
+              reviews: {
+                where: {
+                  isVerified: true, // Only include verified reviews
+                },
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
                   },
                 },
+                orderBy: { createdAt: "desc" },
               },
-              orderBy: { createdAt: "desc" },
             },
-          },
-          skip,
-          take: parseInt(limit.toString()),
-          orderBy: query.sort
-            ? (this.getOrderBy(query.sort) as any)
-            : { createdAt: "desc" },
-        }),
-        this.prisma.product.count({ where }),
+            skip,
+            take: parseInt(limit.toString()),
+            orderBy: query.sort
+              ? (this.getOrderBy(query.sort) as any)
+              : { createdAt: "desc" },
+          }),
+          20000, // 20 second timeout
+        ),
+        this.prisma.executeWithTimeout(
+          this.prisma.product.count({ where }),
+          20000, // 20 second timeout
+        ),
       ]);
 
       // Enrich all products' variants with images using helper
@@ -118,34 +125,37 @@ export class ProductsService {
 
   async findOne(slug: string) {
     try {
-      const product = await this.prisma.product.findUnique({
-        where: { slug },
-        include: {
-          brand: true,
-          category: {
-            include: {
-              parent: true,
-            },
-          },
-          variants: true,
-          reviews: {
-            where: {
-              isVerified: true, // Only show verified reviews on frontend
-            },
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                },
+      const product = await this.prisma.executeWithTimeout(
+        this.prisma.product.findUnique({
+          where: { slug },
+          include: {
+            brand: true,
+            category: {
+              include: {
+                parent: true,
               },
             },
-            orderBy: { createdAt: "desc" },
-            take: 10,
+            variants: true,
+            reviews: {
+              where: {
+                isVerified: true, // Only show verified reviews on frontend
+              },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+              orderBy: { createdAt: "desc" },
+              take: 10,
+            },
+            seo: true, // Include SEO data
           },
-          seo: true, // Include SEO data
-        },
-      });
+        }),
+        20000, // 20 second timeout
+      );
 
       if (!product) {
         throw new NotFoundException("Product not found");

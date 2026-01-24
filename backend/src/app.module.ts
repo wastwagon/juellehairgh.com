@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
 import { PrismaModule } from "./prisma/prisma.module";
+import { TimeoutMiddleware } from "./common/middleware/timeout.middleware";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
 import { ProductsModule } from "./products/products.module";
@@ -76,4 +77,8 @@ import { BlogModule } from "./blog/blog.module";
     EmailModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TimeoutMiddleware).forRoutes("*");
+  }
+}
