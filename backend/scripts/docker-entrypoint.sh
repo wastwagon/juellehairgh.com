@@ -26,6 +26,7 @@ echo ""
 ensure_pool_parameters() {
     local db_url="$1"
     if [ -z "$db_url" ]; then
+        echo "" >&2
         return 1
     fi
     
@@ -33,15 +34,17 @@ ensure_pool_parameters() {
     if echo "$db_url" | grep -q "connection_limit=" && \
        echo "$db_url" | grep -q "pool_timeout=" && \
        echo "$db_url" | grep -q "connect_timeout="; then
+        # Already has all pool parameters, return as-is
+        echo "$db_url"
         return 0
     fi
     
     # Add pool parameters if missing
     if echo "$db_url" | grep -q "?"; then
-        # URL already has query parameters, append pool params
+        # URL already has query parameters, append pool params with &
         echo "${db_url}&connection_limit=10&pool_timeout=20&connect_timeout=10"
     else
-        # URL has no query parameters, add them
+        # URL has no query parameters, add them with ?
         echo "${db_url}?connection_limit=10&pool_timeout=20&connect_timeout=10"
     fi
 }
@@ -90,9 +93,14 @@ fi
 # CRITICAL: Ensure DATABASE_URL always has pool parameters (even if Coolify set it)
 # This prevents connection exhaustion and 504 timeouts
 if [ -n "$DATABASE_URL" ]; then
-    DATABASE_URL=$(ensure_pool_parameters "$DATABASE_URL")
-    export DATABASE_URL
-    echo -e "${GREEN}✓${NC} DATABASE_URL configured with connection pool parameters"
+    NEW_DATABASE_URL=$(ensure_pool_parameters "$DATABASE_URL")
+    if [ -n "$NEW_DATABASE_URL" ]; then
+        DATABASE_URL="$NEW_DATABASE_URL"
+        export DATABASE_URL
+        echo -e "${GREEN}✓${NC} DATABASE_URL configured with connection pool parameters"
+    else
+        echo -e "${YELLOW}⚠️  Warning: Could not add pool parameters to DATABASE_URL, using as-is${NC}"
+    fi
 fi
 
 # Verify all required variables are set
