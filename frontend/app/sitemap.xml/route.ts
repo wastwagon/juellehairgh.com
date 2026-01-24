@@ -1,7 +1,31 @@
 import { NextResponse } from "next/server";
 
+// Helper function to escape XML entities
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+// Helper function to get absolute image URL
+function getAbsoluteImageUrl(imageUrl: string | undefined, siteUrl: string): string {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return escapeXml(imageUrl);
+  }
+  // Handle relative URLs
+  const cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+  return escapeXml(`${siteUrl}${cleanUrl}`);
+}
+
 export async function GET() {
+  // Use the frontend URL, not the API URL
   const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com";
+  // Ensure siteUrl doesn't have trailing slash
+  const cleanSiteUrl = siteUrl.replace(/\/$/, "");
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.juellehairgh.com/api";
 
   try {
@@ -34,7 +58,7 @@ export async function GET() {
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <!-- Homepage -->
   <url>
-    <loc>${siteUrl}</loc>
+    <loc>${escapeXml(cleanSiteUrl)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -43,16 +67,23 @@ export async function GET() {
   <!-- Products -->
   ${products
     .map(
-      (product: any) => `  <url>
-    <loc>${siteUrl}/products/${product.slug}</loc>
+      (product: any) => {
+        const productUrl = `${cleanSiteUrl}/products/${product.slug}`;
+        const imageUrl = product.images?.[0];
+        const imageSection = imageUrl
+          ? `    <image:image>
+      <image:loc>${getAbsoluteImageUrl(imageUrl, cleanSiteUrl)}</image:loc>
+      <image:title>${escapeXml(product.title)}</image:title>
+    </image:image>`
+          : "";
+        return `  <url>
+    <loc>${escapeXml(productUrl)}</loc>
     <lastmod>${product.updatedAt || now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    ${product.images?.[0] ? `<image:image>
-      <image:loc>${product.images[0].startsWith("http") ? product.images[0] : `${siteUrl}${product.images[0]}`}</image:loc>
-      <image:title>${product.title}</image:title>
-    </image:image>` : ""}
-  </url>`
+${imageSection}
+  </url>`;
+      }
     )
     .join("\n")}
   
@@ -60,7 +91,7 @@ export async function GET() {
   ${categories
     .map(
       (category: any) => `  <url>
-    <loc>${siteUrl}/categories/${category.slug}</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/categories/${category.slug}`)}</loc>
     <lastmod>${category.updatedAt || now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -72,7 +103,7 @@ export async function GET() {
   ${collections
     .map(
       (collection: any) => `  <url>
-    <loc>${siteUrl}/collections/${collection.slug}</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/collections/${collection.slug}`)}</loc>
     <lastmod>${collection.updatedAt || now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -84,7 +115,7 @@ export async function GET() {
   ${blogPosts
     .map(
       (post: any) => `  <url>
-    <loc>${siteUrl}/blog/${post.slug}</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/blog/${post.slug}`)}</loc>
     <lastmod>${post.publishedAt || post.updatedAt || now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -94,43 +125,43 @@ export async function GET() {
   
   <!-- Static Pages -->
   <url>
-    <loc>${siteUrl}/about</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/about`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>${siteUrl}/contact</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/contact`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>${siteUrl}/faq</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/faq`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>${siteUrl}/shipping</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/shipping`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>${siteUrl}/returns</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/returns`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>${siteUrl}/privacy</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/privacy`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>${siteUrl}/terms</loc>
+    <loc>${escapeXml(`${cleanSiteUrl}/terms`)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
@@ -150,7 +181,7 @@ export async function GET() {
     const minimalSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>${siteUrl}</loc>
+    <loc>${escapeXml(cleanSiteUrl)}</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
