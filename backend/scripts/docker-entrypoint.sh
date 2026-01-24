@@ -22,6 +22,30 @@ echo -e "${GREEN}  Juelle Hair Backend${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
+# Function to ensure DATABASE_URL has pool parameters
+ensure_pool_parameters() {
+    local db_url="$1"
+    if [ -z "$db_url" ]; then
+        return 1
+    fi
+    
+    # Check if pool parameters are already present
+    if echo "$db_url" | grep -q "connection_limit=" && \
+       echo "$db_url" | grep -q "pool_timeout=" && \
+       echo "$db_url" | grep -q "connect_timeout="; then
+        return 0
+    fi
+    
+    # Add pool parameters if missing
+    if echo "$db_url" | grep -q "?"; then
+        # URL already has query parameters, append pool params
+        echo "${db_url}&connection_limit=10&pool_timeout=20&connect_timeout=10"
+    else
+        # URL has no query parameters, add them
+        echo "${db_url}?connection_limit=10&pool_timeout=20&connect_timeout=10"
+    fi
+}
+
 # Fix Environment Variables (handle special chars in password)
 if [ -f "./scripts/fix-db-env.js" ]; then
     echo -e "${BLUE}→${NC} Fixing database environment..."
@@ -61,6 +85,14 @@ else
     fi
     DATABASE_URL="postgresql://${DB_USER}:${ENCODED_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public&connection_limit=10&pool_timeout=20&connect_timeout=10"
     export DATABASE_URL
+fi
+
+# CRITICAL: Ensure DATABASE_URL always has pool parameters (even if Coolify set it)
+# This prevents connection exhaustion and 504 timeouts
+if [ -n "$DATABASE_URL" ]; then
+    DATABASE_URL=$(ensure_pool_parameters "$DATABASE_URL")
+    export DATABASE_URL
+    echo -e "${GREEN}✓${NC} DATABASE_URL configured with connection pool parameters"
 fi
 
 # Verify all required variables are set
