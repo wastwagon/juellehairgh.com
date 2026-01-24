@@ -18,8 +18,73 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Le Juelle Hair - Crochet Braiding Hair Extensions & Wig Shop",
-  description: "Shop premium wigs, braids, and hair care products in Ghana",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com"),
+  title: {
+    default: "Le Juelle Hair - Premium Wigs, Braids & Hair Extensions in Ghana",
+    template: "%s | Le Juelle Hair",
+  },
+  description: "Shop premium quality lace wigs, crochet braids, ponytails, clip-ins, and hair care products in Ghana. Free shipping on orders GHS 950+. Same-day delivery in Accra.",
+  keywords: [
+    "wigs Ghana",
+    "lace wigs",
+    "crochet braids",
+    "hair extensions Ghana",
+    "human hair wigs",
+    "synthetic wigs",
+    "ponytails",
+    "clip-ins",
+    "hair care products",
+    "Juelle Hair",
+    "hair products Accra",
+  ],
+  authors: [{ name: "Le Juelle Hair" }],
+  creator: "Le Juelle Hair",
+  publisher: "Le Juelle Hair",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_GH",
+    url: process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com",
+    siteName: "Le Juelle Hair",
+    title: "Le Juelle Hair - Premium Wigs & Hair Extensions in Ghana",
+    description: "Shop premium quality lace wigs, crochet braids, ponytails, and hair care products. Free shipping on orders GHS 950+.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Le Juelle Hair - Premium Hair Products",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Le Juelle Hair - Premium Wigs & Hair Extensions",
+    description: "Shop premium quality lace wigs, crochet braids, and hair care products in Ghana.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    // Add Google Search Console verification when available
+    // google: "your-google-verification-code",
+  },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com",
+  },
 };
 
 export default function RootLayout({

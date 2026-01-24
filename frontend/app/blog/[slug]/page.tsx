@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SocialShare } from "@/components/shared/social-share";
+import { MetaTags } from "@/components/seo/meta-tags-app";
 
 interface BlogPost {
   id: string;
@@ -40,7 +41,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
     
-    // Handle media library paths
+    // Handle media library paths - use API proxy
     if (url.includes("library/") || url.includes("/media/library/")) {
       let filename = url;
       if (url.includes("library/")) {
@@ -48,7 +49,6 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       } else if (url.includes("/media/library/")) {
         filename = url.split("/media/library/").pop() || url;
       }
-      // Use Next.js API proxy route
       return `/api/media/library/${filename}`;
     }
     
@@ -66,6 +66,13 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     // Handle regular paths
     if (url.startsWith("/")) return url;
     return `/${url}`;
+  };
+  
+  const getAbsoluteImageUrl = (url?: string) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    if (url.startsWith("/media/")) return `${siteUrl}${url}`;
+    return `${siteUrl}/${url}`;
   };
 
   if (isLoading) {
@@ -106,8 +113,28 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     );
   }
 
+  const siteUrl = typeof window !== "undefined" 
+    ? window.location.origin 
+    : (process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com");
+  
+  const getImageUrl = (url?: string) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    if (url.startsWith("/media/")) return `${siteUrl}${url}`;
+    return `${siteUrl}/${url}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <MetaTags
+        title={post.seoTitle || post.title}
+        description={post.seoDescription || post.excerpt || post.title}
+        keywords={post.tags || []}
+        ogTitle={post.seoTitle || post.title}
+        ogDescription={post.seoDescription || post.excerpt || post.title}
+        ogImage={post.featuredImage ? getAbsoluteImageUrl(post.featuredImage) : undefined}
+        canonicalUrl={`${siteUrl}/blog/${post.slug}`}
+      />
       <Header />
       <main className="flex-1 w-full">
         <article className="container mx-auto px-4 py-8 md:py-12 max-w-4xl">

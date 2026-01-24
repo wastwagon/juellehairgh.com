@@ -41,7 +41,25 @@ export function MetaTags({
   const finalOgTitle = ogTitle || finalTitle;
   const finalOgDescription = ogDescription || finalDescription;
   const finalOgImage = ogImage || defaultImage;
-  const finalCanonical = canonicalUrl || (typeof window !== "undefined" ? window.location.href : "");
+  
+  // Ensure canonical URL is absolute
+  const getCanonicalUrl = () => {
+    if (canonicalUrl) {
+      // If already absolute, return as-is
+      if (canonicalUrl.startsWith("http://") || canonicalUrl.startsWith("https://")) {
+        return canonicalUrl;
+      }
+      // If relative, make it absolute
+      const siteUrl = typeof window !== "undefined" 
+        ? window.location.origin 
+        : (process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com");
+      return `${siteUrl}${canonicalUrl.startsWith("/") ? "" : "/"}${canonicalUrl}`;
+    }
+    // Fallback to current URL
+    return typeof window !== "undefined" ? window.location.href : "";
+  };
+  
+  const finalCanonical = getCanonicalUrl();
 
   useEffect(() => {
     // Update document title

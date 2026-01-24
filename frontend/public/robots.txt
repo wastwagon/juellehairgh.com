@@ -1,0 +1,26 @@
+# robots.txt for Le Juelle Hair
+# https://juellehairgh.com/robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /account/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /auth/
+
+# Allow important pages
+Allow: /products/
+Allow: /categories/
+Allow: /collections/
+Allow: /blog/
+Allow: /brands/
+
+# Sitemap location
+Sitemap: https://juellehairgh.com/sitemap.xml
+
+# Crawl-delay (optional - helps prevent server overload)
+Crawl-delay: 1

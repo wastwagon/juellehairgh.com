@@ -20,6 +20,7 @@ import { ProductVariantSelector } from "./product-variant-selector";
 import { ProductVariant } from "@/types";
 import { SchemaMarkup } from "@/components/seo/schema-markup";
 import { MetaTags } from "@/components/seo/meta-tags-app";
+import { ProductStructuredData } from "@/components/seo/product-structured-data";
 import { ProductReviews } from "./product-reviews";
 import { toast } from "sonner";
 import { processDescription } from "@/lib/process-description";
@@ -270,7 +271,14 @@ export function ProductDetail({ slug }: ProductDetailProps) {
       />
 
       {/* Schema Markup */}
-      {seoData?.schemaData && <SchemaMarkup schema={seoData.schemaData} />}
+      {seoData?.schemaData ? (
+        <SchemaMarkup schema={seoData.schemaData} />
+      ) : (
+        <ProductStructuredData 
+          product={product} 
+          siteUrl={process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com"} 
+        />
+      )}
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Breadcrumbs */}

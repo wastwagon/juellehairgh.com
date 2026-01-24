@@ -12,6 +12,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { MetaTags } from "@/components/seo/meta-tags-app";
 
 interface BlogPost {
   id: string;
@@ -102,6 +103,11 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <MetaTags
+        title="Blog & News - Le Juelle Hair"
+        description="Stay updated with the latest hair care tips, styling guides, and news from Le Juelle Hair. Expert advice on wigs, braids, and hair care."
+        keywords={["hair care tips", "wig care", "braiding tips", "hair styling", "Le Juelle Hair blog"]}
+      />
       <Header />
       <main className="flex-1 w-full">
         <div className="container mx-auto px-4 py-8 md:py-12">
