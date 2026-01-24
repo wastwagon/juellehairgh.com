@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { WhatsAppChatButton } from "@/components/layout/whatsapp-chat-button";
-import { FakeSalesNotification } from "@/components/layout/fake-sales-notification";
+
+// Dynamically import FakeSalesNotification with SSR disabled to prevent build-time errors
+const FakeSalesNotification = dynamic(
+  () => import("@/components/layout/fake-sales-notification").then((mod) => ({ default: mod.FakeSalesNotification })),
+  { ssr: false }
+);
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -56,9 +62,11 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Providers>{children}</Providers>
-        <WhatsAppChatButton />
-        <FakeSalesNotification />
+        <Providers>
+          {children}
+          <WhatsAppChatButton />
+          <FakeSalesNotification />
+        </Providers>
       </body>
     </html>
   );

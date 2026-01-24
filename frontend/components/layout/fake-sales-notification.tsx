@@ -60,10 +60,16 @@ export function FakeSalesNotification() {
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [timeAgo, setTimeAgo] = useState<string>("");
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure we're on the client side
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Check if we should show the notification (hide on admin, checkout, cart pages)
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !isMounted) return;
 
     const path = window.location.pathname;
     const hideOnPaths = ["/admin", "/checkout", "/cart", "/account"];
@@ -82,9 +88,9 @@ export function FakeSalesNotification() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isMounted]);
 
-  // Fetch products for the notification
+  // Fetch products for the notification (only on client side)
   const { data: products } = useQuery<Product[]>({
     queryKey: ["fake-sales-products"],
     queryFn: async () => {
@@ -106,7 +112,7 @@ export function FakeSalesNotification() {
         return [];
       }
     },
-    enabled: !isDismissed && isVisible,
+    enabled: isMounted && typeof window !== "undefined" && !isDismissed && isVisible,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     refetchOnWindowFocus: false,
   });
@@ -147,8 +153,8 @@ export function FakeSalesNotification() {
     }
   };
 
-  // Don't render if dismissed or no product
-  if (isDismissed || !isVisible || !currentProduct) {
+  // Don't render during SSR or if dismissed or no product
+  if (!isMounted || isDismissed || !isVisible || !currentProduct) {
     return null;
   }
 
