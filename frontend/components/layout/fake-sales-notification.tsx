@@ -95,17 +95,43 @@ export function FakeSalesNotification() {
     queryKey: ["fake-sales-products"],
     queryFn: async () => {
       try {
-        const response = await api.get("/products?limit=50&isActive=true");
+        // Fetch a larger set of products to ensure we get enough wigs
+        const response = await api.get("/products?limit=200&isActive=true");
         const fetchedProducts = (response.data.products || []).filter(
-          (p: Product) =>
-            p &&
-            p.images &&
-            p.images.length > 0 &&
-            p.id &&
-            p.isActive !== false &&
-            p.stock !== undefined &&
-            p.stock > 0 // Only show in-stock products
+          (p: Product) => {
+            // Basic validation
+            if (!p || !p.images || p.images.length === 0 || !p.id || p.isActive === false) {
+              return false;
+            }
+
+            // Only show in-stock products (stock must be greater than 0)
+            if (p.stock === undefined || p.stock <= 0) {
+              return false;
+            }
+
+            // Only show wigs - check category slug or title
+            const categorySlug =
+              p.category && typeof p.category === "object" ? p.category.slug : null;
+            const titleLower = p.title?.toLowerCase() || "";
+
+            const isWig =
+              categorySlug === "lace-wigs" ||
+              categorySlug === "wigs" ||
+              categorySlug === "human-hair-wigs" ||
+              titleLower.includes("wig") ||
+              titleLower.includes("lace front") ||
+              titleLower.includes("glueless") ||
+              titleLower.includes("hd lace");
+
+            return isWig;
+          }
         );
+
+        // If no wigs found, log a warning but don't fail
+        if (fetchedProducts.length === 0) {
+          console.warn("No wig products found for fake sales notification");
+        }
+
         return fetchedProducts;
       } catch (error) {
         console.error("Error fetching products for sales notification:", error);
