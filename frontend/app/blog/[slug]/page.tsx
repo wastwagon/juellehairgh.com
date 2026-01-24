@@ -37,6 +37,12 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     },
   });
 
+  // Get site URL for absolute URLs (needed for meta tags)
+  const siteUrl = typeof window !== "undefined" 
+    ? window.location.origin 
+    : (process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com");
+
+  // For Next.js Image component - returns relative URLs for API proxy
   const getImageUrl = (url?: string) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -68,11 +74,15 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     return `/${url}`;
   };
   
+  // For meta tags - returns absolute URLs
   const getAbsoluteImageUrl = (url?: string) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    if (url.startsWith("/media/")) return `${siteUrl}${url}`;
-    return `${siteUrl}/${url}`;
+    // Use the relative URL from getImageUrl and make it absolute
+    const relativeUrl = getImageUrl(url);
+    if (!relativeUrl) return null;
+    if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://")) return relativeUrl;
+    return `${siteUrl}${relativeUrl.startsWith("/") ? "" : "/"}${relativeUrl}`;
   };
 
   if (isLoading) {
@@ -112,17 +122,6 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       </div>
     );
   }
-
-  const siteUrl = typeof window !== "undefined" 
-    ? window.location.origin 
-    : (process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com");
-  
-  const getImageUrl = (url?: string) => {
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    if (url.startsWith("/media/")) return `${siteUrl}${url}`;
-    return `${siteUrl}/${url}`;
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
