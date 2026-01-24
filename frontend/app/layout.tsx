@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { WhatsAppChatButton } from "@/components/layout/whatsapp-chat-button";
+import { FakeSalesNotification } from "@/components/layout/fake-sales-notification";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -57,6 +58,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>{children}</Providers>
         <WhatsAppChatButton />
+        <FakeSalesNotification />
       </body>
     </html>
   );
