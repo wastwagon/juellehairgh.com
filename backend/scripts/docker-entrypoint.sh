@@ -228,6 +228,26 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Starting Application${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
+
+# FINAL CHECK: Ensure DATABASE_URL has pool parameters right before starting
+# This is critical because Coolify might override it via environment variables
+if [ -n "$DATABASE_URL" ]; then
+    FINAL_DATABASE_URL=$(ensure_pool_parameters "$DATABASE_URL")
+    if [ -n "$FINAL_DATABASE_URL" ] && [ "$FINAL_DATABASE_URL" != "$DATABASE_URL" ]; then
+        DATABASE_URL="$FINAL_DATABASE_URL"
+        export DATABASE_URL
+        echo -e "${GREEN}✓${NC} Final DATABASE_URL configured with connection pool parameters"
+    elif echo "$DATABASE_URL" | grep -q "connection_limit=" && \
+         echo "$DATABASE_URL" | grep -q "pool_timeout=" && \
+         echo "$DATABASE_URL" | grep -q "connect_timeout="; then
+        echo -e "${GREEN}✓${NC} DATABASE_URL already has connection pool parameters"
+    else
+        echo -e "${YELLOW}⚠️  Warning: DATABASE_URL missing pool parameters${NC}"
+        echo -e "${YELLOW}  Current: ${DATABASE_URL%%@*}@...${NC}"
+    fi
+fi
+
+echo ""
 echo -e "🚀 Server starting on port ${PORT:-3001}..."
 echo -e "🗄️  Database: Connected"
 echo -e "🔐 JWT: Configured"
