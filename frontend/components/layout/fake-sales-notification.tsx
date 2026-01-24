@@ -267,11 +267,11 @@ export function FakeSalesNotification() {
           {/* Product Image */}
           <div className="flex-shrink-0">
             {productImageUrl ? (
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded overflow-hidden bg-gray-100">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
                 <img
                   src={productImageUrl}
                   alt={currentProduct.title}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full w-auto h-auto object-contain"
                   onError={(e) => {
                     const img = e.target as HTMLImageElement;
                     img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23e5e7eb' width='80' height='80'/%3E%3Ctext fill='%239ca3af' x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-size='10' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
@@ -279,7 +279,7 @@ export function FakeSalesNotification() {
                 />
               </div>
             ) : (
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded bg-gray-100 flex items-center justify-center">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded bg-gray-100 flex items-center justify-center">
                 <ShoppingBag className="h-6 w-6 text-gray-400" />
               </div>
             )}
