@@ -76,6 +76,7 @@ model Category {
   seo         CategorySEO?
   products    Product[]
 
+  @@index([parentId])
   @@map("categories")
 }
 
@@ -184,6 +185,8 @@ model Collection {
   updatedAt   DateTime            @updatedAt
   products    CollectionProduct[]
 
+  @@index([slug])
+  @@index([isActive])
   @@map("collections")
 }
 
