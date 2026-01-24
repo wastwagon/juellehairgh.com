@@ -101,6 +101,14 @@ export function SeoDashboard() {
           <CardContent>
             <div className="text-xl md:text-2xl font-bold">4</div>
             <p className="text-xs text-gray-500 mt-1">Products, Categories, Images, Pages</p>
+            <a
+              href="/sitemap.xml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline mt-2 inline-block"
+            >
+              View Sitemap →
+            </a>
           </CardContent>
         </Card>
 
@@ -154,7 +162,7 @@ export function SeoDashboard() {
               </div>
             </Link>
             <a
-              href="/api/seo/sitemap.xml"
+              href="/sitemap.xml"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
@@ -163,6 +171,18 @@ export function SeoDashboard() {
               <div>
                 <p className="font-medium">View Sitemap</p>
                 <p className="text-xs text-gray-500">Check your XML sitemaps</p>
+              </div>
+            </a>
+            <a
+              href="https://search.google.com/search-console"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+            >
+              <BarChart3 className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="font-medium">Google Search Console</p>
+                <p className="text-xs text-gray-500">Monitor indexing & performance</p>
               </div>
             </a>
             <Link
@@ -215,6 +235,56 @@ export function SeoDashboard() {
                 <p className="text-xs text-gray-500">Configure global SEO settings</p>
               </div>
             </Link>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sitemap Status Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sitemap Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <div>
+                  <p className="font-medium text-green-900">Sitemap Active</p>
+                  <p className="text-sm text-green-700">Your sitemap is live and accessible</p>
+                </div>
+              </div>
+              <a
+                href="/sitemap.xml"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-green-700 hover:text-green-900 underline"
+              >
+                View →
+              </a>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-600">Sitemap URL</p>
+                <p className="font-mono text-xs text-gray-900 break-all">/sitemap.xml</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Google Search Console</p>
+                <a
+                  href="https://search.google.com/search-console"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline text-xs"
+                >
+                  Open Search Console →
+                </a>
+              </div>
+            </div>
+            <div className="pt-2 border-t">
+              <p className="text-xs text-gray-500">
+                💡 <strong>Tip:</strong> Submit your sitemap in Google Search Console to help Google discover and index your pages faster.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

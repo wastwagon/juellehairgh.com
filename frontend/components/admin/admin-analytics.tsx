@@ -15,8 +15,11 @@ import {
   MousePointerClick,
   BarChart3,
   Activity,
+  Search,
+  ExternalLink,
 } from "lucide-react";
 import { UserJourneyViewer } from "./user-journey-viewer";
+import Link from "next/link";
 
 export function AdminAnalytics() {
   const router = useRouter();
