@@ -91,28 +91,64 @@ export function FakeSalesNotification() {
   }, [isMounted]);
 
   // Fetch products for the notification (only on client side)
-  const { data: products } = useQuery<Product[]>({
+  const { data: products, isLoading, error } = useQuery<Product[]>({
     queryKey: ["fake-sales-products"],
     queryFn: async () => {
       try {
         // Fetch a larger set of products to ensure we get enough wigs
         const response = await api.get("/products?limit=200&isActive=true");
-        const fetchedProducts = (response.data.products || []).filter(
-          (p: Product) => {
+        
+        // Debug: Log response structure
+        console.log("🔍 Fake Sales Notification - API Response:", {
+          hasData: !!response.data,
+          hasProducts: !!response.data?.products,
+          productsCount: response.data?.products?.length || 0,
+          responseKeys: Object.keys(response.data || {}),
+        });
+
+        const allProducts = response.data?.products || [];
+        console.log(`📦 Total products fetched: ${allProducts.length}`);
+
+        const fetchedProducts = allProducts.filter((p: Product) => {
             // Basic validation
-            if (!p || !p.images || p.images.length === 0 || !p.id || p.isActive === false) {
+            if (!p || !p.id) {
               return false;
             }
 
-            // Only show in-stock products (stock must be greater than 0)
-            if (p.stock === undefined || p.stock <= 0) {
+            if (!p.images || p.images.length === 0) {
+              return false;
+            }
+
+            if (p.isActive === false) {
+              return false;
+            }
+
+            // Check stock - products with variants might have stock at variant level
+            const hasVariants = p.variants && Array.isArray(p.variants) && p.variants.length > 0;
+            let hasStock = false;
+
+            if (hasVariants) {
+              // For products with variants, check if any variant has stock > 0
+              hasStock = p.variants.some((v: any) => {
+                const variantStock = v?.stock;
+                return variantStock !== undefined && variantStock !== null && variantStock > 0;
+              });
+            } else {
+              // For simple products, check product stock
+              const productStock = p.stock;
+              hasStock = productStock !== undefined && productStock !== null && productStock > 0;
+            }
+
+            if (!hasStock) {
               return false;
             }
 
             // Only show wigs - check category slug or title
             const categorySlug =
-              p.category && typeof p.category === "object" ? p.category.slug : null;
-            const titleLower = p.title?.toLowerCase() || "";
+              p.category && typeof p.category === "object" && p.category.slug
+                ? p.category.slug
+                : null;
+            const titleLower = (p.title || "").toLowerCase();
 
             const isWig =
               categorySlug === "lace-wigs" ||
@@ -127,21 +163,49 @@ export function FakeSalesNotification() {
           }
         );
 
-        // If no wigs found, log a warning but don't fail
+        console.log(`✅ Filtered wig products: ${fetchedProducts.length}`, {
+          sampleProducts: fetchedProducts.slice(0, 3).map((p: Product) => ({
+            title: p.title,
+            category: p.category && typeof p.category === "object" ? p.category.slug : "unknown",
+            stock: p.stock,
+            hasVariants: !!(p.variants && p.variants.length > 0),
+          })),
+        });
+
+        // If no wigs found, log detailed warning
         if (fetchedProducts.length === 0) {
-          console.warn("No wig products found for fake sales notification");
+          console.warn("⚠️ No wig products found for fake sales notification", {
+            totalProducts: allProducts.length,
+            sampleCategories: allProducts.slice(0, 10).map((p: Product) => ({
+              title: p.title,
+              category: p.category && typeof p.category === "object" ? p.category.slug : "unknown",
+              stock: p.stock,
+            })),
+          });
         }
 
         return fetchedProducts;
       } catch (error) {
-        console.error("Error fetching products for sales notification:", error);
+        console.error("❌ Error fetching products for sales notification:", error);
         return [];
       }
     },
-    enabled: isMounted && typeof window !== "undefined" && !isDismissed && isVisible,
+    enabled: isMounted && typeof window !== "undefined" && !isDismissed,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     refetchOnWindowFocus: false,
   });
+
+  // Debug: Log query state
+  useEffect(() => {
+    if (isMounted) {
+      console.log("🔍 Fake Sales Notification Query State:", {
+        isLoading,
+        error: error?.message,
+        productsCount: products?.length || 0,
+        isEnabled: isMounted && typeof window !== "undefined" && !isDismissed && isVisible,
+      });
+    }
+  }, [isLoading, error, products, isMounted, isDismissed, isVisible]);
 
   // Select random product and set time ago
   useEffect(() => {
