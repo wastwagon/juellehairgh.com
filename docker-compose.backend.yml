@@ -14,9 +14,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-juellehair}
       POSTGRES_HOST: ${POSTGRES_HOST:?POSTGRES_HOST is required}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      # Fallback DATABASE_URL (overwritten by entrypoint script fix-db-env.js)
-      # Use POSTGRES_HOST environment variable for external database connection
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-juellehair}?schema=public
+      # DATABASE_URL: Use from Coolify's .env file (has pool parameters)
+      # Entrypoint script will ensure pool parameters are always present
+      DATABASE_URL: ${DATABASE_URL}
       PORT: 3001
       NODE_ENV: production
     ports:
