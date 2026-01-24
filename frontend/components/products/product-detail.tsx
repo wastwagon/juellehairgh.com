@@ -436,6 +436,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
                   className={`flex-1 px-2 py-1 ${isOutOfStock ? 'bg-gray-400' : 'bg-pink-600 hover:bg-pink-700'} text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md flex items-center justify-center gap-1 transition-all duration-200`}
+                  data-button-id={`add-to-cart-${product.id}`}
                 >
                   <ShoppingCart className="h-3 w-3" />
                   {isOutOfStock ? "Out of Stock" : "Add to Cart"}

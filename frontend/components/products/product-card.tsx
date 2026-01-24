@@ -360,6 +360,7 @@ export function ProductCard({ product }: ProductCardProps) {
               size="sm"
               className="w-full h-7 text-xs bg-pink-600 hover:bg-pink-700 text-white font-medium flex items-center justify-center gap-1 px-1 py-1"
               disabled={isOutOfStock}
+              data-button-id={`add-to-cart-${product.id}`}
             >
               <ShoppingCart className="h-3 w-3" />
               Add to Cart

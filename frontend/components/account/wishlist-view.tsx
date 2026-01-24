@@ -152,6 +152,7 @@ export function WishlistView() {
                     onClick={() => handleAddToCart(item)}
                     className="flex-1 text-sm"
                     size="sm"
+                    data-button-id={`add-to-cart-${item.product.id}`}
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Add to Cart
