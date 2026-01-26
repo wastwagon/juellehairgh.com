@@ -15,6 +15,15 @@ services:
       NODE_ENV: production
     ports:
       - "3000:3000"
+    labels:
+      # Workaround for Coolify v4 Traefik domain parsing bug (Host(``) && PathPrefix(`domain`))
+      # Ensure correct routing for both apex + www domains
+      - "traefik.enable=true"
+      - "traefik.http.routers.juellehairgh-frontend.rule=Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
+      - "traefik.http.routers.juellehairgh-frontend.entrypoints=http,https"
+      - "traefik.http.routers.juellehairgh-frontend.tls=true"
+      - "traefik.http.routers.juellehairgh-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.juellehairgh-frontend.loadbalancer.server.port=3000"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
       interval: 30s
