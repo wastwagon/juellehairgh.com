@@ -30,31 +30,45 @@ async function bootstrap() {
     // Strict CORS configuration
     app.enableCors({
       origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) {
           return callback(null, true);
         }
 
+        // Development bypass
         if (!isProduction) {
           if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
             return callback(null, true);
           }
         }
 
-        const isCustomDomain = origin.includes("juellehairgh.com");
-        const isInAllowedList = allowedOriginsList.some((allowedOrigin) => {
-          if (!allowedOrigin) return false;
-          const domain = allowedOrigin
-            .replace(/^https?:\/\//, "")
-            .replace(/\/$/, "");
-          return origin === allowedOrigin || origin.includes(domain);
-        });
+        // Clean origin for comparison
+        const cleanOrigin = origin.replace(/\/$/, "");
 
-        if (isCustomDomain || isInAllowedList) {
+        // Explicit match for production domains
+        const isProdDomain =
+          cleanOrigin === "https://juellehairgh.com" ||
+          cleanOrigin === "https://www.juellehairgh.com" ||
+          cleanOrigin.endsWith(".juellehairgh.com");
+
+        if (isProdDomain) {
           return callback(null, true);
         }
 
-        console.warn(`⚠️  CORS: Blocked origin: ${origin}`);
-        return callback(new Error("Not allowed by CORS"));
+        // Check against the allowed origins list
+        const isInAllowedList = allowedOriginsList.some((allowed) => {
+          if (!allowed) return false;
+          const cleanAllowed = allowed.replace(/\/$/, "");
+          return cleanOrigin === cleanAllowed || cleanOrigin.includes(cleanAllowed.replace(/^https?:\/\//, ""));
+        });
+
+        if (isInAllowedList) {
+          return callback(null, true);
+        }
+
+        // Log blocked origin for debugging
+        console.warn(`⚠️  CORS: Blocked origin: [${origin}]`);
+        return callback(new Error(`Origin [${origin}] not allowed by CORS`));
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
