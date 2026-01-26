@@ -56,7 +56,8 @@ export function AdminProducts() {
     queryFn: async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       if (!token) throw new Error("Not authenticated");
-      const response = await api.get("/products?limit=100", {
+      // IMPORTANT: includeInactive=true so admins can still see products set to inactive
+      const response = await api.get("/products?limit=200&includeInactive=true", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

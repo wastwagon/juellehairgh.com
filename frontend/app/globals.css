@@ -109,6 +109,16 @@
   }
 }
 
+/* Fixed mobile header spacer (matches Header height + safe area) */
+.mobile-header-spacer {
+  height: calc(88px + env(safe-area-inset-top));
+}
+
+/* Fixed mobile bottom-nav spacer (matches nav height + safe area) */
+.mobile-bottom-nav-spacer {
+  height: calc(80px + env(safe-area-inset-bottom));
+}
+
 /* Prevent body scroll when mobile menu is open */
 body.mobile-menu-open {
   overflow: hidden;

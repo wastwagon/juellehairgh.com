@@ -214,10 +214,18 @@ export function Header() {
   const isHomePage = pathname === "/";
 
   return (
-    <header className={cn(
-      "sticky top-0 z-50 w-full transition-all duration-200 bg-white/95 backdrop-blur-sm",
-      isHomePage ? "shadow-none border-b-0" : "shadow-sm border-b"
-    )}>
+    <>
+      {/* Spacer so fixed mobile header doesn't cover content */}
+      <div className="mobile-header-spacer lg:hidden" aria-hidden />
+      <header
+        className={cn(
+          // Fixed on mobile for consistent behavior across real devices
+          "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 bg-white/95 backdrop-blur-sm safe-area-inset-top",
+          // Desktop can remain sticky
+          "lg:sticky lg:top-0",
+          isHomePage ? "shadow-none border-b-0" : "shadow-sm border-b",
+        )}
+      >
       {/* Maintenance Mode Banner for Admins */}
       {isMaintenanceMode && isAdmin && (
         <div className="bg-amber-600 text-white text-xs md:text-sm py-1.5 px-4 text-center font-bold flex items-center justify-center gap-2">
@@ -573,7 +581,8 @@ export function Header() {
         {/* Search Modal */}
         <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </div>
-    </header>
+      </header>
+    </>
   );
 }
 

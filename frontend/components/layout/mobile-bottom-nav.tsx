@@ -104,7 +104,7 @@ export function MobileBottomNav() {
       <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
 
       {/* Spacer for bottom nav on mobile */}
-      <div className="h-20 lg:hidden" />
+      <div className="mobile-bottom-nav-spacer lg:hidden" />
     </>
   );
 }
