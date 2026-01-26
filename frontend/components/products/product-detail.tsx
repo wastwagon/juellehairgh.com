@@ -62,7 +62,16 @@ export function ProductDetail({ slug }: ProductDetailProps) {
       if (!product?.categoryId) return [];
       try {
         const response = await api.get(`/products?category=${product.categoryId}&limit=4`);
-        return (response.data.products || []).filter((p: Product) => p.id !== product.id).slice(0, 4);
+        return (response.data.products || [])
+          .filter(
+            (p: Product) =>
+              p &&
+              p.id !== product.id &&
+              p.isActive !== false &&
+              !!p.images &&
+              p.images.length > 0,
+          )
+          .slice(0, 4);
       } catch (error) {
         return [];
       }

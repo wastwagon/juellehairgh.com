@@ -57,7 +57,10 @@ export function BrandPage({ slug }: BrandPageProps) {
     );
   }
 
-  const products = productsData?.products || [];
+  const products =
+    productsData?.products?.filter(
+      (p: Product) => p && p.id && p.isActive !== false && !!p.images && p.images.length > 0,
+    ) || [];
 
   return (
     <div>

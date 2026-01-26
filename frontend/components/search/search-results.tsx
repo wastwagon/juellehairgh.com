@@ -62,6 +62,11 @@ export function SearchResults() {
     );
   }
 
+  const visibleProducts =
+    productsData?.products?.filter(
+      (p: Product) => p && p.id && p.isActive !== false && !!p.images && p.images.length > 0,
+    ) || [];
+
   return (
     <div className="w-full">
       <Breadcrumbs
@@ -70,13 +75,13 @@ export function SearchResults() {
           { label: `"${query}"` },
         ]}
       />
-      {productsData?.products && productsData.products.length > 0 ? (
+      {visibleProducts.length > 0 ? (
         <>
           <p className="text-sm md:text-base text-gray-600 mb-6">
-            Found {productsData.pagination?.total || 0} products
+            Found {productsData.pagination?.total || visibleProducts.length} products
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {productsData.products.map((product) => {
+            {visibleProducts.map((product) => {
               // Ensure priceGhs is a number
               const productWithPrice = {
                 ...product,

@@ -49,7 +49,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         const response = await api.get(
           `/products?search=${encodeURIComponent(debouncedQuery)}&limit=8`
         );
-        return response.data?.products || [];
+        return (response.data?.products || []).filter(
+          (p: Product) => p && p.id && p.isActive !== false,
+        );
       } catch (error) {
         console.error("Search error:", error);
         return [];

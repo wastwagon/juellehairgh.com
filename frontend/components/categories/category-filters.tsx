@@ -25,7 +25,9 @@ export function CategoryFilters({
     queryKey: ["brands"],
     queryFn: async () => {
       const response = await api.get("/products?limit=1000");
-      const products = response.data.products || [];
+      const products = (response.data.products || []).filter(
+        (p: any) => p && p.id && p.isActive !== false,
+      );
       const uniqueBrands = Array.from(
         new Set(products.map((p: any) => p.brand?.name).filter(Boolean))
       );

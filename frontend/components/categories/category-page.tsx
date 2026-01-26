@@ -151,6 +151,11 @@ export function CategoryPage({ slug }: CategoryPageProps) {
     ? infiniteProductsData?.pages.flatMap((page) => page.products) || []
     : productsData?.products || [];
 
+  // Never show inactive products on the public shop/category pages
+  const visibleProducts = allProducts.filter(
+    (p: any) => p && p.id && p.isActive !== false,
+  );
+
   // Loading state
   const isLoadingProducts = isShopAll ? isLoadingInfinite : isLoading;
 
@@ -226,7 +231,7 @@ export function CategoryPage({ slug }: CategoryPageProps) {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <p className="text-sm text-gray-600">
               {isShopAll
-                ? `${allProducts.length}${infiniteProductsData?.pages[0]?.pagination?.total ? ` of ${infiniteProductsData.pages[0].pagination.total}` : ''} products`
+                ? `${visibleProducts.length}${infiniteProductsData?.pages[0]?.pagination?.total ? ` of ${infiniteProductsData.pages[0].pagination.total}` : ''} products`
                 : `${productsData?.pagination?.total || 0} products`}
             </p>
             <Select
@@ -254,7 +259,7 @@ export function CategoryPage({ slug }: CategoryPageProps) {
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {allProducts.map((product) => {
+                {visibleProducts.map((product) => {
                   // Ensure priceGhs is a number
                   const productWithPrice = {
                     ...product,
