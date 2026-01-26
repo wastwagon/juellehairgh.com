@@ -15,9 +15,10 @@ import { api } from "@/lib/api";
 
 interface ProductCardProps {
   product: Product;
+  compactBadges?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, compactBadges = false }: ProductCardProps) {
   const { displayCurrency, convert } = useCurrencyStore();
   const { addItem } = useCartStore();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
@@ -269,21 +270,39 @@ export function ProductCard({ product }: ProductCardProps) {
           
           {/* Sale Badge - Hide if out of stock */}
           {!isOutOfStock && displayComparePrice && discountPercent > 0 && (
-            <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-pink-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg">
+            <div
+              className={
+                compactBadges
+                  ? "absolute top-1 left-1 bg-pink-600 text-white text-[9px] font-bold px-2 py-1 rounded z-10 shadow-lg"
+                  : "absolute top-1 left-1 md:top-2 md:left-2 bg-pink-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg"
+              }
+            >
               Save {discountPercent}%
             </div>
           )}
           
           {/* NEW Badge */}
           {product.badges?.includes("NEW") && (
-            <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-pink-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg">
+            <div
+              className={
+                compactBadges
+                  ? "absolute top-1 left-1 bg-pink-600 text-white text-[9px] font-bold px-2 py-1 rounded z-10 shadow-lg"
+                  : "absolute top-1 left-1 md:top-2 md:left-2 bg-pink-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg"
+              }
+            >
               NEW
             </div>
           )}
 
           {/* Out of Stock Badge */}
           {isOutOfStock && (
-            <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-red-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg">
+            <div
+              className={
+                compactBadges
+                  ? "absolute top-1 left-1 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded z-10 shadow-lg"
+                  : "absolute top-1 left-1 md:top-2 md:left-2 bg-red-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-3 md:py-1.5 rounded md:rounded-lg z-10 shadow-lg"
+              }
+            >
               Out of Stock
             </div>
           )}
