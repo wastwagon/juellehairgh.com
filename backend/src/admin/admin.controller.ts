@@ -573,7 +573,7 @@ export class AdminController {
         error?.message ||
         error?.code ||
         "Failed to send test email. Please check your SMTP configuration.";
-      
+
       throw new BadRequestException({
         message: "Failed to send test email",
         error: errorMessage,

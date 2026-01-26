@@ -69,7 +69,7 @@ export class OrdersService {
     let paymentStatus: PaymentStatus = PaymentStatus.PENDING;
     let orderStatus: OrderStatus = OrderStatus.AWAITING_PAYMENT;
     const paymentMethod = orderData.paymentMethod || "paystack";
-    
+
     if (paymentMethod === "wallet") {
       try {
         // Deduct from wallet without orderId first (will update after order creation)
@@ -102,22 +102,22 @@ export class OrdersService {
     let billingAddress;
     try {
       shippingAddress = await this.prisma.address.create({
-      data: {
-        userId,
-        ...orderData.shippingAddress,
-      },
-    });
+        data: {
+          userId,
+          ...orderData.shippingAddress,
+        },
+      });
 
       billingAddress = await this.prisma.address.create({
-      data: {
-        userId,
-        ...orderData.billingAddress,
-      },
-    });
+        data: {
+          userId,
+          ...orderData.billingAddress,
+        },
+      });
     } catch (error: any) {
       console.error("Error creating addresses:", error);
       throw new BadRequestException(
-        `Failed to create addresses: ${error.message || "Invalid address data"}`
+        `Failed to create addresses: ${error.message || "Invalid address data"}`,
       );
     }
 
@@ -125,84 +125,88 @@ export class OrdersService {
     let order;
     try {
       order = await this.prisma.order.create({
-      data: {
-        userId,
-        totalGhs, // This includes subtotal + shipping cost
-        displayCurrency: orderData.displayCurrency || "GHS",
-        displayTotal: orderData.displayTotal,
-        shippingAddressId: shippingAddress.id,
-        billingAddressId: billingAddress.id,
-        shippingMethod: orderData.shippingMethod || null,
-        status: orderStatus,
-        paymentStatus: paymentStatus,
-        paymentMethod: paymentMethod,
-        items: {
-          create: cart.items.map((item) => ({
-            productId: item.productId,
-            variantId: item.variantId,
-            variantIds:
-              item.variantIds && item.variantIds.length > 0
-                ? item.variantIds
-                : undefined,
-            quantity: item.quantity,
-            priceGhs: (() => {
-              // Use variant price if available, considering sale price
-              if (item.variant?.priceGhs) {
-                const regularPrice = Number(item.variant.priceGhs);
-                const salePrice = item.variant.compareAtPriceGhs
-                  ? Number(item.variant.compareAtPriceGhs)
+        data: {
+          userId,
+          totalGhs, // This includes subtotal + shipping cost
+          displayCurrency: orderData.displayCurrency || "GHS",
+          displayTotal: orderData.displayTotal,
+          shippingAddressId: shippingAddress.id,
+          billingAddressId: billingAddress.id,
+          shippingMethod: orderData.shippingMethod || null,
+          status: orderStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          items: {
+            create: cart.items.map((item) => ({
+              productId: item.productId,
+              variantId: item.variantId,
+              variantIds:
+                item.variantIds && item.variantIds.length > 0
+                  ? item.variantIds
+                  : undefined,
+              quantity: item.quantity,
+              priceGhs: (() => {
+                // Use variant price if available, considering sale price
+                if (item.variant?.priceGhs) {
+                  const regularPrice = Number(item.variant.priceGhs);
+                  const salePrice = item.variant.compareAtPriceGhs
+                    ? Number(item.variant.compareAtPriceGhs)
+                    : null;
+                  // Use sale price if available and lower than regular price
+                  return salePrice && salePrice < regularPrice
+                    ? salePrice
+                    : regularPrice;
+                }
+                // For products without variants, check product sale price
+                const regularPrice = Number(item.product.priceGhs);
+                const salePrice = item.product.compareAtPriceGhs
+                  ? Number(item.product.compareAtPriceGhs)
                   : null;
                 // Use sale price if available and lower than regular price
                 return salePrice && salePrice < regularPrice
                   ? salePrice
                   : regularPrice;
-              }
-              // For products without variants, check product sale price
-              const regularPrice = Number(item.product.priceGhs);
-              const salePrice = item.product.compareAtPriceGhs
-                ? Number(item.product.compareAtPriceGhs)
-                : null;
-              // Use sale price if available and lower than regular price
-              return salePrice && salePrice < regularPrice
-                ? salePrice
-                : regularPrice;
-            })(),
-          })),
-        },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
+              })(),
+            })),
           },
         },
-        shippingAddress: true,
-        billingAddress: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
+        include: {
+          items: {
+            include: {
+              product: true,
+              variant: true,
+            },
+          },
+          shippingAddress: true,
+          billingAddress: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
           },
         },
-      },
-    });
+      });
     } catch (error: any) {
       console.error("Error creating order:", error);
       // Clean up addresses if order creation fails
       try {
         if (shippingAddress?.id) {
-          await this.prisma.address.delete({ where: { id: shippingAddress.id } });
+          await this.prisma.address.delete({
+            where: { id: shippingAddress.id },
+          });
         }
         if (billingAddress?.id) {
-          await this.prisma.address.delete({ where: { id: billingAddress.id } });
+          await this.prisma.address.delete({
+            where: { id: billingAddress.id },
+          });
         }
       } catch (cleanupError) {
         console.error("Error cleaning up addresses:", cleanupError);
       }
       throw new BadRequestException(
-        `Failed to create order: ${error.message || "Unknown error"}`
+        `Failed to create order: ${error.message || "Unknown error"}`,
       );
     }
 
@@ -250,11 +254,14 @@ export class OrdersService {
     // Send new order notification to admin (non-blocking)
     this.emailService.sendAdminNewOrder(order).catch((error) => {
       console.error("Failed to send admin new order notification:", error);
-      console.error("Error details:", JSON.stringify({
-        message: error?.message,
-        stack: error?.stack,
-        orderId: order?.id,
-      }));
+      console.error(
+        "Error details:",
+        JSON.stringify({
+          message: error?.message,
+          stack: error?.stack,
+          orderId: order?.id,
+        }),
+      );
       // Don't throw - email failure shouldn't block order creation
     });
 

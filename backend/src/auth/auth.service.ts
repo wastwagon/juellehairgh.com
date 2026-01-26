@@ -208,7 +208,11 @@ export class AuthService {
 
     // Send password reset email (non-blocking)
     try {
-      await this.emailService.sendPasswordResetEmail(user.email, user.name, resetToken);
+      await this.emailService.sendPasswordResetEmail(
+        user.email,
+        user.name,
+        resetToken,
+      );
     } catch (error) {
       console.error("Failed to send password reset email:", error);
       // Don't throw - token is already saved
@@ -242,7 +246,9 @@ export class AuthService {
           passwordResetExpires: null,
         },
       });
-      throw new BadRequestException("Reset token has expired. Please request a new one.");
+      throw new BadRequestException(
+        "Reset token has expired. Please request a new one.",
+      );
     }
 
     // Hash new password
@@ -259,7 +265,8 @@ export class AuthService {
     });
 
     return {
-      message: "Password has been reset successfully. You can now login with your new password.",
+      message:
+        "Password has been reset successfully. You can now login with your new password.",
     };
   }
 }

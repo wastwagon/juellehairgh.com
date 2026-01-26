@@ -486,7 +486,10 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: any) {
-    this.logger.log(`📝 Updating product ${id} with data:`, JSON.stringify(updateProductDto));
+    this.logger.log(
+      `📝 Updating product ${id} with data:`,
+      JSON.stringify(updateProductDto),
+    );
     // If title is being updated and slug is not provided, regenerate slug
     if (updateProductDto.title && !updateProductDto.slug) {
       const existing = await this.prisma.product.findUnique({ where: { id } });

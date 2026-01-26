@@ -57,8 +57,14 @@ import * as path from "path";
             const smtpPort = parseInt(await getSetting("SMTP_PORT", "587"));
             const smtpUser = await getSetting("SMTP_USER", "");
             const smtpPassword = await getSetting("SMTP_PASSWORD", "");
-            const emailFrom = await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || "noreply@juellehairgh.com");
-            const emailFromName = await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana");
+            const emailFrom = await getSetting(
+              "EMAIL_FROM",
+              configService.get("EMAIL_FROM") || "noreply@juellehairgh.com",
+            );
+            const emailFromName = await getSetting(
+              "EMAIL_FROM_NAME",
+              configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana",
+            );
 
             return {
               transport: {
@@ -139,8 +145,14 @@ import * as path from "path";
               };
             }
 
-            const emailFrom = await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || "noreply@juellehairgh.com");
-            const emailFromName = await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana");
+            const emailFrom = await getSetting(
+              "EMAIL_FROM",
+              configService.get("EMAIL_FROM") || "noreply@juellehairgh.com",
+            );
+            const emailFromName = await getSetting(
+              "EMAIL_FROM_NAME",
+              configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana",
+            );
 
             return {
               transport: {
@@ -182,8 +194,14 @@ import * as path from "path";
               );
             }
 
-            const emailFrom = await getSetting("EMAIL_FROM", configService.get("EMAIL_FROM") || `noreply@${mailgunDomain}`);
-            const emailFromName = await getSetting("EMAIL_FROM_NAME", configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana");
+            const emailFrom = await getSetting(
+              "EMAIL_FROM",
+              configService.get("EMAIL_FROM") || `noreply@${mailgunDomain}`,
+            );
+            const emailFromName = await getSetting(
+              "EMAIL_FROM_NAME",
+              configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana",
+            );
 
             return {
               transport: {
@@ -225,8 +243,10 @@ import * as path from "path";
             error?.message || "Unknown error",
           );
           // Fallback: use environment variables directly (database might not be available)
-          const emailFrom = configService.get("EMAIL_FROM") || "noreply@juellehairgh.com";
-          const emailFromName = configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana";
+          const emailFrom =
+            configService.get("EMAIL_FROM") || "noreply@juellehairgh.com";
+          const emailFromName =
+            configService.get("EMAIL_FROM_NAME") || "Juelle Hair Ghana";
 
           return {
             transport: {

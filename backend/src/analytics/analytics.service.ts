@@ -16,19 +16,22 @@ export class AnalyticsService {
   }) {
     try {
       return await this.prisma.analyticsEvent.create({
-      data: {
-        eventType: data.eventType,
-        userId: data.userId,
-        sessionId: data.sessionId,
-        productId: data.productId,
-        orderId: data.orderId,
-        revenue: data.revenue,
-        metadata: data.metadata || {},
-      },
-    });
+        data: {
+          eventType: data.eventType,
+          userId: data.userId,
+          sessionId: data.sessionId,
+          productId: data.productId,
+          orderId: data.orderId,
+          revenue: data.revenue,
+          metadata: data.metadata || {},
+        },
+      });
     } catch (error: any) {
       // Log error but don't throw - analytics is non-critical
-      console.error("Failed to track analytics event:", error?.message || error);
+      console.error(
+        "Failed to track analytics event:",
+        error?.message || error,
+      );
       throw error; // Re-throw to be handled by controller
     }
   }

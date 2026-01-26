@@ -19,8 +19,8 @@ export class AdminService {
           // Include both PAID and PENDING (for Cash on Delivery) orders in revenue
           this.prisma.order
             .aggregate({
-              where: { 
-                paymentStatus: { in: ["PAID", "PENDING"] }
+              where: {
+                paymentStatus: { in: ["PAID", "PENDING"] },
               },
               _sum: { totalGhs: true },
             })

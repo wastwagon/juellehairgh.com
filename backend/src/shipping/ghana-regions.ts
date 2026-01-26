@@ -22,7 +22,7 @@ export const GHANA_REGIONS = [
   "Central",
 ] as const;
 
-export type GhanaRegion = typeof GHANA_REGIONS[number];
+export type GhanaRegion = (typeof GHANA_REGIONS)[number];
 
 /**
  * Helper function to get all regions as an array of strings

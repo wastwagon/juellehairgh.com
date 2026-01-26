@@ -36,31 +36,39 @@ export class EmailService {
         return setting.value;
       }
     } catch (error) {
-      this.logger.warn("Failed to fetch ADMIN_EMAIL from database, using environment variable");
+      this.logger.warn(
+        "Failed to fetch ADMIN_EMAIL from database, using environment variable",
+      );
     }
-    return this.configService.get<string>("ADMIN_EMAIL") || "admin@juellehairgh.com";
+    return (
+      this.configService.get<string>("ADMIN_EMAIL") || "admin@juellehairgh.com"
+    );
   }
 
   /**
    * Helper function to format payment method name for display
    */
-  private formatPaymentMethod(paymentMethod: string | null | undefined): string {
+  private formatPaymentMethod(
+    paymentMethod: string | null | undefined,
+  ): string {
     if (!paymentMethod) return "Paystack";
-    
+
     const methodMap: Record<string, string> = {
       paystack: "Paystack",
       wallet: "Wallet Balance",
       cash_on_delivery: "Cash on Delivery",
       cod: "Cash on Delivery",
     };
-    
+
     return methodMap[paymentMethod.toLowerCase()] || paymentMethod;
   }
 
   /**
    * Helper function to get product image URL for emails
    */
-  private getProductImageUrl(imagePath: string | null | undefined): string | null {
+  private getProductImageUrl(
+    imagePath: string | null | undefined,
+  ): string | null {
     if (!imagePath) return null;
 
     // Handle absolute URLs
@@ -176,10 +184,10 @@ export class EmailService {
       );
 
       const subject = `Order Confirmation - Order #${order.id.slice(0, 8).toUpperCase()}`;
-      
+
       // Get customer email - prioritize user email, fallback to checking user from database if not included
       customerEmail = order.user?.email;
-      
+
       // If user email is not in the order object, fetch it from database
       if (!customerEmail && order.userId) {
         try {
@@ -189,17 +197,26 @@ export class EmailService {
           });
           customerEmail = user?.email;
         } catch (error) {
-          this.logger.warn(`Could not fetch user email for order ${order.id}:`, error);
+          this.logger.warn(
+            `Could not fetch user email for order ${order.id}:`,
+            error,
+          );
         }
       }
-      
+
       if (!customerEmail) {
-        this.logger.error(`No email found for order ${order.id}. User ID: ${order.userId}, User object: ${JSON.stringify(order.user)}`);
-        throw new Error(`Cannot send order confirmation: No email address found for order ${order.id}`);
+        this.logger.error(
+          `No email found for order ${order.id}. User ID: ${order.userId}, User object: ${JSON.stringify(order.user)}`,
+        );
+        throw new Error(
+          `Cannot send order confirmation: No email address found for order ${order.id}`,
+        );
       }
-      
-      this.logger.log(`Sending order confirmation email to: ${customerEmail} for order ${order.id}`);
-      
+
+      this.logger.log(
+        `Sending order confirmation email to: ${customerEmail} for order ${order.id}`,
+      );
+
       await this.mailerService.sendMail({
         to: customerEmail,
         subject,
@@ -235,17 +252,25 @@ export class EmailService {
           year: new Date().getFullYear(),
         },
       });
-      this.logger.log(`Order confirmation email sent for order ${order.id} to ${customerEmail}`);
+      this.logger.log(
+        `Order confirmation email sent for order ${order.id} to ${customerEmail}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send order confirmation email for order ${order.id}:`, error);
-      this.logger.error(`Error details:`, JSON.stringify({
-        message: error?.message,
-        stack: error?.stack,
-        orderId: order?.id,
-        userId: order?.userId,
-        userEmail: order?.user?.email,
-        customerEmail: customerEmail,
-      }));
+      this.logger.error(
+        `Failed to send order confirmation email for order ${order.id}:`,
+        error,
+      );
+      this.logger.error(
+        `Error details:`,
+        JSON.stringify({
+          message: error?.message,
+          stack: error?.stack,
+          orderId: order?.id,
+          userId: order?.userId,
+          userEmail: order?.user?.email,
+          customerEmail: customerEmail,
+        }),
+      );
       // Re-throw to ensure it's caught by the caller
       throw error;
     }
@@ -433,8 +458,10 @@ export class EmailService {
    */
   async sendAdminNewOrder(order: any) {
     try {
-      this.logger.log(`Attempting to send admin new order notification for order ${order.id}`);
-      
+      this.logger.log(
+        `Attempting to send admin new order notification for order ${order.id}`,
+      );
+
       const orderItems =
         order.items?.map((item: any) => {
           // Handle multiple variants (variantIds) or single variant (variantId)
@@ -479,14 +506,18 @@ export class EmailService {
 
       const adminEmail = await this.getAdminEmail();
       this.logger.log(`Admin email retrieved: ${adminEmail}`);
-      
+
       if (!adminEmail || adminEmail === "admin@juellehairgh.com") {
-        this.logger.warn(`Admin email may not be configured correctly: ${adminEmail}`);
+        this.logger.warn(
+          `Admin email may not be configured correctly: ${adminEmail}`,
+        );
       }
-      
+
       const subject = `New Order Received - Order #${order.id.slice(0, 8).toUpperCase()}`;
-      this.logger.log(`Sending email to ${adminEmail} with subject: ${subject}`);
-      
+      this.logger.log(
+        `Sending email to ${adminEmail} with subject: ${subject}`,
+      );
+
       await this.mailerService.sendMail({
         to: adminEmail,
         subject,
@@ -522,12 +553,17 @@ export class EmailService {
         `New order notification sent to admin for order ${order.id}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to send admin new order notification for order ${order?.id}:`, error);
-      this.logger.error(`Error details: ${JSON.stringify({
-        message: error?.message,
-        stack: error?.stack,
-        orderId: order?.id,
-      })}`);
+      this.logger.error(
+        `Failed to send admin new order notification for order ${order?.id}:`,
+        error,
+      );
+      this.logger.error(
+        `Error details: ${JSON.stringify({
+          message: error?.message,
+          stack: error?.stack,
+          orderId: order?.id,
+        })}`,
+      );
     }
   }
 
@@ -561,7 +597,9 @@ export class EmailService {
             order.user?.email || order.shippingAddress?.email || "N/A",
           total: Number(order.totalGhs).toFixed(2),
           currency: order.displayCurrency || "GHS",
-          paymentMethod: this.formatPaymentMethod(order.paymentMethod || "paystack"),
+          paymentMethod: this.formatPaymentMethod(
+            order.paymentMethod || "paystack",
+          ),
           transactionReference: transaction,
           itemCount: order.items?.length || 0,
           shippingMethod: order.shippingMethod || "N/A",
@@ -651,7 +689,10 @@ export class EmailService {
       });
       this.logger.log(`Password reset email sent to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset email to ${email}:`, error);
+      this.logger.error(
+        `Failed to send password reset email to ${email}:`,
+        error,
+      );
       throw error;
     }
   }

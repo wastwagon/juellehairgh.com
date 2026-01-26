@@ -15,12 +15,13 @@ export class PrismaService
 
   constructor() {
     super({
-      log: process.env.NODE_ENV === "development" 
-        ? ["query", "error", "warn"] 
-        : ["error"],
+      log:
+        process.env.NODE_ENV === "development"
+          ? ["query", "error", "warn"]
+          : ["error"],
       errorFormat: "pretty",
     });
-    
+
     // Ensure DATABASE_URL has connection pool parameters
     this.ensurePoolConfig();
   }
@@ -36,7 +37,10 @@ export class PrismaService
     }
 
     // Check if pool parameters already exist
-    if (databaseUrl.includes("connection_limit") || databaseUrl.includes("pool_timeout")) {
+    if (
+      databaseUrl.includes("connection_limit") ||
+      databaseUrl.includes("pool_timeout")
+    ) {
       this.logger.log("✅ Connection pool parameters already configured");
       return;
     }
@@ -44,7 +48,7 @@ export class PrismaService
     // Log warning - pool params should be added in entrypoint script
     this.logger.warn(
       "⚠️ DATABASE_URL missing connection pool parameters. " +
-      "These should be added by docker-entrypoint.sh or fix-db-env.js"
+        "These should be added by docker-entrypoint.sh or fix-db-env.js",
     );
   }
 
@@ -52,24 +56,31 @@ export class PrismaService
     try {
       // Set connection timeout warning
       const connectTimeout = setTimeout(() => {
-        this.logger.warn("⚠️ Database connection is taking longer than expected...");
+        this.logger.warn(
+          "⚠️ Database connection is taking longer than expected...",
+        );
       }, 10000);
 
       await this.$connect();
       clearTimeout(connectTimeout);
       this.logger.log("✅ Successfully connected to database");
-      
+
       // Test connection with a simple query (with timeout)
       try {
         await Promise.race([
           this.$queryRaw`SELECT 1`,
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Connection test timeout")), 5000)
-          )
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Connection test timeout")),
+              5000,
+            ),
+          ),
         ]);
         this.logger.log("✅ Database connection verified");
       } catch (testError: any) {
-        this.logger.warn(`⚠️ Database connection test failed: ${testError.message}`);
+        this.logger.warn(
+          `⚠️ Database connection test failed: ${testError.message}`,
+        );
       }
     } catch (error: any) {
       // Don't crash the app if database connection fails initially
