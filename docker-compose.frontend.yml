@@ -19,10 +19,17 @@ services:
       # Workaround for Coolify v4 Traefik domain parsing bug (Host(``) && PathPrefix(`domain`))
       # Ensure correct routing for both apex + www domains
       - "traefik.enable=true"
+      # HTTPS router
       - "traefik.http.routers.juellehairgh-frontend.rule=Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
-      - "traefik.http.routers.juellehairgh-frontend.entrypoints=http,https"
+      - "traefik.http.routers.juellehairgh-frontend.entrypoints=https"
       - "traefik.http.routers.juellehairgh-frontend.tls=true"
       - "traefik.http.routers.juellehairgh-frontend.tls.certresolver=letsencrypt"
+      # HTTP router -> redirect to HTTPS (avoids Traefik 404 on port 80)
+      - "traefik.http.routers.juellehairgh-frontend-http.rule=Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
+      - "traefik.http.routers.juellehairgh-frontend-http.entrypoints=http"
+      - "traefik.http.routers.juellehairgh-frontend-http.middlewares=juellehairgh-https-redirect"
+      - "traefik.http.middlewares.juellehairgh-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.juellehairgh-https-redirect.redirectscheme.permanent=true"
       - "traefik.http.services.juellehairgh-frontend.loadbalancer.server.port=3000"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
