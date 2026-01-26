@@ -67,12 +67,13 @@ export function AdminProducts() {
     enabled: mounted && typeof window !== "undefined" && !!localStorage.getItem("token"),
   });
 
-  const deleteMutation = useMutation({
+  const archiveMutation = useMutation({
     mutationFn: async (productId: string) => {
       if (!mounted) throw new Error("Not mounted");
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Not authenticated");
-      return api.delete(`/admin/products/${productId}`, {
+      // Backend implements soft-delete on DELETE /products/:id (sets isActive=false)
+      return api.delete(`/products/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     },
@@ -80,18 +81,45 @@ export function AdminProducts() {
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "product"] }); // Invalidate all product detail queries
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Product deleted successfully");
+      toast.success("Product archived (set to inactive)");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete product");
+      toast.error(error.response?.data?.message || "Failed to archive product");
     },
   });
 
-  const handleDelete = async (product: Product) => {
-    if (!confirm(`Are you sure you want to delete "${product.title}"? This action cannot be undone.`)) {
+  const permanentDeleteMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      if (!mounted) throw new Error("Not mounted");
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Not authenticated");
+      return api.delete(`/products/${productId}/permanent`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "product"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product permanently deleted");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to permanently delete product");
+    },
+  });
+
+  const handleArchive = async (product: Product) => {
+    if (!confirm(`Archive "${product.title}"? Customers won’t see it, but it stays in admin.`)) {
       return;
     }
-    deleteMutation.mutate(product.id);
+    archiveMutation.mutate(product.id);
+  };
+
+  const handlePermanentDelete = async (product: Product) => {
+    const warning = `PERMANENTLY delete "${product.title}"?\n\nThis cannot be undone.\n\nType DELETE to confirm.`;
+    const typed = prompt(warning);
+    if (typed !== "DELETE") return;
+    permanentDeleteMutation.mutate(product.id);
   };
 
   // Don't render until mounted to prevent hydration mismatch
@@ -255,12 +283,22 @@ export function AdminProducts() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(product)}
-                          disabled={deleteMutation.isPending}
+                          onClick={() => handleArchive(product)}
+                          disabled={archiveMutation.isPending || permanentDeleteMutation.isPending}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
+                          Archive
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handlePermanentDelete(product)}
+                          disabled={archiveMutation.isPending || permanentDeleteMutation.isPending}
+                          className="whitespace-nowrap"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete Permanently
                         </Button>
                       </div>
                     </td>

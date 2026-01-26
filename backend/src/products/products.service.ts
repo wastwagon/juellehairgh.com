@@ -3,6 +3,7 @@ import {
   NotFoundException,
   Logger,
   InternalServerErrorException,
+  BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -526,6 +527,30 @@ export class ProductsService {
       where: { id },
       data: { isActive: false },
     });
+  }
+
+  /**
+   * Permanently delete a product (hard delete).
+   *
+   * Safety: if the product is referenced by any OrderItem, we refuse to delete
+   * to avoid breaking order history / foreign key constraints.
+   */
+  async permanentRemove(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) throw new NotFoundException("Product not found");
+
+    const orderItemCount = await this.prisma.orderItem.count({
+      where: { productId: id },
+    });
+
+    if (orderItemCount > 0) {
+      throw new BadRequestException(
+        "This product has order history and cannot be permanently deleted. Set it to Inactive instead.",
+      );
+    }
+
+    // Cascades will remove related records (variants/seo/reviews/wishlist/cart/collections/flash sales).
+    return this.prisma.product.delete({ where: { id } });
   }
 
   private getOrderBy(sort: string) {

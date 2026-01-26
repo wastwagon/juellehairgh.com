@@ -75,4 +75,12 @@ export class ProductsController {
   async remove(@Param("id") id: string) {
     return this.productsService.remove(id);
   }
+
+  // Permanent delete (admin only). Refuses if product has order history.
+  @Delete(":id/permanent")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN")
+  async permanentRemove(@Param("id") id: string) {
+    return this.productsService.permanentRemove(id);
+  }
 }
