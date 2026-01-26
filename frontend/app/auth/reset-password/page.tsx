@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const tokenParam = searchParams.get("token");
+    const tokenParam = searchParams?.get("token");
     if (!tokenParam) {
       setError("Invalid reset link. Please request a new password reset.");
     } else {
@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
         password: data.password,
       });
       setSuccess(true);
-      
+
       // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push("/auth/login");
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
         <div className="relative w-full max-w-md mx-auto">
           {/* Background */}
           <div className="absolute inset-0 bg-pink-600 rounded-3xl opacity-5 blur-3xl" />
-          
+
           <Card className="relative border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
             <CardHeader className="text-center pb-8 pt-8">
               <div className="mx-auto mb-4 w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center">
@@ -110,8 +110,8 @@ export default function ResetPasswordPage() {
                 {success ? "Password Reset!" : "Reset Password"}
               </CardTitle>
               <CardDescription className="text-base mt-2">
-                {success 
-                  ? "Your password has been successfully reset" 
+                {success
+                  ? "Your password has been successfully reset"
                   : "Enter your new password"}
               </CardDescription>
             </CardHeader>
@@ -131,9 +131,9 @@ export default function ResetPasswordPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Link href="/auth/login">
-                    <Button 
+                    <Button
                       type="button"
                       className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                     >
@@ -181,9 +181,9 @@ export default function ResetPasswordPage() {
                     )}
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
                     disabled={isLoading || !token}
                   >
                     {isLoading ? (
@@ -200,7 +200,7 @@ export default function ResetPasswordPage() {
                   </Button>
 
                   <div className="text-center">
-                    <Link 
+                    <Link
                       href="/auth/login"
                       className="text-sm text-purple-600 hover:text-purple-700 font-medium inline-flex items-center gap-1 hover:underline"
                     >

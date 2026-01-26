@@ -9,11 +9,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Redirect to /auth/login with any query parameters preserved
-    const redirect = searchParams.get('redirect');
-    const redirectUrl = redirect 
+    const redirect = searchParams?.get('redirect');
+    const redirectUrl = redirect
       ? `/auth/login?redirect=${encodeURIComponent(redirect)}`
       : '/auth/login';
-    
+
     router.replace(redirectUrl);
   }, [router, searchParams]);
 
