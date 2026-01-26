@@ -7,7 +7,8 @@ import { api } from "@/lib/api";
 import { Product } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Package, Plus, Search, Edit, Trash2, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -17,6 +18,9 @@ export function AdminProducts() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Ensure component only renders client-side content after hydration
   useEffect(() => {
@@ -48,16 +52,24 @@ export function AdminProducts() {
     }
   }, [router, mounted]);
 
-  const { data: productsData, isLoading, refetch } = useQuery<{
+  const { data: productsData, isLoading } = useQuery<{
     products: Product[];
     pagination: any;
   }>({
-    queryKey: ["admin", "products"],
+    queryKey: ["admin", "products", searchQuery],
     queryFn: async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       if (!token) throw new Error("Not authenticated");
       // IMPORTANT: includeInactive=true so admins can still see products set to inactive
-      const response = await api.get("/products?limit=200&includeInactive=true", {
+      const params: Record<string, string> = {
+        limit: "200",
+        includeInactive: "true",
+      };
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      const response = await api.get("/products", {
+        params,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -149,9 +161,21 @@ export function AdminProducts() {
           <p className="text-gray-600 mt-1">View and manage all products</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
-            <Search className="h-4 w-4 mr-2" />
-            Search
+          <Button
+            variant="outline"
+            onClick={() => setShowSearch((v) => !v)}
+          >
+            {showSearch ? (
+              <>
+                <X className="h-4 w-4 mr-2" />
+                Close
+              </>
+            ) : (
+              <>
+                <Search className="h-4 w-4 mr-2" />
+                Search
+              </>
+            )}
           </Button>
           <Link href="/admin/products/new">
             <Button>
@@ -161,6 +185,52 @@ export function AdminProducts() {
           </Link>
         </div>
       </div>
+
+      {showSearch && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search products by title or description..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setSearchQuery(searchText.trim());
+                    }
+                  }}
+                  className="pl-10 pr-10"
+                />
+                {searchText && (
+                  <button
+                    onClick={() => setSearchText("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    type="button"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchText("");
+                    setSearchQuery("");
+                  }}
+                  disabled={!searchText && !searchQuery}
+                >
+                  Clear
+                </Button>
+                <Button onClick={() => setSearchQuery(searchText.trim())}>Search</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
