@@ -32,10 +32,30 @@ export default function GlobalError({
                             Something went wrong!
                         </h1>
 
-                        <p className="text-gray-600 mb-6">
-                            We encountered a critical error. Our team has been notified.
-                            Please try refreshing the page.
+                        <p className="text-gray-600 mb-4">
+                            We encountered a critical error. Please try refreshing the page.
                         </p>
+
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg text-left overflow-auto max-h-64 border border-gray-200">
+                            <p className="text-sm font-mono text-red-600 font-bold mb-2">
+                                {error.name}: {error.message}
+                            </p>
+                            {error.digest && (
+                                <p className="text-[10px] text-gray-400 font-mono mb-2">
+                                    Digest: {error.digest}
+                                </p>
+                            )}
+                            {error.stack && (
+                                <details className="mt-2 text-left">
+                                    <summary className="text-xs text-gray-500 cursor-pointer hover:bg-gray-100 p-1 rounded inline-block">
+                                        View Stack Trace
+                                    </summary>
+                                    <pre className="text-[10px] text-gray-400 mt-2 whitespace-pre-wrap p-2 bg-gray-100 rounded border border-gray-200">
+                                        {error.stack}
+                                    </pre>
+                                </details>
+                            )}
+                        </div>
 
                         <div className="flex flex-col gap-3">
                             <Button
@@ -54,13 +74,6 @@ export default function GlobalError({
                                 Go to Homepage
                             </Button>
                         </div>
-
-                        {/* Show error digest for debugging if available */}
-                        {error.digest && (
-                            <p className="mt-8 text-xs text-gray-400 font-mono">
-                                Error ID: {error.digest}
-                            </p>
-                        )}
                     </div>
                 </div>
             </body>

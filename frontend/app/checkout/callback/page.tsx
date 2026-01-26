@@ -17,7 +17,7 @@ export default function CheckoutCallbackPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const reference = searchParams.get("reference");
+    const reference = searchParams?.get("reference");
 
     if (reference) {
       api

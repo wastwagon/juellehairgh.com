@@ -113,10 +113,10 @@ api.interceptors.response.use(
     // Only log errors that aren't silent 404s
     if (!isSilent404) {
       console.error("API Error:", {
-        url: error.config?.url,
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data,
+        url: error?.config?.url || 'unknown',
+        status: error?.response?.status || 'N/A',
+        message: error?.message || 'No message',
+        data: error?.response?.data || null,
       });
     }
 

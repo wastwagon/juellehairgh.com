@@ -20,7 +20,7 @@ export default function ThankYouPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(true);
-  const orderId = searchParams.get("orderId");
+  const orderId = searchParams?.get("orderId");
 
   useEffect(() => {
     if (orderId) {
@@ -174,9 +174,9 @@ export default function ThankYouPage() {
                   <h2 className="text-2xl font-bold text-gray-900">Order Confirmation</h2>
                   <p className="text-sm text-gray-500">Order #{order.id.slice(0, 8).toUpperCase()}</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
+                    {new Date(order.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
                       day: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
@@ -242,8 +242,8 @@ export default function ThankYouPage() {
                 </h3>
                 <div className="space-y-4">
                   {order.items?.map((item, index) => (
-                    <div 
-                      key={item.id} 
+                    <div
+                      key={item.id}
                       className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-all animate-slide-in"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
@@ -341,15 +341,15 @@ export default function ThankYouPage() {
               If you have any questions about your order, please don't hesitate to contact us. We're here to help!
             </p>
             <div className="flex flex-wrap gap-6">
-              <a 
-                href="mailto:sales@juellehairgh.com" 
+              <a
+                href="mailto:sales@juellehairgh.com"
                 className="flex items-center gap-2 px-3 py-1.5 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm"
               >
                 <Mail className="h-5 w-5" />
                 <span className="font-semibold">sales@juellehairgh.com</span>
               </a>
-              <a 
-                href="tel:+233539506949" 
+              <a
+                href="tel:+233539506949"
                 className="flex items-center gap-2 px-3 py-1.5 bg-pink-50 rounded-lg text-pink-600 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg transform hover:scale-105 text-sm"
               >
                 <Phone className="h-5 w-5" />
@@ -387,7 +387,7 @@ export default function ThankYouPage() {
       </main>
       <Footer />
       <MobileBottomNav />
-      
+
       <style jsx>{`
         @keyframes fade-in {
           from {

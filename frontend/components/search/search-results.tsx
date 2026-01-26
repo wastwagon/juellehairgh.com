@@ -10,7 +10,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 export function SearchResults() {
   const searchParams = useSearchParams();
-  const query = searchParams.get("q") || "";
+  const query = searchParams?.get("q") || "";
 
   const { data: productsData, isLoading } = useQuery<{
     products: Product[];
@@ -86,7 +86,7 @@ export function SearchResults() {
               const productWithPrice = {
                 ...product,
                 priceGhs: typeof product.priceGhs === 'string' ? parseFloat(product.priceGhs) : product.priceGhs,
-                compareAtPriceGhs: product.compareAtPriceGhs 
+                compareAtPriceGhs: product.compareAtPriceGhs
                   ? (typeof product.compareAtPriceGhs === 'string' ? parseFloat(product.compareAtPriceGhs) : product.compareAtPriceGhs)
                   : null,
               };
