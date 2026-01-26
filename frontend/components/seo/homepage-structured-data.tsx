@@ -14,7 +14,7 @@ export function HomePageStructuredData({ siteUrl }: HomePageStructuredDataProps)
     const organizationSchema = {
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: "Le Juelle Hair",
+      name: "Juelle Hair Gh",
       url: siteUrl,
       logo: `${siteUrl}/logo.png`,
       description: "Premium wigs, braids, and hair care products in Ghana",
@@ -44,7 +44,7 @@ export function HomePageStructuredData({ siteUrl }: HomePageStructuredDataProps)
     const websiteSchema = {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "Le Juelle Hair",
+      name: "Juelle Hair Gh",
       url: siteUrl,
       potentialAction: {
         "@type": "SearchAction",
@@ -60,7 +60,7 @@ export function HomePageStructuredData({ siteUrl }: HomePageStructuredDataProps)
     const storeSchema = {
       "@context": "https://schema.org",
       "@type": "Store",
-      name: "Le Juelle Hair",
+      name: "Juelle Hair Gh",
       image: `${siteUrl}/logo.png`,
       address: {
         "@type": "PostalAddress",

@@ -14,13 +14,14 @@ import { FlashSalesSection } from "@/components/home/flash-sales-section";
 // import { BlogSection } from "@/components/home/blog-section";
 import { HashScrollHandler } from "@/components/home/hash-scroll-handler";
 import { HomePageStructuredData } from "@/components/seo/homepage-structured-data";
+import { ShopAllSection } from "@/components/home/shop-all-section";
 
 // Force dynamic rendering to prevent caching stale content
 export const dynamic = 'force-dynamic';
 
 // SEO Metadata for homepage
 export const metadata: Metadata = {
-  title: "Le Juelle Hair - Premium Wigs, Braids & Hair Extensions in Ghana",
+  title: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
   description: "Shop premium quality lace wigs, crochet braids, ponytails, clip-ins, and hair care products in Ghana. Free shipping on orders GHS 950+. Same-day delivery in Accra.",
   keywords: [
     "wigs Ghana",
@@ -36,23 +37,23 @@ export const metadata: Metadata = {
     "hair products Accra",
   ],
   openGraph: {
-    title: "Le Juelle Hair - Premium Wigs & Hair Extensions in Ghana",
+    title: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
     description: "Shop premium quality lace wigs, crochet braids, ponytails, and hair care products. Free shipping on orders GHS 950+.",
     type: "website",
     locale: "en_GH",
-    siteName: "Le Juelle Hair",
+    siteName: "Juelle Hair Gh",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Le Juelle Hair - Premium Hair Products",
+        alt: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Le Juelle Hair - Premium Wigs & Hair Extensions",
+    title: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
     description: "Shop premium quality lace wigs, crochet braids, and hair care products in Ghana.",
   },
   alternates: {
@@ -93,6 +94,9 @@ export default function HomePage() {
         </div>
         <div className="bg-white w-full">
           <ProductGrid title="New Arrivals" limit={8} />
+        </div>
+        <div className="bg-white w-full">
+          <ShopAllSection />
         </div>
         <div className="bg-gray-50 w-full">
           <ProductGrid title="Best Sellers" limit={8} />

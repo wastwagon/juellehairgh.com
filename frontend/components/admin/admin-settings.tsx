@@ -17,7 +17,7 @@ export function AdminSettings() {
   const [testEmailStatus, setTestEmailStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [testEmailMessage, setTestEmailMessage] = useState("");
   const [settings, setSettings] = useState({
-    siteName: "Juelle Hair",
+    siteName: "Juelle Hair Gh",
     siteEmail: "sales@juellehairgh.com",
     sitePhone: "+233 539506949",
     shippingFreeThreshold: 950,
@@ -32,7 +32,7 @@ export function AdminSettings() {
     smtpUser: "admin@juellehairgh.com",
     smtpPassword: "",
     emailFrom: "admin@juellehairgh.com",
-    emailFromName: "Le Juelle Hair",
+    emailFromName: "Juelle Hair Gh",
     adminEmail: "",
     maintenanceMode: false,
   });
@@ -64,7 +64,7 @@ export function AdminSettings() {
         smtpUser: apiSettings.SMTP_USER || "",
         smtpPassword: apiSettings.SMTP_PASSWORD || "",
         emailFrom: apiSettings.EMAIL_FROM || "",
-        emailFromName: apiSettings.EMAIL_FROM_NAME || "Le Juelle Hair",
+        emailFromName: apiSettings.EMAIL_FROM_NAME || "Juelle Hair Gh",
         adminEmail: apiSettings.ADMIN_EMAIL || "",
         siteName: apiSettings.SITE_NAME || prev.siteName,
         siteEmail: apiSettings.SITE_EMAIL || prev.siteEmail,
@@ -419,10 +419,10 @@ export function AdminSettings() {
                   type="text"
                   value={settings.emailFromName}
                   onChange={(e) => setSettings({ ...settings, emailFromName: e.target.value })}
-                  placeholder="Le Juelle Hair"
+                placeholder="Juelle Hair Gh"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Display name that appears as the sender (e.g., "Le Juelle Hair")
+                Display name that appears as the sender (e.g., "Juelle Hair Gh")
                 </p>
               </div>
 

@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
     if (!response.ok) {
       return {
-        title: "Shop - Le Juelle Hair",
+        title: "Shop - Juelle Hair Gh",
         description: "Shop premium wigs, braids, and hair care products in Ghana",
       };
     }
@@ -26,11 +26,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const seoData = category?.seo;
 
     const categoryName = category.name || params.slug;
-    const title = seoData?.metaTitle || `${categoryName} - Le Juelle Hair`;
+    const title = seoData?.metaTitle || `${categoryName} - Juelle Hair Gh`;
     const description = seoData?.metaDescription || 
       (category.description 
         ? category.description.replace(/<[^>]*>/g, "").substring(0, 160)
-        : `Shop ${categoryName} at Le Juelle Hair. Premium quality hair products in Ghana.`);
+        : `Shop ${categoryName} at Juelle Hair Gh. Premium quality hair products in Ghana.`);
     
     const image = seoData?.ogImage || category.image || `${siteUrl}/logo.png`;
     const canonicalUrl = seoData?.canonicalUrl || `${siteUrl}/categories/${params.slug}`;
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         "wigs Ghana",
         "hair extensions",
         "hair products",
-        "Le Juelle Hair",
+        "Juelle Hair Gh",
       ],
       openGraph: {
         title: seoData?.ogTitle || title,
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   } catch (error) {
     // Fallback metadata if fetch fails
     return {
-      title: "Shop - Le Juelle Hair",
+      title: "Shop - Juelle Hair Gh",
       description: "Shop premium wigs, braids, and hair care products in Ghana",
     };
   }

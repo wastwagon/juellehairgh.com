@@ -1,4 +1,4 @@
-# robots.txt for Le Juelle Hair
+# robots.txt for Juelle Hair Gh
 # https://juellehairgh.com/robots.txt
 
 User-agent: *

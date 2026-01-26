@@ -1,36 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { ProductCard } from "@/components/products/product-card";
-import { Product, Collection } from "@/types";
-import { TrendingUp } from "lucide-react";
+import { Product } from "@/types";
+import Link from "next/link";
 
-export function TrendingProductsSection() {
-  // First, try to fetch from "trending" collection
-  const { data: collection, isLoading: isLoadingCollection } = useQuery<Collection>({
-    queryKey: ["collection", "trending"],
-    queryFn: async () => {
-      try {
-        const timestamp = Date.now();
-        const response = await api.get(`/collections/trending?t=${timestamp}`);
-        return response.data;
-      } catch (err: any) {
-        return null;
-      }
-    },
-    retry: 1,
-    staleTime: 0,
-    cacheTime: 0,
-    refetchOnMount: true,
-  });
-
-  // Get products from collection if available
-  const collectionProducts = collection?.products?.map((cp: any) => cp.product || cp).filter((p: any) => p && p.images && p.images.length > 0 && p.id && p.isActive !== false) || [];
-  const hasCollectionProducts = collectionProducts.length > 0;
-
-  // Use infinite query for products - either from collection or fallback to all products
+export function ShopAllSection() {
   const {
     data: infiniteProductsData,
     fetchNextPage,
@@ -41,35 +18,33 @@ export function TrendingProductsSection() {
     products: Product[];
     pagination: any;
   }>({
-    queryKey: ["products-infinite", "homepage", "trending", hasCollectionProducts, collection?.id],
+    queryKey: ["products-infinite", "homepage", "shop-all"],
     queryFn: async ({ pageParam = 1 }) => {
       try {
-        // If we have collection products, use them directly (access collection from query context)
-        if (hasCollectionProducts && collectionProducts.length > 0) {
-          const pageSize = 12;
-          const startIndex = (pageParam - 1) * pageSize;
-          const endIndex = startIndex + pageSize;
-          const pageProducts = collectionProducts.slice(startIndex, endIndex);
-          const totalProducts = collectionProducts.length;
-          const totalPages = Math.ceil(totalProducts / pageSize);
-          
-          return {
-            products: pageProducts,
-            pagination: {
-              page: pageParam,
-              totalPages,
-              total: totalProducts,
-            },
-          };
-        }
-        
-        // Fallback: fetch from API sorted by popular/trending
+        // Fetch from API (paged)
+        // Use limit=20 so desktop (5 cols) stays nicely aligned
         const params = new URLSearchParams({
-          sort: "popular",
+          sort: "newest",
           page: String(pageParam),
+          limit: "20",
         });
         const response = await api.get(`/products?${params}`);
-        return response.data;
+        const products = (response.data?.products || [])
+          .filter((p: any) => p && p.images && p.images.length > 0 && p.id && p.isActive !== false)
+          .map((p: any) => ({
+            ...p,
+            priceGhs: typeof p.priceGhs === "string" ? parseFloat(p.priceGhs) : p.priceGhs,
+            compareAtPriceGhs: p.compareAtPriceGhs
+              ? typeof p.compareAtPriceGhs === "string"
+                ? parseFloat(p.compareAtPriceGhs)
+                : p.compareAtPriceGhs
+              : null,
+          })) as Product[];
+
+        return {
+          products,
+          pagination: response.data?.pagination,
+        };
       } catch (err: any) {
         console.error("Error fetching products:", err);
         return { products: [], pagination: null };
@@ -81,7 +56,6 @@ export function TrendingProductsSection() {
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     initialPageParam: 1,
-    enabled: !isLoadingCollection,
   });
 
   // Flatten all products from infinite query
@@ -117,14 +91,16 @@ export function TrendingProductsSection() {
   if (isLoadingInfinite && allProducts.length === 0) {
     return (
       <section className="py-8 md:py-12 container mx-auto px-4">
-        <div className="flex items-center justify-center mb-6 md:mb-8 gap-2">
-          <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+        <div className="flex flex-col items-center mb-6 md:mb-8 gap-3">
           <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
-            Trending Products
+            Shop All
           </span>
+          <Link href="/shop-all" className="text-sm text-primary hover:underline font-medium">
+            View all →
+          </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {[...Array(8)].map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          {[...Array(10)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
               <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
@@ -142,26 +118,18 @@ export function TrendingProductsSection() {
 
   return (
     <section className="py-8 md:py-12 container mx-auto px-4">
-      <div className="flex items-center justify-center mb-6 md:mb-8 gap-2">
-        <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+      <div className="flex flex-col items-center mb-6 md:mb-8 gap-3">
         <span className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-pink-600 text-white text-xs md:text-sm font-bold shadow-lg">
-          Trending Products
+          Shop All
         </span>
+        <Link href="/shop-all" className="text-sm text-primary hover:underline font-medium">
+          View all →
+        </Link>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {allProducts.map((product: Product) => {
-          if (!product || !product.id || !product.title) {
-            return null;
-          }
-          const productWithPrice = {
-            ...product,
-            priceGhs: typeof product.priceGhs === 'string' ? parseFloat(product.priceGhs) : product.priceGhs,
-            compareAtPriceGhs: product.compareAtPriceGhs
-              ? (typeof product.compareAtPriceGhs === 'string' ? parseFloat(product.compareAtPriceGhs) : product.compareAtPriceGhs)
-              : null,
-          };
-          return <ProductCard key={product.id} product={productWithPrice} />;
-        })}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        {allProducts.map((product: Product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
 
       {/* Infinite scroll trigger */}

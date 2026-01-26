@@ -104,9 +104,9 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <MetaTags
-        title="Blog & News - Le Juelle Hair"
-        description="Stay updated with the latest hair care tips, styling guides, and news from Le Juelle Hair. Expert advice on wigs, braids, and hair care."
-        keywords={["hair care tips", "wig care", "braiding tips", "hair styling", "Le Juelle Hair blog"]}
+        title="Blog & News - Juelle Hair Gh"
+        description="Stay updated with the latest hair care tips, styling guides, and news from Juelle Hair Gh. Expert advice on wigs, braids, and hair care."
+        keywords={["hair care tips", "wig care", "braiding tips", "hair styling", "Juelle Hair Gh blog"]}
       />
       <Header />
       <main className="flex-1 w-full">

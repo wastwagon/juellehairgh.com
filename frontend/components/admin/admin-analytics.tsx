@@ -62,6 +62,22 @@ export function AdminAnalytics() {
     refetchInterval: refreshInterval,
   });
 
+  // All-time page views (safe: uses existing events endpoint; no backend changes needed)
+  const { data: totalPageViewsAllTime } = useQuery<number>({
+    queryKey: ["analytics", "pageviews-total"],
+    queryFn: async () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Not authenticated");
+      // limit=1 keeps payload tiny; pagination.total gives the full count
+      const response = await api.get("/analytics/events?eventType=page_view&page=1&limit=1", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return Number(response.data?.pagination?.total || 0);
+    },
+    enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
+    refetchInterval: refreshInterval,
+  });
+
   const { data: revenueChart } = useQuery({
     queryKey: ["analytics", "revenue-chart"],
     queryFn: async () => {
@@ -317,6 +333,21 @@ export function AdminAnalytics() {
               {stats.pageViews || 0}
             </div>
             <p className="text-xs text-gray-500 mt-1">Last 24 hours</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-gray-700">Total Page Views</CardTitle>
+            <div className="p-2 bg-slate-100 rounded-lg">
+              <Eye className="h-5 w-5 text-slate-700" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold text-gray-900">
+              {Number(totalPageViewsAllTime || 0).toLocaleString("en-US")}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">All time</p>
           </CardContent>
         </Card>
 

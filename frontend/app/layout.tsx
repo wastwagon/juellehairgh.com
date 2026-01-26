@@ -20,8 +20,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com"),
   title: {
-    default: "Le Juelle Hair - Premium Wigs, Braids & Hair Extensions in Ghana",
-    template: "%s | Le Juelle Hair",
+    default: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
+    template: "%s | Juelle Hair Gh",
   },
   description: "Shop premium quality lace wigs, crochet braids, ponytails, clip-ins, and hair care products in Ghana. Free shipping on orders GHS 950+. Same-day delivery in Accra.",
   keywords: [
@@ -37,9 +37,9 @@ export const metadata: Metadata = {
     "Juelle Hair",
     "hair products Accra",
   ],
-  authors: [{ name: "Le Juelle Hair" }],
-  creator: "Le Juelle Hair",
-  publisher: "Le Juelle Hair",
+  authors: [{ name: "Juelle Hair Gh" }],
+  creator: "Juelle Hair Gh",
+  publisher: "Juelle Hair Gh",
   formatDetection: {
     email: false,
     address: false,
@@ -49,21 +49,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_GH",
     url: process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com",
-    siteName: "Le Juelle Hair",
-    title: "Le Juelle Hair - Premium Wigs & Hair Extensions in Ghana",
+    siteName: "Juelle Hair Gh",
+    title: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
     description: "Shop premium quality lace wigs, crochet braids, ponytails, and hair care products. Free shipping on orders GHS 950+.",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Le Juelle Hair - Premium Hair Products",
+        alt: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Le Juelle Hair - Premium Wigs & Hair Extensions",
+    title: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
     description: "Shop premium quality lace wigs, crochet braids, and hair care products in Ghana.",
     images: ["/logo.png"],
   },

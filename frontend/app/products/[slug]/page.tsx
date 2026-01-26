@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
     if (!response.ok) {
       return {
-        title: "Product - Le Juelle Hair",
+        title: "Product - Juelle Hair Gh",
         description: "Shop premium wigs, braids, and hair care products in Ghana",
       };
     }
@@ -25,11 +25,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const product = await response.json();
     const seoData = product?.seo;
 
-    const title = seoData?.metaTitle || `${product.title} - Le Juelle Hair`;
+    const title = seoData?.metaTitle || `${product.title} - Juelle Hair Gh`;
     const description = seoData?.metaDescription || 
       (product.description 
         ? product.description.replace(/<[^>]*>/g, "").substring(0, 160)
-        : `Shop ${product.title} at Le Juelle Hair. Premium quality hair products in Ghana.`);
+        : `Shop ${product.title} at Juelle Hair Gh. Premium quality hair products in Ghana.`);
     
     const image = seoData?.ogImage || product.images?.[0] || `${siteUrl}/logo.png`;
     const canonicalUrl = seoData?.canonicalUrl || `${siteUrl}/products/${params.slug}`;
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   } catch (error) {
     // Fallback metadata if fetch fails
     return {
-      title: "Product - Le Juelle Hair",
+      title: "Product - Juelle Hair Gh",
       description: "Shop premium wigs, braids, and hair care products in Ghana",
     };
   }

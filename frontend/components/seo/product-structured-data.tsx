@@ -21,7 +21,7 @@ export function ProductStructuredData({ product, siteUrl }: ProductStructuredDat
 
     const productImage = product.images?.[0] ? getImageUrl(product.images[0]) : `${siteUrl}/logo.png`;
     const productUrl = `${siteUrl}/products/${product.slug}`;
-    const brandName = typeof product.brand === "object" ? product.brand?.name : product.brand || "Le Juelle Hair";
+    const brandName = typeof product.brand === "object" ? product.brand?.name : product.brand || "Juelle Hair Gh";
     
     const { regularPrice, salePrice } = {
       regularPrice: product.priceGhs,
@@ -34,7 +34,7 @@ export function ProductStructuredData({ product, siteUrl }: ProductStructuredDat
       name: product.title,
       description: product.description
         ? product.description.replace(/<[^>]*>/g, "").substring(0, 500)
-        : `Shop ${product.title} at Le Juelle Hair. Premium quality hair products in Ghana.`,
+        : `Shop ${product.title} at Juelle Hair Gh. Premium quality hair products in Ghana.`,
       image: product.images?.map((img) => getImageUrl(img)) || [productImage],
       brand: {
         "@type": "Brand",
@@ -54,7 +54,7 @@ export function ProductStructuredData({ product, siteUrl }: ProductStructuredDat
         priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 1 year from now
         seller: {
           "@type": "Organization",
-          name: "Le Juelle Hair",
+          name: "Juelle Hair Gh",
         },
       },
       aggregateRating: product.reviews && product.reviews.length > 0

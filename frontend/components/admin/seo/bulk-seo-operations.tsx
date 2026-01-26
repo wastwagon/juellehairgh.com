@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 export function BulkSeoOperations() {
   const [productIds, setProductIds] = useState("");
-  const [titleTemplate, setTitleTemplate] = useState("{title} - {brand} | Le Juelle Hair");
+  const [titleTemplate, setTitleTemplate] = useState("{title} - {brand} | Juelle Hair Gh");
   const [descriptionTemplate, setDescriptionTemplate] = useState("{description}");
   const [keywords, setKeywords] = useState("");
   const [templateId, setTemplateId] = useState("");
@@ -262,7 +262,7 @@ export function BulkSeoOperations() {
                   id="titleTemplate"
                   value={titleTemplate}
                   onChange={(e) => setTitleTemplate(e.target.value)}
-                  placeholder="{title} - {brand} | Le Juelle Hair"
+                  placeholder="{title} - {brand} | Juelle Hair Gh"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Available variables: {"{title}"}, {"{brand}"}, {"{category}"}, {"{price}"}, {"{site_name}"}

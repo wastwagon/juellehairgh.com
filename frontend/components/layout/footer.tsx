@@ -102,7 +102,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-6">
               <h3 className="text-xl font-bold mb-3 text-gray-900">
-                Juelle Hair
+                Juelle Hair Gh
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed mb-6">
                 Crochet Braiding Hair Extensions & Wig Shop. Shop the latest wigs, braids, and hair care products.
@@ -289,7 +289,7 @@ export function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <p className="text-sm text-gray-500">
-              &copy; {currentYear} Le Juelle Hair. All rights reserved.
+              &copy; {currentYear} Juelle Hair Gh. All rights reserved.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
               <Link

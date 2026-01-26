@@ -5,11 +5,11 @@ import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { AboutPage } from "@/components/pages/about-page";
 
 export const metadata: Metadata = {
-  title: "About Us - Le Juelle Hair",
-  description: "Learn about Le Juelle Hair - your trusted source for premium wigs, braids, and hair care products in Ghana. Quality products, excellent service.",
+  title: "About Us - Juelle Hair Gh",
+  description: "Learn about Juelle Hair Gh - your trusted source for premium wigs, braids, and hair care products in Ghana. Quality products, excellent service.",
   openGraph: {
-    title: "About Us - Le Juelle Hair",
-    description: "Learn about Le Juelle Hair - your trusted source for premium hair products in Ghana.",
+    title: "About Us - Juelle Hair Gh",
+    description: "Learn about Juelle Hair Gh - your trusted source for premium hair products in Ghana.",
     type: "website",
   },
 };
