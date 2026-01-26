@@ -276,11 +276,6 @@ export function CategoryPage({ slug }: CategoryPageProps) {
                       <span className="ml-3 text-sm text-gray-600">Loading more products...</span>
                     </div>
                   )}
-                  {!hasNextPage && allProducts.length > 0 && (
-                    <div className="text-center py-8 text-sm text-gray-500">
-                      All products loaded
-                    </div>
-                  )}
                 </div>
               )}
 

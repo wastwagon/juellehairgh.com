@@ -18,7 +18,7 @@ interface ProductCardProps {
   compactBadges?: boolean;
 }
 
-export function ProductCard({ product, compactBadges = false }: ProductCardProps) {
+export function ProductCard({ product, compactBadges = true }: ProductCardProps) {
   const { displayCurrency, convert } = useCurrencyStore();
   const { addItem } = useCartStore();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
@@ -346,12 +346,12 @@ export function ProductCard({ product, compactBadges = false }: ProductCardProps
         )}
 
         {/* Price - Show for both simple and variation products */}
-        <div className="flex items-center gap-1 md:gap-2 mb-3">
-          <span className="text-xs md:text-base lg:text-lg font-bold text-gray-900">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
+          <span className="text-sm md:text-base font-bold text-gray-900 leading-tight">
             {formatCurrency(displayPrice, displayCurrency)}
           </span>
           {displayComparePrice && (
-            <span className="text-[10px] md:text-sm text-gray-400 line-through">
+            <span className="text-xs md:text-sm text-gray-400 line-through leading-tight">
               {formatCurrency(displayComparePrice, displayCurrency)}
             </span>
           )}
