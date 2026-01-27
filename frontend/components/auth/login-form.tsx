@@ -39,7 +39,7 @@ export function LoginForm() {
       const response = await api.post("/auth/login", data);
       localStorage.setItem("token", response.data.accessToken);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      
+
       const userRole = response.data.user?.role;
 
       // Set cookie for middleware access (expires in 7 days)
@@ -48,11 +48,12 @@ export function LoginForm() {
         date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
         document.cookie = `user_role=${userRole}; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
       }
-      
+
       // Check for redirect parameter
-      const params = new URLSearchParams(window.location.search);
+      const search = typeof window !== 'undefined' ? window.location.search : "";
+      const params = new URLSearchParams(search);
       const redirect = params.get("redirect");
-      
+
       // Priority: Admin/Manager → Redirect param → Default account
       if (userRole === "ADMIN" || userRole === "MANAGER") {
         // Admin/Manager always goes to admin dashboard
@@ -75,7 +76,7 @@ export function LoginForm() {
     <div className="relative w-full max-w-md mx-auto">
       {/* Background */}
       <div className="absolute inset-0 bg-pink-600 rounded-3xl opacity-5 blur-3xl" />
-      
+
       <Card className="relative border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-8 pt-8">
           <div className="mx-auto mb-4 w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center">
@@ -114,7 +115,7 @@ export function LoginForm() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-semibold text-gray-700">Password</label>
-                <Link 
+                <Link
                   href="/auth/forgot-password"
                   className="text-sm text-purple-600 hover:text-purple-700 font-medium hover:underline"
                 >
@@ -132,9 +133,9 @@ export function LoginForm() {
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+            <Button
+              type="submit"
+              className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -160,9 +161,9 @@ export function LoginForm() {
             </div>
 
             <Link href="/auth/register">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="w-full h-12 border-2 border-purple-500 text-purple-600 hover:bg-purple-50 font-semibold rounded-xl transition-all duration-300"
               >
                 Create Account

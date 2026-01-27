@@ -10,7 +10,7 @@ import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
-export default function CheckoutCallbackPage() {
+function CheckoutCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -165,5 +165,24 @@ export default function CheckoutCallbackPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function CheckoutCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-white">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-12 w-12 text-purple-600 animate-spin" />
+        </main>
+        <Footer />
+        <MobileBottomNav />
+      </div>
+    }>
+      <CheckoutCallbackContent />
+    </Suspense>
   );
 }

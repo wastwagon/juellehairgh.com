@@ -41,11 +41,12 @@ export function RegisterForm() {
       const response = await api.post("/auth/register", data);
       localStorage.setItem("token", response.data.accessToken);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      
+
       // Check for redirect parameter
-      const params = new URLSearchParams(window.location.search);
+      const search = typeof window !== 'undefined' ? window.location.search : "";
+      const params = new URLSearchParams(search);
       const redirect = params.get("redirect");
-      
+
       if (redirect) {
         router.push(redirect);
       } else {
@@ -64,7 +65,7 @@ export function RegisterForm() {
     <div className="relative w-full max-w-md mx-auto">
       {/* Background */}
       <div className="absolute inset-0 bg-pink-600 rounded-3xl opacity-5 blur-3xl" />
-      
+
       <Card className="relative border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-8 pt-8">
           <div className="mx-auto mb-4 w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center">
@@ -145,9 +146,9 @@ export function RegisterForm() {
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+            <Button
+              type="submit"
+              className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -173,9 +174,9 @@ export function RegisterForm() {
             </div>
 
             <Link href="/auth/login">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="w-full h-12 border-2 border-pink-500 text-pink-600 hover:bg-pink-50 font-semibold rounded-xl transition-all duration-300"
               >
                 Sign In

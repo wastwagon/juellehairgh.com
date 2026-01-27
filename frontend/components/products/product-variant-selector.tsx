@@ -30,11 +30,11 @@ export function ProductVariantSelector({
   const groupedVariants = useMemo(() => {
     const groups: Record<string, ProductVariant[]> = {};
     const seenValues = new Map<string, Set<string>>(); // Track seen values per group
-    
+
     variants.forEach((variant) => {
       let normalizedName = variant.name;
       const nameLower = variant.name.toLowerCase();
-      
+
       // Handle combined variant names (e.g., "Color / Length" or "Color/Length")
       // Split them and create separate entries for each attribute
       if (nameLower.includes(" / ") || nameLower.includes("/")) {
@@ -46,32 +46,32 @@ export function ProductVariantSelector({
           normalizedName = parts[0].trim();
         }
       }
-      
+
       // Convert old "Option" or "PA Color" variants to "Color"
-      if (normalizedName.toLowerCase() === "option" || 
-          normalizedName.toLowerCase().includes("pa color") || 
-          normalizedName.toLowerCase().includes("pa_color") || 
-          normalizedName.toLowerCase().includes("pa-color")) {
+      if (normalizedName.toLowerCase() === "option" ||
+        normalizedName.toLowerCase().includes("pa color") ||
+        normalizedName.toLowerCase().includes("pa_color") ||
+        normalizedName.toLowerCase().includes("pa-color")) {
         normalizedName = "Color";
       }
-      
+
       const key = normalizedName.toLowerCase();
       if (!groups[key]) {
         groups[key] = [];
         seenValues.set(key, new Set());
       }
-      
+
       // Check if we've already seen this value in this group
       const valueKey = variant.value.toLowerCase().trim();
-      const seenSet = seenValues.get(key)!;
-      
-      if (!seenSet.has(valueKey)) {
+      const seenSet = seenValues.get(key);
+
+      if (seenSet && !seenSet.has(valueKey)) {
         seenSet.add(valueKey);
         // Push variant with normalized name
         groups[key].push({ ...variant, name: normalizedName });
       }
     });
-    
+
     // Sort groups by priority: Color first, then Length, then others alphabetically
     const sortedGroups: Record<string, ProductVariant[]> = {};
     const priority = ['color', 'length', 'size'];
@@ -83,11 +83,11 @@ export function ProductVariantSelector({
       if (bIndex !== -1) return 1;
       return a.localeCompare(b);
     });
-    
+
     sortedKeys.forEach(key => {
       sortedGroups[key] = groups[key];
     });
-    
+
     return sortedGroups;
   }, [variants]);
 
@@ -105,12 +105,12 @@ export function ProductVariantSelector({
       .map((variantId) => variants.find((v) => v.id === variantId))
       .find((v) => v?.priceGhs);
     if (!selected?.priceGhs) return basePrice;
-    
+
     // If variant has sale price and it's lower than regular price, use sale price
     const regularPrice = Number(selected.priceGhs);
     const salePrice = selected.compareAtPriceGhs ? Number(selected.compareAtPriceGhs) : null;
     const isOnSale = salePrice && salePrice < regularPrice;
-    
+
     return isOnSale ? salePrice : regularPrice;
   }, [selectedVariants, variants, basePrice]);
 
@@ -171,12 +171,12 @@ export function ProductVariantSelector({
       {Object.entries(groupedVariants).map(([variantName, variantList]) => {
         const isColor = variantName.includes("color") || variantName.includes("colour");
         const selectedId = selectedVariants[variantName.toLowerCase()];
-        
+
         // Get the display name (capitalize first letter, handle special cases)
-        const displayName = variantName === "color" ? "Color" : 
-                           variantName === "length" ? "Length" :
-                           variantName === "size" ? "Size" :
-                           variantName.charAt(0).toUpperCase() + variantName.slice(1);
+        const displayName = variantName === "color" ? "Color" :
+          variantName === "length" ? "Length" :
+            variantName === "size" ? "Size" :
+              variantName.charAt(0).toUpperCase() + variantName.slice(1);
 
         return (
           <div key={variantName} className="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
@@ -196,12 +196,12 @@ export function ProductVariantSelector({
                   const isSelected = selectedId === variant.id;
                   // Use color swatch images from variant.image (enriched from ProductAttributeTerm by backend)
                   let imageUrl: string | null = null;
-                  
+
                   if (variant.image) {
                     // If it's already a full URL, use it as-is
                     if (variant.image.startsWith("http")) {
                       imageUrl = variant.image;
-                    } 
+                    }
                     // If it starts with /media/swatches/, use Next.js API proxy
                     else if (variant.image.startsWith("/media/swatches/")) {
                       const filename = variant.image.split('/').pop() || variant.image;
@@ -230,11 +230,10 @@ export function ProductVariantSelector({
                             }
                           }
                         }}
-                        className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                          isSelected
+                        className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${isSelected
                             ? "border-primary ring-2 ring-primary ring-offset-2"
                             : "border-gray-300 hover:border-gray-400"
-                        } ${variant.stock === 0 ? "opacity-50" : ""}`}
+                          } ${variant.stock === 0 ? "opacity-50" : ""}`}
                         style={{ width: '100px', height: '100px' }}
                         title={variant.value}
                         disabled={variant.stock === 0}
@@ -247,19 +246,19 @@ export function ProductVariantSelector({
                             onError={(e) => {
                               const img = e.target as HTMLImageElement;
                               const retryCount = parseInt(img.getAttribute('data-retry') || '0');
-                              
+
                               // Try Next.js API proxy route fallback if direct path fails
                               if (retryCount < 3 && variant.image) {
                                 // Extract filename from image path
                                 const filename = variant.image.split('/').pop() || variant.image;
                                 // Use Next.js API proxy route (same as collection images)
                                 const fallbackUrl = `/api/media/swatches/${filename}`;
-                                
+
                                 img.setAttribute('data-retry', String(retryCount + 1));
                                 img.src = fallbackUrl;
                                 return;
                               }
-                              
+
                               // Final fallback: show text
                               img.style.display = 'none';
                               const parent = img.parentElement;
@@ -311,13 +310,12 @@ export function ProductVariantSelector({
                       type="button"
                       onClick={() => handleVariantSelect(variantName, variant.id)}
                       disabled={isOutOfStock}
-                      className={`px-2.5 py-1 rounded-md border-2 text-xs font-medium transition-all ${
-                        isSelected
+                      className={`px-2.5 py-1 rounded-md border-2 text-xs font-medium transition-all ${isSelected
                           ? "border-primary bg-primary text-white"
                           : isOutOfStock
-                          ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
-                      }`}
+                            ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
+                        }`}
                     >
                       {variant.value}
                       {variant.priceGhs && variant.priceGhs !== basePrice && (
@@ -341,14 +339,14 @@ export function ProductVariantSelector({
         const selected = Object.values(selectedVariants)
           .map((variantId) => variants.find((v) => v.id === variantId))
           .find((v) => v?.priceGhs);
-        
+
         if (!selected) return null;
-        
+
         const regularPrice = Number(selected.priceGhs);
         const salePrice = selected.compareAtPriceGhs ? Number(selected.compareAtPriceGhs) : null;
         const isOnSale = salePrice && salePrice < regularPrice;
         const variantPrice = isOnSale ? salePrice : regularPrice;
-        
+
         // Show if price differs from base OR if variant is on sale
         if (variantPrice !== basePrice || isOnSale) {
           return (

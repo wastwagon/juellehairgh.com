@@ -10,7 +10,7 @@ import { CheckCircle2, XCircle, Mail } from "lucide-react";
 import { api } from "@/lib/api";
 import Link from "next/link";
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const token = searchParams?.get("token");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -85,5 +85,24 @@ export default function UnsubscribePage() {
       <Footer />
       <MobileBottomNav />
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function UnsubscribePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1 w-full flex items-center justify-center py-12 md:py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        </main>
+        <Footer />
+        <MobileBottomNav />
+      </div>
+    }>
+      <UnsubscribeContent />
+    </Suspense>
   );
 }

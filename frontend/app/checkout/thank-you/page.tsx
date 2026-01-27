@@ -14,7 +14,7 @@ import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -444,5 +444,27 @@ export default function ThankYouPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-white">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 text-purple-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </main>
+        <Footer />
+        <MobileBottomNav />
+      </div>
+    }>
+      <ThankYouContent />
+    </Suspense>
   );
 }

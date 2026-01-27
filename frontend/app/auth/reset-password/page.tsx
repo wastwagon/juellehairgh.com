@@ -25,7 +25,7 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [success, setSuccess] = useState(false);
@@ -217,5 +217,24 @@ export default function ResetPasswordPage() {
       <Footer />
       <MobileBottomNav />
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-white">
+        <Header />
+        <main className="flex-1 container py-12 md:py-20 lg:py-32 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+        </main>
+        <Footer />
+        <MobileBottomNav />
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
