@@ -52,7 +52,7 @@ export function LoginForm() {
       // Check for redirect parameter
       const search = typeof window !== 'undefined' ? window.location.search : "";
       const params = new URLSearchParams(search);
-      const redirect = params.get("redirect");
+      const redirect = params?.get("redirect");
 
       // Priority: Admin/Manager → Redirect param → Default account
       if (userRole === "ADMIN" || userRole === "MANAGER") {

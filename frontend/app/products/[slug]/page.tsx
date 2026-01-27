@@ -7,7 +7,7 @@ import { ProductDetail } from "@/components/products/product-detail";
 // Generate metadata for product pages (Next.js App Router)
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com";
-  
+
   try {
     // Fetch product data for metadata
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.juellehairgh.com/api";
@@ -26,11 +26,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const seoData = product?.seo;
 
     const title = seoData?.metaTitle || `${product.title} - Juelle Hair Gh`;
-    const description = seoData?.metaDescription || 
-      (product.description 
+    const description = seoData?.metaDescription ||
+      (product.description
         ? product.description.replace(/<[^>]*>/g, "").substring(0, 160)
         : `Shop ${product.title} at Juelle Hair Gh. Premium quality hair products in Ghana.`);
-    
+
     const image = seoData?.ogImage || product.images?.[0] || `${siteUrl}/logo.png`;
     const canonicalUrl = seoData?.canonicalUrl || `${siteUrl}/products/${params.slug}`;
 
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       openGraph: {
         title: seoData?.ogTitle || title,
         description: seoData?.ogDescription || description,
-        type: "product",
+        type: "website",
         images: [
           {
             url: image,

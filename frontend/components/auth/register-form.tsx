@@ -45,7 +45,7 @@ export function RegisterForm() {
       // Check for redirect parameter
       const search = typeof window !== 'undefined' ? window.location.search : "";
       const params = new URLSearchParams(search);
-      const redirect = params.get("redirect");
+      const redirect = params?.get("redirect");
 
       if (redirect) {
         router.push(redirect);

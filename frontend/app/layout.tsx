@@ -11,14 +11,31 @@ const FakeSalesNotification = dynamic(
   { ssr: false }
 );
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: 'swap', // Optimize font loading
   preload: true,
 });
 
+// Safe URL construction for metadataBase to prevent server crashes if env var is misconfigured
+const getMetadataBase = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  // Handle comma-separated URLs from Coolify or stray characters
+  const firstUrl = envUrl.split(',')[0].trim().replace("/api", "");
+
+  try {
+    if (firstUrl && (firstUrl.startsWith('http://') || firstUrl.startsWith('https://'))) {
+      return new URL(firstUrl);
+    }
+    return new URL("https://juellehairgh.com");
+  } catch (e) {
+    console.error("❌ Invalid metadataBase URL:", firstUrl);
+    return new URL("https://juellehairgh.com");
+  }
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com"),
+  metadataBase: getMetadataBase(),
   title: {
     default: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
     template: "%s | Juelle Hair Gh",

@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { Suspense } from "react";
 import { CategoryPage } from "@/components/categories/category-page";
 
 // Generate metadata for category pages (Next.js App Router)
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com";
-  
+
   try {
     // Fetch category data for metadata
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.juellehairgh.com/api";
@@ -27,11 +28,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
     const categoryName = category.name || params.slug;
     const title = seoData?.metaTitle || `${categoryName} - Juelle Hair Gh`;
-    const description = seoData?.metaDescription || 
-      (category.description 
+    const description = seoData?.metaDescription ||
+      (category.description
         ? category.description.replace(/<[^>]*>/g, "").substring(0, 160)
         : `Shop ${categoryName} at Juelle Hair Gh. Premium quality hair products in Ghana.`);
-    
+
     const image = seoData?.ogImage || category.image || `${siteUrl}/logo.png`;
     const canonicalUrl = seoData?.canonicalUrl || `${siteUrl}/categories/${params.slug}`;
 
@@ -87,7 +88,9 @@ export default function CategoryListingPage({ params }: { params: { slug: string
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       <main className="flex-1 w-full">
-        <CategoryPage slug={params.slug} />
+        <Suspense fallback={<div className="container mx-auto px-4 py-8 animate-pulse text-center">Loading category...</div>}>
+          <CategoryPage slug={params.slug} />
+        </Suspense>
       </main>
       <Footer />
       <MobileBottomNav />
