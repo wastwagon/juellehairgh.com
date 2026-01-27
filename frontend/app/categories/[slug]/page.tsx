@@ -24,6 +24,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
 
     const category = await response.json();
+
+    // Defensive check: handle missing category body even if 200 OK
+    if (!category || Object.keys(category).length === 0) {
+      console.error(`[Metadata Error] Category not found in API response for slug: ${params.slug}`);
+      return {
+        title: "Category Not Found - Juelle Hair Gh",
+        description: "Shop premium wigs, braids, and hair care products in Ghana",
+      };
+    }
+
     const seoData = category?.seo;
 
     const categoryName = category.name || params.slug;
@@ -76,6 +86,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   } catch (error) {
     // Fallback metadata if fetch fails
+    console.error(`[Metadata Crash] Critical error generating metadata for category ${params.slug}:`, error);
     return {
       title: "Shop - Juelle Hair Gh",
       description: "Shop premium wigs, braids, and hair care products in Ghana",

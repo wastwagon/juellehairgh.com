@@ -23,13 +23,23 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
 
     const product = await response.json();
+
+    // Extreme defensive check: handle missing product body even if 200 OK
+    if (!product || Object.keys(product).length === 0) {
+      console.error(`[Metadata Error] Product not found in API response for slug: ${params.slug}`);
+      return {
+        title: "Product Not Found - Juelle Hair Gh",
+        description: "Shop premium wigs, braids, and hair care products in Ghana",
+      };
+    }
+
     const seoData = product?.seo;
 
-    const title = seoData?.metaTitle || `${product.title} - Juelle Hair Gh`;
+    const title = seoData?.metaTitle || `${product.title || 'Product'} - Juelle Hair Gh`;
     const description = seoData?.metaDescription ||
       (product.description
         ? product.description.replace(/<[^>]*>/g, "").substring(0, 160)
-        : `Shop ${product.title} at Juelle Hair Gh. Premium quality hair products in Ghana.`);
+        : `Shop ${product.title || 'this product'} at Juelle Hair Gh. Premium quality hair products in Ghana.`);
 
     const image = seoData?.ogImage || product.images?.[0] || `${siteUrl}/logo.png`;
     const canonicalUrl = seoData?.canonicalUrl || `${siteUrl}/products/${params.slug}`;
@@ -53,7 +63,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
             url: image,
             width: 1200,
             height: 630,
-            alt: product.title,
+            alt: product.title || "Product",
           },
         ],
         url: canonicalUrl,
@@ -74,6 +84,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   } catch (error) {
     // Fallback metadata if fetch fails
+    console.error(`[Metadata Crash] Critical error generating metadata for ${params.slug}:`, error);
     return {
       title: "Product - Juelle Hair Gh",
       description: "Shop premium wigs, braids, and hair care products in Ghana",
