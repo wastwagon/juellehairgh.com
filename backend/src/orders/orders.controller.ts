@@ -9,16 +9,16 @@ import {
 } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 
 @Controller("orders")
 export class OrdersController {
   constructor(private ordersService: OrdersService) { }
 
+  /** Guest checkout allowed: optional JWT populates req.user when logged in. */
   @Post()
+  @UseGuards(OptionalJwtAuthGuard)
   async create(@Request() req, @Body() body: any) {
-    // If user is authenticated via JWT (optional), req.user will be set by a global guard or we can check headers manually if needed.
-    // However, since we removed UseGuards(JwtAuthGuard), req.user might be undefined.
-    // We'll let the service handle user creation/lookup if userId is missing.
     const userId = req.user?.id || null;
     return this.ordersService.create(userId, body);
   }

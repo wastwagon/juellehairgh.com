@@ -280,7 +280,7 @@ export function CheckoutForm() {
       // Ensure wallet payment is not used (temporarily disabled)
       const paymentMethod = formData.paymentMethod === "wallet" ? "paystack" : formData.paymentMethod;
 
-      // Create order
+      // Create order (guest checkout: do not send Authorization so backend accepts request)
       const orderResponse = await api.post(
         "/orders",
         {
@@ -300,11 +300,7 @@ export function CheckoutForm() {
             quantity: item.quantity,
           })),
         },
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : undefined,
-          },
-        }
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {}
       );
 
       const order = orderResponse.data;
@@ -324,18 +320,14 @@ export function CheckoutForm() {
         window.location.href = `/checkout/thank-you?orderId=${order.id}`;
         return; // Exit early to prevent further execution
       } else {
-        // Initialize Paystack payment
+        // Initialize Paystack payment (guest: no Authorization; backend accepts by orderId + email)
         const paymentResponse = await api.post(
           "/payments/initialize",
           {
             orderId: order.id,
             email: formData.email,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+          token ? { headers: { Authorization: `Bearer ${token}` } } : {}
         );
 
         // Redirect to Paystack

@@ -9,14 +9,15 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PaymentsService } from "./payments.service";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 
 @Controller("payments")
 export class PaymentsController {
   constructor(private paymentsService: PaymentsService) {}
 
+  /** Guest checkout: initialize Paystack by orderId + email (no JWT required). */
   @Post("initialize")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async initialize(
     @Request() req,
     @Body()

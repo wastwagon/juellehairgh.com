@@ -82,10 +82,10 @@ api.interceptors.request.use((config) => {
     console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
   }
 
-  // Automatically add auth token if available and not already set
+  // Automatically add auth token if available and not already set (never send "Bearer null" for guest)
   if (typeof window !== "undefined" && !config.headers.Authorization) {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (token && token !== "null" && token !== "undefined") {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
