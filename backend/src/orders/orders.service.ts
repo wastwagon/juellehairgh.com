@@ -9,6 +9,7 @@ import { EmailService } from "../email/email.service";
 import { WalletService } from "../wallet/wallet.service";
 import { ProductsService } from "../products/products.service";
 import { PaymentStatus, OrderStatus } from "@prisma/client";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class OrdersService {
@@ -18,9 +19,59 @@ export class OrdersService {
     private emailService: EmailService,
     private walletService: WalletService,
     private productsService: ProductsService,
-  ) {}
+  ) { }
 
-  async create(userId: string, orderData: any) {
+  async create(userId: string | null, orderData: any) {
+    // Handle guest checkout or missing user ID
+    if (!userId) {
+      if (!orderData.email) {
+        throw new BadRequestException("Email is required for guest checkout");
+      }
+
+      // Check if user exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: orderData.email },
+      });
+
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        // Create new guest user
+        const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+        const newUser = await this.prisma.user.create({
+          data: {
+            email: orderData.email,
+            password: hashedPassword,
+            name: `${orderData.shippingAddress?.firstName || 'Guest'} ${orderData.shippingAddress?.lastName || 'User'}`,
+            phone: orderData.shippingAddress?.phone,
+            role: "CUSTOMER", // explicit default
+          },
+        });
+        userId = newUser.id;
+
+        // Optionally send welcome email with generated password (not implemented here but good to have)
+      }
+    }
+
+    // Sync cart items from request if provided (important for guest checkout or cross-device sync)
+    if (orderData.items && Array.isArray(orderData.items) && orderData.items.length > 0) {
+      // Clear existing cart to assume frontend state is truth
+      await this.cartService.clearCart(userId);
+
+      // Re-populate cart
+      for (const item of orderData.items) {
+        await this.cartService.addItem(
+          userId,
+          item.productId,
+          item.quantity,
+          item.variantId,
+          item.variantIds
+        );
+      }
+    }
+
     const cart = await this.cartService.getOrCreateCart(userId);
 
     if (!cart.items || cart.items.length === 0) {

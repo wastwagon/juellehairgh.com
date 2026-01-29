@@ -12,12 +12,15 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @Controller("orders")
 export class OrdersController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(private ordersService: OrdersService) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   async create(@Request() req, @Body() body: any) {
-    return this.ordersService.create(req.user.id, body);
+    // If user is authenticated via JWT (optional), req.user will be set by a global guard or we can check headers manually if needed.
+    // However, since we removed UseGuards(JwtAuthGuard), req.user might be undefined.
+    // We'll let the service handle user creation/lookup if userId is missing.
+    const userId = req.user?.id || null;
+    return this.ordersService.create(userId, body);
   }
 
   @Get()

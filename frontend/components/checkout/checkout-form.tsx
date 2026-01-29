@@ -181,7 +181,7 @@ export function CheckoutForm() {
 
   const handleSaveNewAddress = async () => {
     if (!isLoggedIn) return;
-    
+
     try {
       await saveAddressMutation.mutateAsync({
         ...formData.shippingAddress,
@@ -242,7 +242,7 @@ export function CheckoutForm() {
 
     try {
       const token = localStorage.getItem("token");
-      
+
       // Sync cart items to backend if user is logged in
       if (token && isLoggedIn && items.length > 0) {
         try {
@@ -293,10 +293,16 @@ export function CheckoutForm() {
           displayCurrency,
           displayTotal,
           paymentMethod: paymentMethod,
+          items: items.map(item => ({
+            productId: item.productId,
+            variantId: item.variantId || undefined,
+            variantIds: item.variantIds && item.variantIds.length > 0 ? item.variantIds : (item.variantId ? [item.variantId] : undefined),
+            quantity: item.quantity,
+          })),
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: token ? `Bearer ${token}` : undefined,
           },
         }
       );
@@ -705,59 +711,59 @@ export function CheckoutForm() {
                 const variantKey = item.variantIds && item.variantIds.length > 0
                   ? item.variantIds.sort().join(',')
                   : item.variantId || "default";
-                
+
                 return (
-                <div key={`${item.productId}-${variantKey}`} className="flex gap-3">
-                  <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center">
-                    {item.product?.images?.[0] && (
-                      <img
-                        src={item.product.images[0]}
-                        alt={item.product.title}
-                        className="w-full h-full object-contain"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{item.product?.title}</p>
-                    {(item.variants && item.variants.length > 0) ? (
-                      <div className="text-xs text-gray-600 mt-1 space-y-0.5">
-                        {item.variants.map((variant, idx) => (
-                          <p key={idx}>
-                            {variant.name}: {variant.value}
-                          </p>
-                        ))}
-                      </div>
-                    ) : item.variant ? (
-                      <p className="text-xs text-gray-600 mt-1">
-                        {item.variant.name}: {item.variant.value}
-                      </p>
-                    ) : null}
-                    <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity}</p>
-                    {(() => {
-                      const effectivePrice = getEffectivePrice(item);
-                      const regularPrice = item.variants && item.variants.length > 0
-                        ? (item.variants.find((v: any) => v.priceGhs)?.priceGhs ? Number(item.variants.find((v: any) => v.priceGhs).priceGhs) : (item.variant?.priceGhs ? Number(item.variant.priceGhs) : (item.product?.priceGhs ? Number(item.product.priceGhs) : 0)))
-                        : (item.variant?.priceGhs ? Number(item.variant.priceGhs) : (item.product?.priceGhs ? Number(item.product.priceGhs) : 0));
-                      const salePrice = item.variants && item.variants.length > 0
-                        ? (item.variants.find((v: any) => v.priceGhs)?.compareAtPriceGhs ? Number(item.variants.find((v: any) => v.priceGhs).compareAtPriceGhs) : null)
-                        : (item.variant?.compareAtPriceGhs ? Number(item.variant.compareAtPriceGhs) : null);
-                      const isOnSale = salePrice && salePrice < regularPrice;
-                      
-                      return (
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
-                          {isOnSale ? (
-                            <>
-                              <span className="text-primary">{formatCurrency(convert(salePrice * item.quantity), displayCurrency)}</span>
-                              <span className="ml-2 text-gray-400 line-through text-xs">{formatCurrency(convert(regularPrice * item.quantity), displayCurrency)}</span>
-                            </>
-                          ) : (
-                            formatCurrency(convert(effectivePrice * item.quantity), displayCurrency)
-                          )}
+                  <div key={`${item.productId}-${variantKey}`} className="flex gap-3">
+                    <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      {item.product?.images?.[0] && (
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.title}
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 line-clamp-2">{item.product?.title}</p>
+                      {(item.variants && item.variants.length > 0) ? (
+                        <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                          {item.variants.map((variant, idx) => (
+                            <p key={idx}>
+                              {variant.name}: {variant.value}
+                            </p>
+                          ))}
+                        </div>
+                      ) : item.variant ? (
+                        <p className="text-xs text-gray-600 mt-1">
+                          {item.variant.name}: {item.variant.value}
                         </p>
-                      );
-                    })()}
+                      ) : null}
+                      <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity}</p>
+                      {(() => {
+                        const effectivePrice = getEffectivePrice(item);
+                        const regularPrice = item.variants && item.variants.length > 0
+                          ? (item.variants.find((v: any) => v.priceGhs)?.priceGhs ? Number(item.variants.find((v: any) => v.priceGhs).priceGhs) : (item.variant?.priceGhs ? Number(item.variant.priceGhs) : (item.product?.priceGhs ? Number(item.product.priceGhs) : 0)))
+                          : (item.variant?.priceGhs ? Number(item.variant.priceGhs) : (item.product?.priceGhs ? Number(item.product.priceGhs) : 0));
+                        const salePrice = item.variants && item.variants.length > 0
+                          ? (item.variants.find((v: any) => v.priceGhs)?.compareAtPriceGhs ? Number(item.variants.find((v: any) => v.priceGhs).compareAtPriceGhs) : null)
+                          : (item.variant?.compareAtPriceGhs ? Number(item.variant.compareAtPriceGhs) : null);
+                        const isOnSale = salePrice && salePrice < regularPrice;
+
+                        return (
+                          <p className="text-sm font-semibold text-gray-900 mt-1">
+                            {isOnSale ? (
+                              <>
+                                <span className="text-primary">{formatCurrency(convert(salePrice * item.quantity), displayCurrency)}</span>
+                                <span className="ml-2 text-gray-400 line-through text-xs">{formatCurrency(convert(regularPrice * item.quantity), displayCurrency)}</span>
+                              </>
+                            ) : (
+                              formatCurrency(convert(effectivePrice * item.quantity), displayCurrency)
+                            )}
+                          </p>
+                        );
+                      })()}
+                    </div>
                   </div>
-                </div>
                 );
               })}
             </div>
@@ -768,15 +774,15 @@ export function CheckoutForm() {
               </div>
               {formData.shippingMethod && (() => {
                 const methodName = formData.shippingMethod.name || "";
-                const isLocalPickup = methodName.toUpperCase().includes("LOCAL PICK-UP") || 
-                                      methodName.toUpperCase().includes("PICK-UP");
+                const isLocalPickup = methodName.toUpperCase().includes("LOCAL PICK-UP") ||
+                  methodName.toUpperCase().includes("PICK-UP");
                 const isPayToRider = methodName.toUpperCase().includes("PAY TO RIDER");
                 const freeShippingThreshold = formData.shippingMethod.freeShippingThreshold;
-                const qualifiesForFreeShipping = freeShippingThreshold && 
-                                                 subtotalGhs >= Number(freeShippingThreshold);
-                const shouldShowFree = (isLocalPickup && shippingCost === 0) || 
-                                      (shippingCost === 0 && qualifiesForFreeShipping && !isPayToRider);
-                
+                const qualifiesForFreeShipping = freeShippingThreshold &&
+                  subtotalGhs >= Number(freeShippingThreshold);
+                const shouldShowFree = (isLocalPickup && shippingCost === 0) ||
+                  (shippingCost === 0 && qualifiesForFreeShipping && !isPayToRider);
+
                 return (
                   <div className="flex justify-between text-sm text-gray-700">
                     <span>Shipping</span>
@@ -813,13 +819,13 @@ export function CheckoutForm() {
               disabled={loading}
               className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none text-sm px-4"
             >
-              {loading ? "Processing..." : 
-               formData.paymentMethod === "cash_on_delivery" ? "Place Order (Cash on Delivery)" :
-               "Pay Securely with Paystack"}
+              {loading ? "Processing..." :
+                formData.paymentMethod === "cash_on_delivery" ? "Place Order (Cash on Delivery)" :
+                  "Pay Securely with Paystack"}
             </Button>
             <p className="text-xs text-center text-gray-500 mt-3">
               {formData.paymentMethod === "cash_on_delivery" ? "💵 Pay with cash when your order arrives" :
-               "🔒 Secure payment powered by Paystack"}
+                "🔒 Secure payment powered by Paystack"}
             </p>
           </div>
         </div>
