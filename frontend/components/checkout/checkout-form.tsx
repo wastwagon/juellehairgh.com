@@ -767,13 +767,16 @@ export function CheckoutForm() {
               {formData.shippingMethod && (() => {
                 const methodName = formData.shippingMethod.name || "";
                 const isLocalPickup = methodName.toUpperCase().includes("LOCAL PICK-UP") ||
-                  methodName.toUpperCase().includes("PICK-UP");
-                const isPayToRider = methodName.toUpperCase().includes("PAY TO RIDER");
+                  methodName.toUpperCase().includes("PICK-UP") ||
+                  methodName.toUpperCase().includes("DANSOMAN");
+                const isPayToRider = methodName.toUpperCase().includes("PAY TO RIDER") ||
+                  methodName.toUpperCase().includes("PAY CASH ON DELIVERY") ||
+                  methodName.toUpperCase().includes("CASH ON DELIVERY");
                 const freeShippingThreshold = formData.shippingMethod.freeShippingThreshold;
                 const qualifiesForFreeShipping = freeShippingThreshold &&
                   subtotalGhs >= Number(freeShippingThreshold);
-                const shouldShowFree = (isLocalPickup && shippingCost === 0) ||
-                  (shippingCost === 0 && qualifiesForFreeShipping && !isPayToRider);
+                // Do not show "FREE" for local pickup or pay-to-rider; show GH¢0.00 instead
+                const shouldShowFree = (shippingCost === 0 && qualifiesForFreeShipping && !isLocalPickup && !isPayToRider);
 
                 return (
                   <div className="flex justify-between text-sm text-gray-700">

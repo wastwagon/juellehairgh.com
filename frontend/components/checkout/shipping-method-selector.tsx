@@ -63,12 +63,16 @@ export function ShippingMethodSelector({
 
   useEffect(() => {
     if (methods && methods.length > 0 && !selectedId) {
-      // Prioritize "Pay to Rider on Arrival" as default, otherwise select first method
-      const payToRiderMethod = methods.find((m) => 
-        m.name.toUpperCase().includes("PAY TO RIDER") || 
-        m.name.toUpperCase().includes("PAY TO RIDER ON ARRIVAL")
-      );
-      
+      // Default to "Pay to rider on delivery" / "Pay cash on delivery" when available
+      const payToRiderMethod = methods.find((m) => {
+        const name = m.name.toUpperCase();
+        return (
+          name.includes("PAY TO RIDER") ||
+          name.includes("PAY TO RIDER ON ARRIVAL") ||
+          name.includes("PAY CASH ON DELIVERY") ||
+          name.includes("CASH ON DELIVERY")
+        );
+      });
       const defaultMethod = payToRiderMethod || methods[0];
       setSelectedId(defaultMethod.id);
       onSelect(defaultMethod);
@@ -154,23 +158,20 @@ export function ShippingMethodSelector({
       >
         {methods.map((method) => {
           const cost = method.calculatedCost;
-          const isLocalPickup = method.name.toUpperCase().includes("LOCAL PICK-UP") || 
-                                method.name.toUpperCase().includes("PICK-UP");
+          const isLocalPickup = method.name.toUpperCase().includes("LOCAL PICK-UP") ||
+                               method.name.toUpperCase().includes("PICK-UP") ||
+                               method.name.toUpperCase().includes("DANSOMAN");
           const isPayToRider = method.name.toUpperCase().includes("PAY TO RIDER") ||
-                               method.name.toUpperCase().includes("PAY TO RIDER");
-          
-          // Show "FREE" only for:
-          // 1. Local pick-up methods
-          // 2. Methods that qualify for free shipping (has threshold AND order meets threshold)
-          const qualifiesForFreeShipping = method.freeShippingThreshold && 
+                               method.name.toUpperCase().includes("PAY CASH ON DELIVERY") ||
+                               method.name.toUpperCase().includes("CASH ON DELIVERY");
+          // Do not show "FREE" for local pickup or pay-to-rider (user request: zero cost but no "free" label)
+          const qualifiesForFreeShipping = method.freeShippingThreshold &&
                                            orderTotal >= Number(method.freeShippingThreshold);
-          const shouldShowFree = (isLocalPickup && cost === 0) || 
-                                 (cost === 0 && qualifiesForFreeShipping && !isPayToRider);
-          
-          const costDisplay = shouldShowFree 
-            ? "FREE" 
-            : (cost > 0 ? formatCurrency(convert(cost), displayCurrency) : "");
-          
+          const shouldShowFree = (cost === 0 && qualifiesForFreeShipping && !isLocalPickup && !isPayToRider);
+          const showZeroAsFree = shouldShowFree;
+          const costDisplay = showZeroAsFree
+            ? "FREE"
+            : (cost >= 0 ? formatCurrency(convert(cost), displayCurrency) : "");
           const displayText = `${method.name}${method.estimatedDays ? ` (${method.estimatedDays})` : ""}${costDisplay ? ` - ${costDisplay}` : ""}`;
 
           return (
@@ -193,27 +194,25 @@ export function ShippingMethodSelector({
               <p className="text-xs text-gray-500">Estimated: {selectedMethod.estimatedDays}</p>
             )}
             {(() => {
-              const isLocalPickup = selectedMethod.name.toUpperCase().includes("LOCAL PICK-UP") || 
-                                    selectedMethod.name.toUpperCase().includes("PICK-UP");
-              const isPayToRider = selectedMethod.name.toUpperCase().includes("PAY TO RIDER");
-              const qualifiesForFreeShipping = selectedMethod.freeShippingThreshold && 
+              const isLocalPickup = selectedMethod.name.toUpperCase().includes("LOCAL PICK-UP") ||
+                                    selectedMethod.name.toUpperCase().includes("PICK-UP") ||
+                                    selectedMethod.name.toUpperCase().includes("DANSOMAN");
+              const isPayToRider = selectedMethod.name.toUpperCase().includes("PAY TO RIDER") ||
+                                  selectedMethod.name.toUpperCase().includes("PAY CASH ON DELIVERY") ||
+                                  selectedMethod.name.toUpperCase().includes("CASH ON DELIVERY");
+              const qualifiesForFreeShipping = selectedMethod.freeShippingThreshold &&
                                                orderTotal >= Number(selectedMethod.freeShippingThreshold);
-              const shouldShowFree = (isLocalPickup && selectedMethod.calculatedCost === 0) || 
-                                     (selectedMethod.calculatedCost === 0 && qualifiesForFreeShipping && !isPayToRider);
-              
-              if (shouldShowFree) {
+              // Do not show "FREE" for local pickup or pay-to-rider; show GH¢0.00 instead
+              const shouldShowFree = (selectedMethod.calculatedCost === 0 && qualifiesForFreeShipping && !isLocalPickup && !isPayToRider);
+              const cost = selectedMethod.calculatedCost;
+              const showAmount = cost > 0 || !shouldShowFree;
+              const amountDisplay = shouldShowFree ? "FREE" : formatCurrency(convert(cost), displayCurrency);
+              if (showAmount || shouldShowFree) {
                 return (
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-900">Shipping Cost:</span>
-                    <span className="text-base font-bold text-green-600">FREE</span>
-                  </div>
-                );
-              } else if (selectedMethod.calculatedCost > 0) {
-                return (
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900">Shipping Cost:</span>
-                    <span className="text-base font-bold text-gray-900">
-                      {formatCurrency(convert(selectedMethod.calculatedCost), displayCurrency)}
+                    <span className={`text-base font-bold ${shouldShowFree ? "text-green-600" : "text-gray-900"}`}>
+                      {amountDisplay}
                     </span>
                   </div>
                 );
