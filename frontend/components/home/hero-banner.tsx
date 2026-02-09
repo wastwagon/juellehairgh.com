@@ -6,7 +6,7 @@ import Link from "next/link";
 export function HeroBanner() {
   return (
     <section className="hero-banner-section relative w-full overflow-hidden m-0 p-0">
-      <Link href="/categories/drawstring-half-wigs" className="block w-full h-full cursor-pointer">
+      <Link href="/categories/shop-all" className="block w-full h-full cursor-pointer">
         {/* Mobile Hero Image - Container fits image (1280×1280); full image visible, no cropping */}
         <div className="block md:hidden w-full m-0 p-0">
           <Image
