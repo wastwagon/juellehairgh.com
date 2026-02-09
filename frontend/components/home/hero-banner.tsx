@@ -7,14 +7,15 @@ export function HeroBanner() {
   return (
     <section className="hero-banner-section relative w-full overflow-hidden m-0 p-0">
       <Link href="/categories/drawstring-half-wigs" className="block w-full h-full cursor-pointer">
-        {/* Mobile Hero Image - Screens smaller than 768px; fits mobile and small devices */}
-        <div className="block md:hidden relative w-full aspect-[3/4] min-h-[280px] m-0 p-0">
+        {/* Mobile Hero Image - Container fits image (1280×1280); full image visible, no cropping */}
+        <div className="block md:hidden w-full m-0 p-0">
           <Image
             src="/Mobile-hero-banner.jpeg"
             alt="Hero Banner"
-            fill
+            width={1280}
+            height={1280}
             priority
-            className="object-cover object-center"
+            className="w-full h-auto object-contain"
             sizes="100vw"
             quality={90}
           />
