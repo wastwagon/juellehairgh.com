@@ -1,7 +1,10 @@
 # ================================================================
 # FRONTEND DOCKERFILE - DO NOT COPY PRISMA (backend only)
 # ================================================================
-FROM node:18-alpine AS builder
+# Optional: set NODE_BASE_IMAGE to a mirror if Docker Hub times out (e.g. TLS handshake timeout)
+# Example in Coolify: build-arg NODE_BASE_IMAGE=your-mirror.com/library/node:18-alpine
+ARG NODE_BASE_IMAGE=node:18-alpine
+FROM ${NODE_BASE_IMAGE} AS builder
 
 WORKDIR /app
 
@@ -106,9 +109,9 @@ RUN cp -r public .next/standalone/ && \
     exit 1; \
 }
 
-# Production stage
-# Explicitly reference the builder stage to avoid BuildKit confusion
-FROM node:18-alpine AS runner
+# Production stage (same base image as builder for consistency)
+ARG NODE_BASE_IMAGE=node:18-alpine
+FROM ${NODE_BASE_IMAGE} AS runner
 
 # Install wget for healthcheck
 RUN apk add --no-cache wget
