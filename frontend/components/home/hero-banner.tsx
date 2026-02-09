@@ -8,10 +8,9 @@ export function HeroBanner() {
     <section className="hero-banner-section relative w-full overflow-hidden m-0 p-0">
       <Link href="/categories/drawstring-half-wigs" className="block w-full h-full cursor-pointer">
         {/* Mobile Hero Image - Shows on screens smaller than 768px (md breakpoint) */}
-        {/* Image dimensions: 5121x1700 (aspect ratio ~3:1) */}
         <div className="block md:hidden relative w-full aspect-[3/1] m-0 p-0">
           <Image
-            src="/IMG_0715.webp"
+            src="/NewPoroHeroBanner.jpeg"
             alt="Hero Banner"
             fill
             priority
@@ -22,10 +21,9 @@ export function HeroBanner() {
         </div>
 
         {/* Desktop Hero Image - Shows on screens 768px and larger (md breakpoint and up) */}
-        {/* Image dimensions: 5121x1700 (aspect ratio ~3:1) */}
         <div className="hidden md:block relative w-full aspect-[3/1] m-0 p-0">
           <Image
-            src="/IMG_0715.webp"
+            src="/NewPoroHeroBanner.jpeg"
             alt="Hero Banner"
             fill
             priority

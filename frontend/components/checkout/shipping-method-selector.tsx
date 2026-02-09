@@ -28,6 +28,23 @@ interface ShippingMethodSelectorProps {
   onSelect: (method: ShippingMethod) => void;
 }
 
+/** Display name for checkout: show "Pay to Rider on Delivery" instead of "PAY CASH ON DELIVERY". */
+function getShippingMethodDisplayName(name: string): string {
+  const u = name.toUpperCase();
+  if (u.includes("PAY CASH ON DELIVERY") || u.includes("CASH ON DELIVERY")) {
+    return "Pay to Rider on Delivery";
+  }
+  return name;
+}
+
+/** Display description: same wording as display name where relevant. */
+function getShippingMethodDisplayDescription(description?: string | null): string | undefined {
+  if (!description) return undefined;
+  return description
+    .replace(/Pay cash on delivery/gi, "Pay to rider on delivery")
+    .replace(/pay cash on delivery/gi, "Pay to rider on delivery");
+}
+
 export function ShippingMethodSelector({
   country,
   region = "",
@@ -172,7 +189,8 @@ export function ShippingMethodSelector({
           const costDisplay = showZeroAsFree
             ? "FREE"
             : (cost >= 0 ? formatCurrency(convert(cost), displayCurrency) : "");
-          const displayText = `${method.name}${method.estimatedDays ? ` (${method.estimatedDays})` : ""}${costDisplay ? ` - ${costDisplay}` : ""}`;
+          const displayName = getShippingMethodDisplayName(method.name);
+          const displayText = `${displayName}${method.estimatedDays ? ` (${method.estimatedDays})` : ""}${costDisplay ? ` - ${costDisplay}` : ""}`;
 
           return (
             <option key={method.id} value={method.id}>
@@ -186,9 +204,9 @@ export function ShippingMethodSelector({
       {selectedMethod && (
         <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-sm text-gray-700">
-            <p className="font-medium mb-1">{selectedMethod.name}</p>
-            {selectedMethod.description && (
-              <p className="text-gray-600 mb-1">{selectedMethod.description}</p>
+            <p className="font-medium mb-1">{getShippingMethodDisplayName(selectedMethod.name)}</p>
+            {getShippingMethodDisplayDescription(selectedMethod.description) && (
+              <p className="text-gray-600 mb-1">{getShippingMethodDisplayDescription(selectedMethod.description)}</p>
             )}
             {selectedMethod.estimatedDays && (
               <p className="text-xs text-gray-500">Estimated: {selectedMethod.estimatedDays}</p>
