@@ -16,17 +16,22 @@ services:
     ports:
       - "3000:3000"
     labels:
-      # Workaround for Coolify v4 Traefik domain parsing bug (Host(``) && PathPrefix(`domain`))
-      # Ensure correct routing for both apex + www domains
+      # Dedicated proxy routers (permanent fix: disable Coolify proxy for this app so only these labels apply)
+      # Coolify v4 can inject broken rules; set Proxy to None in Coolify Advanced so only this file is used
       - "traefik.enable=true"
-      # HTTPS router
+      - "traefik.docker.network=coolify"
+      # HTTPS router (priority 1000 = above Coolify defaults so this route is used)
       - "traefik.http.routers.juellehairgh-frontend.rule=Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
+      - "traefik.http.routers.juellehairgh-frontend.priority=1000"
       - "traefik.http.routers.juellehairgh-frontend.entrypoints=https"
       - "traefik.http.routers.juellehairgh-frontend.tls=true"
       - "traefik.http.routers.juellehairgh-frontend.tls.certresolver=letsencrypt"
-      # HTTP router -> redirect to HTTPS (avoids Traefik 404 on port 80)
+      - "traefik.http.routers.juellehairgh-frontend.service=juellehairgh-frontend"
+      # HTTP router -> redirect to HTTPS
       - "traefik.http.routers.juellehairgh-frontend-http.rule=Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
+      - "traefik.http.routers.juellehairgh-frontend-http.priority=1000"
       - "traefik.http.routers.juellehairgh-frontend-http.entrypoints=http"
+      - "traefik.http.routers.juellehairgh-frontend-http.service=juellehairgh-frontend"
       - "traefik.http.routers.juellehairgh-frontend-http.middlewares=juellehairgh-https-redirect"
       - "traefik.http.middlewares.juellehairgh-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.juellehairgh-https-redirect.redirectscheme.permanent=true"
@@ -38,8 +43,10 @@ services:
       retries: 3
       start_period: 60s
     networks:
-      - juelle-hair-network
-      - coolify
+      juelle-hair-network: {}
+      coolify:
+        aliases:
+          - juellehairgh-frontend
     restart: unless-stopped
 
 networks:

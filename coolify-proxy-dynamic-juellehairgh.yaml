@@ -1,0 +1,39 @@
+# Traefik dynamic configuration for juellehairgh.com
+# Copy this file to the Coolify server at: /data/coolify/proxy/dynamic/juellehairgh.yaml
+# Then run: docker restart coolify-proxy
+#
+# This defines dedicated routers via the file provider so traffic works even when
+# Coolify injects broken Docker labels (Host(``) && PathPrefix(...)).
+
+http:
+  routers:
+    juellehairgh-https:
+      rule: "Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
+      entryPoints:
+        - https
+      service: juellehairgh-frontend
+      tls:
+        certResolver: letsencrypt
+      priority: 1000
+    juellehairgh-http:
+      rule: "Host(`juellehairgh.com`) || Host(`www.juellehairgh.com`)"
+      entryPoints:
+        - http
+      middlewares:
+        - juellehairgh-redirect-https
+      service: juellehairgh-frontend
+      priority: 1000
+
+  services:
+    juellehairgh-frontend:
+      loadBalancer:
+        servers:
+          # Coolify attaches proxy to app network; service name "frontend" resolves there
+          - url: "http://frontend:3000"
+        passHostHeader: true
+
+  middlewares:
+    juellehairgh-redirect-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
