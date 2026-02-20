@@ -40,8 +40,8 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-      - backend_dist:/app/dist
-    command: sh -c "npm rebuild bcrypt --build-from-source 2>/dev/null || true && npm run prisma:generate && npm run start:dev"
+      # backend_dist removed - use host dist so compiled code matches source
+    command: sh -c "npm rebuild bcrypt --build-from-source 2>/dev/null || true && npm run prisma:generate && npm run build && node dist/main.js"
     networks:
       - juelle-hair-network
     restart: unless-stopped
@@ -52,6 +52,7 @@ services:
       dockerfile: Dockerfile
     container_name: juelle-hair-frontend
     environment:
+      DOCKER_ENV: "true"
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:9001/api}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}

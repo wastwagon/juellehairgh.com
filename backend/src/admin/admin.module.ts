@@ -6,9 +6,10 @@ import { ProductsModule } from "../products/products.module";
 import { OrdersModule } from "../orders/orders.module";
 import { PrismaModule } from "../prisma/prisma.module";
 import { EmailModule } from "../email/email.module";
+import { SettingsModule } from "../settings/settings.module";
 
 @Module({
-  imports: [ProductsModule, OrdersModule, PrismaModule, EmailModule],
+  imports: [ProductsModule, OrdersModule, PrismaModule, EmailModule, SettingsModule],
   controllers: [AdminController, UploadController],
   providers: [AdminService],
 })

@@ -1,34 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Get API base URL - same logic as api.ts
+// Get API base URL - proxies media from backend
+// Must match how the frontend reaches the backend (localhost when dev on host, backend:3001 when in Docker)
 function getApiBaseUrl(): string {
-  // Priority 1: Check if we're in Docker (for local Docker Compose)
-  // Server-side API routes in Docker should use service name, not localhost
-  // If NEXT_PUBLIC_API_BASE_URL includes localhost:9001 or localhost:8001, we're in local Docker
   const url = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (url?.includes('localhost:9001') || url?.includes('localhost:8001')) {
-    // Server-side API route in Docker - use service name for internal requests
+
+  // When Next.js runs IN Docker (frontend container), use internal service name
+  // localhost:9001 from inside a container would not reach the backend
+  if (process.env.DOCKER_ENV === 'true') {
     return 'http://backend:3001/api';
   }
-  
-  // Priority 2: Use NEXT_PUBLIC_API_BASE_URL if set
+
+  // Use NEXT_PUBLIC_API_BASE_URL as-is (localhost:9001 or localhost:3001)
+  // Works when frontend runs locally - host can reach backend via localhost
   if (url && url.trim() !== '') {
     return url.endsWith('/api') ? url : `${url}/api`;
   }
-  
-  // Priority 3: Check for explicit BACKEND_URL environment variable
-  if (process.env.BACKEND_URL) {
-    const backendUrl = process.env.BACKEND_URL.endsWith('/api') 
-      ? process.env.BACKEND_URL 
-      : `${process.env.BACKEND_URL}/api`;
-    return backendUrl;
-  }
-  
-  // Final fallback
-  const fallbackUrl = 'http://localhost:3001/api';
-  console.warn('⚠️ Media proxy: API Base URL not configured, using fallback:', fallbackUrl);
-  
-  return fallbackUrl;
+
+  // Fallback: match project defaults - Docker backend on 9001, local backend on 3001
+  return process.env.BACKEND_PORT === '9001' ? 'http://localhost:9001/api' : 'http://localhost:3001/api';
 }
 
 // Proxy media requests to backend

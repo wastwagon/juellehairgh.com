@@ -21,6 +21,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { PrismaService } from "../prisma/prisma.service";
+import { SettingsService } from "../settings/settings.service";
 
 @Controller("admin")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -32,11 +33,26 @@ export class AdminController {
     private ordersService: OrdersService,
     private emailService: EmailService,
     private prisma: PrismaService,
+    private settingsService: SettingsService,
   ) {}
 
   @Get("dashboard")
   async getDashboard() {
     return this.adminService.getDashboardStats();
+  }
+
+  // Hero Banner CMS - static routes before parametric to ensure registration
+  @Get("hero-banner")
+  async getHeroBanner() {
+    return this.settingsService.getHeroBanner();
+  }
+
+  @Put("hero-banner")
+  async updateHeroBanner(
+    @Body()
+    body: { mobileImage?: string; desktopImage?: string; link?: string },
+  ) {
+    return this.settingsService.updateHeroBanner(body);
   }
 
   // Products Management
