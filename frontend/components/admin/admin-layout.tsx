@@ -54,6 +54,7 @@ const navItems = [
   { href: "/admin/wallets", label: "Wallet Management", icon: Wallet },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/blog", label: "Blog", icon: FileText },
+  { href: "/admin/hero-banner", label: "Hero Banner", icon: Image },
   { href: "/admin/banners", label: "Banners", icon: Image },
   { href: "/admin/media", label: "Media Library", icon: Database },
   { href: "/admin/discount-codes", label: "Discount Codes", icon: Ticket },

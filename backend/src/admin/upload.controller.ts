@@ -235,6 +235,101 @@ export class UploadController {
     };
   }
 
+  // Upload banner image - static route before parametric to ensure registration
+  @Post("banner")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN")
+  @UseInterceptors(
+    FileInterceptor("file", {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const bannerDir = path.join(MEDIA_DIR, "banners");
+          if (!fs.existsSync(bannerDir)) {
+            fs.mkdirSync(bannerDir, { recursive: true });
+          }
+          cb(null, bannerDir);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          const name = file.originalname
+            .replace(ext, "")
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
+          cb(null, `${uniqueSuffix}-${name}${ext}`);
+        },
+      }),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+          return cb(
+            new BadRequestException("Only image files are allowed!"),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadBannerImage(
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    if (!file) {
+      throw new BadRequestException("No file uploaded");
+    }
+
+    const filePath = path.join(MEDIA_DIR, "banners", file.filename);
+    const fileUrl = `/media/banners/${file.filename}`;
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    if (!fs.existsSync(filePath)) {
+      throw new BadRequestException(
+        `File was not saved correctly. Expected at: ${filePath}`,
+      );
+    }
+
+    const frontendMediaPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+      "media",
+      "banners",
+    );
+    const frontendPublicPath = path.join(
+      process.cwd(),
+      "..",
+      "frontend",
+      "public",
+    );
+
+    if (fs.existsSync(frontendPublicPath)) {
+      try {
+        if (!fs.existsSync(frontendMediaPath)) {
+          fs.mkdirSync(frontendMediaPath, { recursive: true });
+        }
+        const frontendFilePath = path.join(frontendMediaPath, file.filename);
+        fs.copyFileSync(filePath, frontendFilePath);
+      } catch (error) {
+        console.error(
+          `[Upload] Could not copy file to frontend directory: ${error}`,
+        );
+      }
+    }
+
+    return {
+      success: true,
+      url: fileUrl,
+      filename: file.filename,
+      originalName: file.originalname,
+      size: file.size,
+    };
+  }
+
   @Post("product")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("ADMIN")
@@ -771,104 +866,6 @@ export class UploadController {
     };
   }
 
-  // Upload banner image
-  @Post("banner")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("ADMIN")
-  @UseInterceptors(
-    FileInterceptor("file", {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const bannerDir = path.join(MEDIA_DIR, "banners");
-          if (!fs.existsSync(bannerDir)) {
-            fs.mkdirSync(bannerDir, { recursive: true });
-          }
-          cb(null, bannerDir);
-        },
-        filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + "-" + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          const name = file.originalname
-            .replace(ext, "")
-            .replace(/[^a-z0-9]/gi, "-")
-            .toLowerCase();
-          cb(null, `${uniqueSuffix}-${name}${ext}`);
-        },
-      }),
-      limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
-      },
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(
-            new BadRequestException("Only image files are allowed!"),
-            false,
-          );
-        }
-        cb(null, true);
-      },
-    }),
-  )
-  async uploadBannerImage(
-    @UploadedFile() file: Express.Multer.File | undefined,
-  ) {
-    if (!file) {
-      throw new BadRequestException("No file uploaded");
-    }
-
-    const filePath = path.join(MEDIA_DIR, "banners", file.filename);
-    const fileUrl = `/media/banners/${file.filename}`;
-
-    // Wait for file system sync
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Verify file was saved
-    if (!fs.existsSync(filePath)) {
-      throw new BadRequestException(
-        `File was not saved correctly. Expected at: ${filePath}`,
-      );
-    }
-
-    // Copy to frontend/public/media/banners
-    const frontendMediaPath = path.join(
-      process.cwd(),
-      "..",
-      "frontend",
-      "public",
-      "media",
-      "banners",
-    );
-    const frontendPublicPath = path.join(
-      process.cwd(),
-      "..",
-      "frontend",
-      "public",
-    );
-
-    if (fs.existsSync(frontendPublicPath)) {
-      try {
-        if (!fs.existsSync(frontendMediaPath)) {
-          fs.mkdirSync(frontendMediaPath, { recursive: true });
-        }
-        const frontendFilePath = path.join(frontendMediaPath, file.filename);
-        fs.copyFileSync(filePath, frontendFilePath);
-      } catch (error) {
-        console.error(
-          `[Upload] Could not copy file to frontend directory: ${error}`,
-        );
-      }
-    }
-
-    return {
-      success: true,
-      url: fileUrl,
-      filename: file.filename,
-      originalName: file.originalname,
-      size: file.size,
-    };
-  }
-
   // Upload profile picture (user-facing)
   @Post("profile-picture")
   @UseGuards(JwtAuthGuard)
@@ -992,6 +989,8 @@ export class UploadController {
       "categories",
       "brands",
       "collections",
+      "banners",
+      "profiles",
     ];
     if (!validCategories.includes(category)) {
       throw new BadRequestException("Invalid category");
@@ -1134,6 +1133,8 @@ export class UploadController {
       "categories",
       "brands",
       "collections",
+      "banners",
+      "profiles",
     ];
     if (!validCategories.includes(category)) {
       throw new BadRequestException("Invalid category");
