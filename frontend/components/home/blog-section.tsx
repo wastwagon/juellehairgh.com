@@ -91,7 +91,7 @@ export function BlogSection() {
                 <div className="relative w-full h-40 sm:h-48 md:h-56 overflow-hidden bg-pink-100 flex items-center justify-center">
                   {post.featuredImage ? (
                     <Image
-                      src={getImageUrl(post.featuredImage) || "/placeholder-product.jpg"}
+                      src={getImageUrl(post.featuredImage) || "/placeholder-product.svg"}
                       alt={post.title}
                       fill
                       className="object-contain group-hover:scale-105 transition-transform duration-300"

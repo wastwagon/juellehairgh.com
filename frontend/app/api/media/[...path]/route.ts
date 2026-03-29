@@ -4,9 +4,12 @@ import { NextRequest, NextResponse } from 'next/server';
 // Must match how the frontend reaches the backend (localhost when dev on host, backend:3001 when in Docker)
 function getApiBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const internal = process.env.INTERNAL_API_BASE_URL?.trim();
+  if (internal) {
+    return internal.endsWith('/api') ? internal : `${internal}/api`;
+  }
 
-  // When Next.js runs IN Docker (frontend container), use internal service name
-  // localhost:9001 from inside a container would not reach the backend
+  // Same compose stack as backend only
   if (process.env.DOCKER_ENV === 'true') {
     return 'http://backend:3001/api';
   }

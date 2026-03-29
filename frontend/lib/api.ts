@@ -5,20 +5,22 @@ import axios from "axios";
 const getApiBaseUrl = () => {
   let url: string | undefined;
 
-  // Priority 1: Server-side environment (Docker internal network)
-  // When running on the server (SSR), we should ALWAYS use the internal service name
-  // if we are in a Docker environment (Coolify/Docker Compose)
+  // Priority 1: Server-side (SSR, RSC, Route Handlers)
+  // Use internal Docker hostname ONLY when explicitly enabled (same compose stack as backend).
+  // Coolify split apps: frontend container has no "backend" DNS name — use NEXT_PUBLIC_API_BASE_URL or INTERNAL_API_BASE_URL.
   if (typeof window === "undefined") {
-    // Check if we are in Docker (either via explicit env var or by default for server-side)
-    // In production VPS, the backend is reachable at http://backend:3001
-    const isDocker = process.env.DOCKER_ENV === "true" || process.env.NODE_ENV === "production";
-
-    if (isDocker) {
+    const internal = process.env.INTERNAL_API_BASE_URL?.trim();
+    if (internal) {
+      return internal.endsWith("/api") ? internal : `${internal}/api`;
+    }
+    if (process.env.DOCKER_ENV === "true") {
       return "http://backend:3001/api";
     }
-
-    // Fallback for local SSR without Docker
-    return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+    const pub = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+    if (pub) {
+      return pub.endsWith("/api") ? pub : `${pub}/api`;
+    }
+    return "http://localhost:3001/api";
   }
 
   // Priority 2: Runtime config (set via window.__ENV__ from layout.tsx)
@@ -57,7 +59,7 @@ const getApiBaseUrl = () => {
 
 // Create axios instance with dynamic base URL and timeout
 export const api = axios.create({
-  baseURL: typeof window !== "undefined" ? getApiBaseUrl() : "http://backend:3001/api",
+  baseURL: getApiBaseUrl(),
   timeout: 10000, // 10 second timeout to prevent hanging and 504s
   headers: {
     "Content-Type": "application/json",

@@ -110,8 +110,10 @@ export const trackEvent = async (
 export const analytics = {
   // Page view tracking
   pageView: (path?: string) => {
+    const resolved =
+      path ?? (typeof window !== "undefined" ? window.location.pathname : undefined);
     trackEvent("page_view", {
-      metadata: { path: path || window.location.pathname },
+      metadata: { path: resolved ?? "/" },
     });
   },
 

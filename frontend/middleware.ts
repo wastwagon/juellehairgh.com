@@ -4,23 +4,29 @@ import type { NextRequest } from "next/server";
 // Configuration for maintenance mode check
 // In Docker development, we need to use the service name 'backend' and internal port 3001
 const getApiUrl = () => {
-  // Middleware runs on the server (SSR)
-  // In production VPS environment, always use internal service name for speed and stability
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const isProduction = process.env.NODE_ENV === "production";
+  const internal = process.env.INTERNAL_API_BASE_URL?.trim();
 
-  if (isProduction || (apiUrl && apiUrl.includes("localhost:9001"))) {
-    // We're in Docker/Production - use the service name for internal communication
+  if (internal) {
+    return internal.endsWith("/api") ? internal : `${internal}/api`;
+  }
+
+  // Same docker-compose stack as backend (docker-compose.yml with service "backend")
+  if (process.env.DOCKER_ENV === "true") {
     return "http://backend:3001/api";
   }
 
-  // Priority 2: Use NEXT_PUBLIC_API_BASE_URL if set (for local/preview)
-  if (apiUrl && apiUrl.trim() !== '') {
-    return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+  // Local dev on host: backend:3001 does not resolve
+  if (apiUrl && apiUrl.includes("localhost")) {
+    return apiUrl.endsWith("/api") ? apiUrl : `${apiUrl}/api`;
   }
 
-  // Priority 3: Fallback
-  return "http://localhost:3001/api";
+  // Coolify / split deploy: reach API via public URL
+  if (apiUrl?.trim()) {
+    return apiUrl.endsWith("/api") ? apiUrl : `${apiUrl}/api`;
+  }
+
+  return "http://localhost:9001/api";
 };
 
 export async function middleware(request: NextRequest) {
@@ -49,7 +55,7 @@ export async function middleware(request: NextRequest) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    const response = await fetch(`${API_URL}/settings/maintenance`, {
+    const response = await fetch(`${API_URL}/settings/site`, {
       signal: controller.signal,
       next: { revalidate: 60 }, // Cache for 60 seconds to reduce API load
     });
@@ -70,7 +76,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const data = await response.json();
-    const isMaintenanceMode = data.enabled === true;
+    const isMaintenanceMode = data.maintenanceMode === true;
 
     // 4. Handle logic if maintenance mode is ACTIVE
     if (isMaintenanceMode) {
