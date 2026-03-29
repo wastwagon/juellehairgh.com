@@ -24,6 +24,7 @@ import { ProductStructuredData } from "@/components/seo/product-structured-data"
 import { ProductReviews } from "./product-reviews";
 import { toast } from "sonner";
 import { processDescription } from "@/lib/process-description";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 interface ProductDetailProps {
   slug: string;
@@ -285,7 +286,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
       ) : (
         <ProductStructuredData 
           product={product} 
-          siteUrl={process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com"} 
+          siteUrl={getPublicSiteUrl()} 
         />
       )}
 

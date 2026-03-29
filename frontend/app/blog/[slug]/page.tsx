@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SocialShare } from "@/components/shared/social-share";
 import { MetaTags } from "@/components/seo/meta-tags-app";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 interface BlogPost {
   id: string;
@@ -40,7 +41,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   // Get site URL for absolute URLs (needed for meta tags)
   const siteUrl = typeof window !== "undefined" 
     ? window.location.origin 
-    : (process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com");
+    : getPublicSiteUrl();
 
   // For Next.js Image component - returns relative URLs for API proxy
   const getImageUrl = (url?: string) => {

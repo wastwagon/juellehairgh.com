@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 // Helper function to escape XML entities
 function escapeXml(text: string): string {
@@ -22,24 +23,7 @@ function getAbsoluteImageUrl(imageUrl: string | undefined, siteUrl: string): str
 }
 
 export async function GET() {
-  // Get the frontend URL - if API_BASE_URL contains 'api.', replace it with the frontend domain
-  let siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  
-  // If API URL contains 'api.', replace it with frontend domain
-  if (siteUrl.includes("api.juellehairgh.com")) {
-    siteUrl = siteUrl.replace("api.juellehairgh.com", "juellehairgh.com");
-  }
-  
-  // Remove /api suffix if present
-  siteUrl = siteUrl.replace("/api", "");
-  
-  // Fallback to default frontend URL
-  if (!siteUrl || siteUrl === "" || siteUrl.includes("api.")) {
-    siteUrl = "https://juellehairgh.com";
-  }
-  
-  // Ensure siteUrl doesn't have trailing slash and is properly formatted
-  const cleanSiteUrl = siteUrl.replace(/\/$/, "");
+  const cleanSiteUrl = getPublicSiteUrl().replace(/\/$/, "");
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.juellehairgh.com/api";
 
   try {

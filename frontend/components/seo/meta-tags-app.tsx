@@ -1,5 +1,7 @@
 "use client";
 
+import { getPublicSiteUrl } from "@/lib/site-url";
+
 // For Next.js App Router - use next/head in client components
 // This is a workaround since App Router doesn't support dynamic metadata in client components
 // For production, consider using generateMetadata in page.tsx files
@@ -52,7 +54,7 @@ export function MetaTags({
       // If relative, make it absolute
       const siteUrl = typeof window !== "undefined" 
         ? window.location.origin 
-        : (process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com");
+        : getPublicSiteUrl();
       return `${siteUrl}${canonicalUrl.startsWith("/") ? "" : "/"}${canonicalUrl}`;
     }
     // Fallback to current URL

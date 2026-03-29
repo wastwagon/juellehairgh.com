@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { WhatsAppChatButton } from "@/components/layout/whatsapp-chat-button";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 // Dynamically import FakeSalesNotification with SSR disabled to prevent build-time errors
 const FakeSalesNotification = dynamic(
@@ -17,19 +18,11 @@ const inter = Inter({
   preload: true,
 });
 
-// Safe URL construction for metadataBase to prevent server crashes if env var is misconfigured
 const getMetadataBase = () => {
-  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  // Handle comma-separated URLs from Coolify or stray characters
-  const firstUrl = envUrl.split(',')[0].trim().replace("/api", "");
-
   try {
-    if (firstUrl && (firstUrl.startsWith('http://') || firstUrl.startsWith('https://'))) {
-      return new URL(firstUrl);
-    }
-    return new URL("https://juellehairgh.com");
+    return new URL(getPublicSiteUrl());
   } catch (e) {
-    console.error("❌ Invalid metadataBase URL:", firstUrl);
+    console.error("❌ Invalid metadataBase URL:", e);
     return new URL("https://juellehairgh.com");
   }
 };
@@ -65,7 +58,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_GH",
-    url: process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com",
+    url: getPublicSiteUrl(),
     siteName: "Juelle Hair Gh",
     title: "Juelle Hair Gh - Crochet Braiding Hair Extensions & Wig Shop",
     description: "Shop premium quality lace wigs, crochet braids, ponytails, and hair care products. Free shipping on orders GHS 950+.",
@@ -100,7 +93,7 @@ export const metadata: Metadata = {
     // google: "your-google-verification-code",
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com",
+    canonical: getPublicSiteUrl(),
   },
 };
 

@@ -15,6 +15,7 @@ import { FlashSalesSection } from "@/components/home/flash-sales-section";
 import { HashScrollHandler } from "@/components/home/hash-scroll-handler";
 import { HomePageStructuredData } from "@/components/seo/homepage-structured-data";
 import { ShopAllSection } from "@/components/home/shop-all-section";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 // Force dynamic rendering to prevent caching stale content
 export const dynamic = 'force-dynamic';
@@ -57,7 +58,7 @@ export const metadata: Metadata = {
     description: "Shop premium quality lace wigs, crochet braids, and hair care products in Ghana.",
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com",
+    canonical: getPublicSiteUrl(),
   },
   robots: {
     index: true,
@@ -73,7 +74,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com";
+  const siteUrl = getPublicSiteUrl();
   
   return (
     <div className="min-h-screen flex flex-col bg-white">

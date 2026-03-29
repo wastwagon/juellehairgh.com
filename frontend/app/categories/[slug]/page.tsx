@@ -4,10 +4,11 @@ import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { Suspense } from "react";
 import { CategoryPage } from "@/components/categories/category-page";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 // Generate metadata for category pages (Next.js App Router)
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com";
+  const siteUrl = getPublicSiteUrl();
 
   try {
     // Fetch category data for metadata

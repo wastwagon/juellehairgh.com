@@ -3,10 +3,11 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { ProductDetail } from "@/components/products/product-detail";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 // Generate metadata for product pages (Next.js App Router)
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") || "https://juellehairgh.com";
+  const siteUrl = getPublicSiteUrl();
 
   try {
     // Fetch product data for metadata
