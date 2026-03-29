@@ -44,6 +44,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Client-side navigations fetch RSC "flight" payloads. A 307 HTML redirect (e.g. to
+  // /maintenance) is not valid flight data and causes: "Failed to fetch RSC payload"
+  // and TypeError: (intermediate value) is not iterable.
+  const h = request.headers;
+  const rscHeader = h.get("RSC");
+  const accept = h.get("accept") || "";
+  const isFlightLike =
+    request.nextUrl.searchParams.has("_rsc") ||
+    rscHeader === "1" ||
+    rscHeader === "true" ||
+    h.get("Next-Router-Prefetch") === "1" ||
+    h.has("Next-Router-State-Tree") ||
+    h.has("Next-Router-Segment-Prefetch") ||
+    accept.includes("text/x-component");
+
+  if (isFlightLike) {
+    return NextResponse.next();
+  }
+
   // 2. Paths that are ALWAYS accessible (even during maintenance)
   // We include /admin and /auth so the admin can log in to turn maintenance off
   const publicPaths = ["/maintenance", "/admin", "/login", "/register", "/auth"];
@@ -57,21 +76,14 @@ export async function middleware(request: NextRequest) {
 
     const response = await fetch(`${API_URL}/settings/site`, {
       signal: controller.signal,
-      next: { revalidate: 60 }, // Cache for 60 seconds to reduce API load
     });
 
     clearTimeout(timeoutId);
 
-    // Check if response is OK before parsing
+    // If the settings endpoint errors, fail open: keep the storefront usable and avoid
+    // breaking every soft navigation (RSC) with redirects users never meant to hit.
     if (!response.ok) {
       console.error(`Maintenance check failed: HTTP ${response.status}`);
-      // If we can't check maintenance status, default to maintenance mode for safety
-      // Only allow admins and public paths
-      const userRole = request.cookies.get("user_role")?.value;
-      const isAdmin = userRole === "ADMIN" || userRole === "MANAGER";
-      if (!isAdmin && !isPublicPath) {
-        return NextResponse.redirect(new URL("/maintenance", request.url));
-      }
       return NextResponse.next();
     }
 
@@ -95,16 +107,8 @@ export async function middleware(request: NextRequest) {
       }
     }
   } catch (error) {
-    // If the check fails (e.g. backend down, network error), default to maintenance mode for safety
-    // This ensures the site is protected even if the API is unavailable
     console.error("Maintenance check failed:", error);
-
-    // Only allow admins and public paths when we can't verify maintenance status
-    const userRole = request.cookies.get("user_role")?.value;
-    const isAdmin = userRole === "ADMIN" || userRole === "MANAGER";
-    if (!isAdmin && !isPublicPath) {
-      return NextResponse.redirect(new URL("/maintenance", request.url));
-    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();

@@ -116,7 +116,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           id="__RUNTIME_CONFIG__"
@@ -143,7 +143,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <Providers>
           {children}
           <WhatsAppChatButton />

@@ -91,7 +91,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="bg-amber-600 text-white text-xs md:text-sm py-2 px-4 text-center font-bold flex items-center justify-center gap-2 z-[60]">
           <ShieldAlert className="h-4 w-4" />
           Storefront Offline: You are viewing the site in Administrative Preview mode.
-          <Link href="/admin/settings" className="underline hover:text-amber-100 ml-2">
+          <Link href="/admin/settings" prefetch={false} className="underline hover:text-amber-100 ml-2">
             Settings
           </Link>
         </div>
@@ -139,6 +139,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={false}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",

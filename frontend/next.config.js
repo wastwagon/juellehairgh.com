@@ -37,11 +37,12 @@ const nextConfig = {
   // Optimize memory usage and build speed
   swcMinify: true, // Use SWC minifier (faster and more memory efficient)
   compress: true, // Enable gzip compression
-  // Optimize build performance
-  generateBuildId: async () => {
-    // Use timestamp for build ID to avoid unnecessary rebuilds
-    return `build-${Date.now()}`;
-  },
+  // Do not use Date.now() for buildId: it guarantees a new ID on every deploy and
+  // leaves long-lived tabs on stale JS while the server serves new RSC payloads →
+  // 404 on ?_rsc= requests and "a[e] is not a function" / "not iterable" errors.
+  // Next.js default build ID is fine; optional: set SOURCE_COMMIT in Coolify and use:
+  // generateBuildId: async () =>
+  //   process.env.SOURCE_COMMIT?.slice(0, 12) || `build-${Date.now()}`,
   // Note: generateStaticParams is not a valid Next.js config option
   // Removed to avoid build warnings
   // Optimize webpack

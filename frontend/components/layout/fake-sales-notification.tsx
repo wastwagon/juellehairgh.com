@@ -91,23 +91,14 @@ export function FakeSalesNotification() {
   }, [isMounted]);
 
   // Fetch products for the notification (only on client side)
-  const { data: products, isLoading, error } = useQuery<Product[]>({
+  const { data: products } = useQuery<Product[]>({
     queryKey: ["fake-sales-products"],
     queryFn: async () => {
       try {
         // Fetch a larger set of products to ensure we get enough wigs
         const response = await api.get("/products?limit=200&isActive=true");
         
-        // Debug: Log response structure
-        console.log("🔍 Fake Sales Notification - API Response:", {
-          hasData: !!response.data,
-          hasProducts: !!response.data?.products,
-          productsCount: response.data?.products?.length || 0,
-          responseKeys: Object.keys(response.data || {}),
-        });
-
         const allProducts = response.data?.products || [];
-        console.log(`📦 Total products fetched: ${allProducts.length}`);
 
         const fetchedProducts = allProducts.filter((p: Product) => {
             // Basic validation
@@ -163,27 +154,6 @@ export function FakeSalesNotification() {
           }
         );
 
-        console.log(`✅ Filtered wig products: ${fetchedProducts.length}`, {
-          sampleProducts: fetchedProducts.slice(0, 3).map((p: Product) => ({
-            title: p.title,
-            category: p.category && typeof p.category === "object" ? p.category.slug : "unknown",
-            stock: p.stock,
-            hasVariants: !!(p.variants && p.variants.length > 0),
-          })),
-        });
-
-        // If no wigs found, log detailed warning
-        if (fetchedProducts.length === 0) {
-          console.warn("⚠️ No wig products found for fake sales notification", {
-            totalProducts: allProducts.length,
-            sampleCategories: allProducts.slice(0, 10).map((p: Product) => ({
-              title: p.title,
-              category: p.category && typeof p.category === "object" ? p.category.slug : "unknown",
-              stock: p.stock,
-            })),
-          });
-        }
-
         return fetchedProducts;
       } catch (error) {
         console.error("❌ Error fetching products for sales notification:", error);
@@ -194,18 +164,6 @@ export function FakeSalesNotification() {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     refetchOnWindowFocus: false,
   });
-
-  // Debug: Log query state
-  useEffect(() => {
-    if (isMounted) {
-      console.log("🔍 Fake Sales Notification Query State:", {
-        isLoading,
-        error: error?.message,
-        productsCount: products?.length || 0,
-        isEnabled: isMounted && typeof window !== "undefined" && !isDismissed && isVisible,
-      });
-    }
-  }, [isLoading, error, products, isMounted, isDismissed, isVisible]);
 
   // Select random product and set time ago
   useEffect(() => {
