@@ -4,11 +4,21 @@ import type { NextRequest } from "next/server";
 // Configuration for maintenance mode check
 // In Docker development, we need to use the service name 'backend' and internal port 3001
 const getApiUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
   const internal = process.env.INTERNAL_API_BASE_URL?.trim();
 
+  const withApiSuffix = (base: string) =>
+    base.endsWith("/api") ? base : `${base}/api`;
+
+  // Split deploy (e.g. Coolify): public API is the source of truth for site settings.
+  // If INTERNAL_API_BASE_URL points at a different instance or stale service, maintenance
+  // mode would disagree with https://api.* — prefer canonical HTTPS when configured.
+  if (apiUrl?.startsWith("https://")) {
+    return withApiSuffix(apiUrl);
+  }
+
   if (internal) {
-    return internal.endsWith("/api") ? internal : `${internal}/api`;
+    return withApiSuffix(internal);
   }
 
   // Same docker-compose stack as backend (docker-compose.yml with service "backend")
@@ -18,12 +28,11 @@ const getApiUrl = () => {
 
   // Local dev on host: backend:3001 does not resolve
   if (apiUrl && apiUrl.includes("localhost")) {
-    return apiUrl.endsWith("/api") ? apiUrl : `${apiUrl}/api`;
+    return withApiSuffix(apiUrl);
   }
 
-  // Coolify / split deploy: reach API via public URL
-  if (apiUrl?.trim()) {
-    return apiUrl.endsWith("/api") ? apiUrl : `${apiUrl}/api`;
+  if (apiUrl) {
+    return withApiSuffix(apiUrl);
   }
 
   return "http://localhost:9001/api";
