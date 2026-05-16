@@ -1749,13 +1749,20 @@ export class AdminService {
   async updateSettings(
     settings: Array<{ key: string; value: string; category?: string }>,
   ) {
-    const updates = settings.map(({ key, value, category = "general" }) =>
-      this.prisma.setting.upsert({
-        where: { key },
-        update: { value, category, updatedAt: new Date() },
-        create: { key, value, category },
-      }),
-    );
+    const updates = settings
+      .filter(
+        (setting) =>
+          !(
+            setting.key === "SMTP_PASSWORD" && !setting.value?.trim()
+          ),
+      )
+      .map(({ key, value, category = "general" }) =>
+        this.prisma.setting.upsert({
+          where: { key },
+          update: { value, category, updatedAt: new Date() },
+          create: { key, value, category },
+        }),
+      );
 
     await Promise.all(updates);
     return this.getSettings();

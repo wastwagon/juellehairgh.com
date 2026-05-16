@@ -39,8 +39,13 @@ const nextConfig = {
   compress: true, // Enable gzip compression
   // Optimize build performance
   generateBuildId: async () => {
-    // Use timestamp for build ID to avoid unnecessary rebuilds
-    return `build-${Date.now()}`;
+    // Stable ID across a deployment — avoids "Failed to find Server Action" for open tabs after redeploy.
+    return (
+      process.env.BUILD_ID ||
+      process.env.COOLIFY_BUILD_ID ||
+      process.env.GIT_COMMIT ||
+      "production"
+    );
   },
   // Note: generateStaticParams is not a valid Next.js config option
   // Removed to avoid build warnings

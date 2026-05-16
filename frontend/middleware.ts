@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const MAINTENANCE_FETCH_TIMEOUT_MS = 5000;
+const MAINTENANCE_CACHE_TTL_MS = 30_000;
+
+let maintenanceCache: { enabled: boolean; expiresAt: number } | null = null;
+
 // Resolve API base for maintenance check (must match the backend that owns MAINTENANCE_MODE).
 const getApiUrl = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
@@ -33,6 +38,39 @@ const getApiUrl = () => {
   return "http://localhost:3001/api";
 };
 
+async function fetchMaintenanceEnabled(apiUrl: string): Promise<boolean | null> {
+  if (maintenanceCache && Date.now() < maintenanceCache.expiresAt) {
+    return maintenanceCache.enabled;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    MAINTENANCE_FETCH_TIMEOUT_MS,
+  );
+
+  try {
+    const response = await fetch(`${apiUrl}/settings/maintenance`, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const enabled = data.enabled === true;
+    maintenanceCache = {
+      enabled,
+      expiresAt: Date.now() + MAINTENANCE_CACHE_TTL_MS,
+    };
+    return enabled;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const API_URL = getApiUrl();
@@ -47,6 +85,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Only run maintenance redirects on full page GET navigations.
+  if (request.method !== "GET") {
+    return NextResponse.next();
+  }
+
   const h = request.headers;
   const rscHeader = h.get("RSC");
   const accept = h.get("accept") || "";
@@ -57,6 +100,7 @@ export async function middleware(request: NextRequest) {
     h.get("Next-Router-Prefetch") === "1" ||
     h.has("Next-Router-State-Tree") ||
     h.has("Next-Router-Segment-Prefetch") ||
+    h.has("Next-Action") ||
     accept.includes("text/x-component");
 
   if (isFlightLike) {
@@ -67,22 +111,11 @@ export async function middleware(request: NextRequest) {
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const isMaintenanceMode = await fetchMaintenanceEnabled(API_URL);
 
-    const response = await fetch(`${API_URL}/settings/maintenance`, {
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.error(`Maintenance check failed: HTTP ${response.status}`);
+    if (isMaintenanceMode === null) {
       return NextResponse.next();
     }
-
-    const data = await response.json();
-    const isMaintenanceMode = data.enabled === true;
 
     if (isMaintenanceMode) {
       const userRole = request.cookies.get("user_role")?.value;
@@ -95,7 +128,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   } catch (error) {
-    console.error("Maintenance check failed:", error);
+    const isAbort =
+      error instanceof Error &&
+      (error.name === "AbortError" || error.message.includes("aborted"));
+    if (!isAbort) {
+      console.error("Maintenance check failed:", error);
+    }
     return NextResponse.next();
   }
 

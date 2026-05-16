@@ -507,9 +507,9 @@ export class EmailService {
       const adminEmail = await this.getAdminEmail();
       this.logger.log(`Admin email retrieved: ${adminEmail}`);
 
-      if (!adminEmail || adminEmail === "admin@juellehairgh.com") {
+      if (!adminEmail?.includes("@")) {
         this.logger.warn(
-          `Admin email may not be configured correctly: ${adminEmail}`,
+          `Admin email is not configured correctly: ${adminEmail}`,
         );
       }
 

@@ -99,7 +99,15 @@ export function AdminSettings() {
             { key: "SMTP_HOST", value: settingsToSave.smtpHost, category: "email" },
             { key: "SMTP_PORT", value: settingsToSave.smtpPort, category: "email" },
             { key: "SMTP_USER", value: settingsToSave.smtpUser, category: "email" },
-            { key: "SMTP_PASSWORD", value: settingsToSave.smtpPassword, category: "email" },
+            ...(settingsToSave.smtpPassword.trim()
+              ? [
+                  {
+                    key: "SMTP_PASSWORD",
+                    value: settingsToSave.smtpPassword,
+                    category: "email",
+                  },
+                ]
+              : []),
             { key: "EMAIL_FROM", value: settingsToSave.emailFrom, category: "email" },
             { key: "EMAIL_FROM_NAME", value: settingsToSave.emailFromName, category: "email" },
             { key: "ADMIN_EMAIL", value: settingsToSave.adminEmail, category: "email" },
@@ -379,7 +387,7 @@ export function AdminSettings() {
                     type={showSmtpPassword ? "text" : "password"}
                     value={settings.smtpPassword}
                     onChange={(e) => setSettings({ ...settings, smtpPassword: e.target.value })}
-                    placeholder="Your SMTP password or app password"
+                    placeholder="Leave blank to keep the current password"
                     className="pr-10"
                   />
                   <button
@@ -498,7 +506,7 @@ export function AdminSettings() {
 
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> After saving SMTP settings, restart the backend server for changes to take effect.
+                  <strong>Note:</strong> SMTP changes apply immediately after saving. Leave the password field blank to keep your existing password.
                 </p>
                 <p className="text-xs text-blue-800 mt-1">
                   <strong>Gmail Users:</strong> You need to enable 2-factor authentication and create an App Password. Go to Google Account → Security → App Passwords.
